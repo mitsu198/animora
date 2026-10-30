@@ -71,30 +71,70 @@ main { padding: 35px 6%; }
     background: #191622;
     border-radius: 13px;
     overflow: hidden;
-    transition: .2s;
+    transition: .25s;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px #a34cff33;
+    transform: translateY(-7px);
+    box-shadow: 0 8px 30px #a34cff66;
 }
 
 .poster {
-    height: 230px;
+    height: 260px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #4d2478, #bd4c91);
+}
+
+.poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: .35s;
+}
+
+.card:hover .poster img {
+    transform: scale(1.06);
+}
+
+.poster-placeholder {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 55px;
-    background: linear-gradient(145deg, #4d2478, #bd4c91);
+    z-index: 0;
 }
 
-.card h3 { margin: 13px; font-size: 16px; }
-.card p { margin: 0 13px 15px; color: #aaa; font-size: 13px; }
+.poster img {
+    position: relative;
+    z-index: 1;
+}
+
+.card h3 {
+    margin: 13px;
+    font-size: 16px;
+}
+
+.card p {
+    margin: 0 13px 15px;
+    color: #aaa;
+    font-size: 13px;
+}
 
 footer {
     padding: 30px;
     text-align: center;
     color: #777;
+}
+
+@media (max-width: 600px) {
+    .hero h1 { font-size: 34px; }
+    header { flex-wrap: wrap; gap: 15px; }
+    nav a { margin-left: 0; margin-right: 14px; }
+    .poster { height: 220px; }
 }
 </style>
 </head>
@@ -124,37 +164,121 @@ footer {
 
     <div class="grid" id="animeList">
 
-        <a class="card" href="/anime?title=Демон-убийца&icon=⚡&genre=Фэнтези">
-            <div class="poster">⚡</div>
+        <a class="card" href="/anime?title=Демон-убийца&icon=⚡&genre=Фэнтези"
+           data-search="демон убийца kimetsu no yaiba">
+            <div class="poster">
+                <span class="poster-placeholder">⚡</span>
+                <img alt="Постер Демон-убийца" loading="lazy">
+            </div>
             <h3>Демон-убийца</h3>
             <p>Приключения · Фэнтези</p>
         </a>
 
-        <a class="card" href="/anime?title=Наруто&icon=🍥&genre=Экшен">
-            <div class="poster">🍥</div>
+        <a class="card" href="/anime?title=Наруто&icon=🍥&genre=Экшен"
+           data-search="наруто naruto">
+            <div class="poster">
+                <span class="poster-placeholder">🍥</span>
+                <img alt="Постер Наруто" loading="lazy">
+            </div>
             <h3>Наруто</h3>
             <p>Приключения · Экшен</p>
         </a>
 
-        <a class="card" href="/anime?title=Ван-Пис&icon=🌊&genre=Фэнтези">
-            <div class="poster">🌊</div>
+        <a class="card" href="/anime?title=Ван-Пис&icon=🌊&genre=Фэнтези"
+           data-search="ван пис one piece">
+            <div class="poster">
+                <span class="poster-placeholder">🌊</span>
+                <img alt="Постер Ван-Пис" loading="lazy">
+            </div>
             <h3>Ван-Пис</h3>
             <p>Приключения · Фэнтези</p>
         </a>
 
-        <a class="card" href="/anime?title=Атака%20титанов&icon=⚔️&genre=Драма">
-            <div class="poster">⚔️</div>
+        <a class="card" href="/anime?title=Атака%20титанов&icon=⚔️&genre=Драма"
+           data-search="атака титанов attack on titan">
+            <div class="poster">
+                <span class="poster-placeholder">⚔️</span>
+                <img alt="Постер Атака титанов" loading="lazy">
+            </div>
             <h3>Атака титанов</h3>
             <p>Экшен · Драма</p>
         </a>
 
-        <a class="card" href="/anime?title=Магическая%20битва&icon=🔥&genre=Фэнтези">
-            <div class="poster">🔥</div>
+        <a class="card" href="/anime?title=Магическая%20битва&icon=🔥&genre=Фэнтези"
+           data-search="магическая битва jujutsu kaisen">
+            <div class="poster">
+                <span class="poster-placeholder">🔥</span>
+                <img alt="Постер Магическая битва" loading="lazy">
+            </div>
             <h3>Магическая битва</h3>
             <p>Экшен · Фэнтези</p>
         </a>
 
-        <a class="card" href="/anime?title=Покемон&icon=🏴‍☠️&genre=Приключения">
-            <div class="poster">🏴‍☠️</div>
+        <a class="card" href="/anime?title=Покемон&icon=⚡&genre=Приключения"
+           data-search="покемон pokemon">
+            <div class="poster">
+                <span class="poster-placeholder">⚡</span>
+                <img alt="Постер Покемон" loading="lazy">
+            </div>
             <h3>Покемон</h3>
-            <p
+            <p>Приключения · Фэнтези</p>
+        </a>
+
+    </div>
+</main>
+
+<footer>ANIMORA © 2026</footer>
+
+<script>
+function filterAnime() {
+    const query = document.getElementById("search").value.toLowerCase();
+
+    document.querySelectorAll(".card").forEach(card => {
+        card.style.display =
+            card.innerText.toLowerCase().includes(query) ||
+            card.dataset.search.includes(query) ? "" : "none";
+    });
+}
+
+async function loadPosters() {
+    const cards = document.querySelectorAll(".card");
+
+    for (const card of cards) {
+        const searchName = card.dataset.search.split(" ")[0];
+
+        try {
+            const response = await fetch(
+                "https://api.jikan.moe/v4/anime?q=" +
+                encodeURIComponent(searchName) + "&limit=1"
+            );
+
+            if (!response.ok) continue;
+
+            const result = await response.json();
+            const anime = result.data && result.data[0];
+
+            if (anime) {
+                const image =
+                    anime.images?.webp?.large_image_url ||
+                    anime.images?.jpg?.large_image_url;
+
+                if (image) {
+                    const img = card.querySelector("img");
+                    img.src = image;
+                    img.onerror = () => img.style.display = "none";
+                }
+            }
+        } catch (error) {
+            console.log("Не удалось загрузить постер:", searchName);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 700));
+    }
+}
+
+loadPosters();
+</script>
+
+</body>
+</html>
+```

@@ -151,6 +151,11 @@ footer{background:#090a0f;border-top:1px solid #24222c}
  .poster{height:220px}
 }
 @media(prefers-reduced-motion:reduce){.shelf-card,.hero-watch,.hero-backdrop{transition:none}}
+
+.hero-backdrop{background-position:center 28%;background-size:cover;opacity:.62;filter:none;transform:scale(1.015)}
+.hero-backdrop.hero-image-ready{opacity:.66}
+.hero-cinema:before{background:linear-gradient(90deg,#08090df7 0%,#08090de8 27%,#08090d99 53%,#08090d36 100%),linear-gradient(0deg,#08090d 0%,transparent 45%)}
+@media(min-width:1100px){.hero-cinema{min-height:620px}.hero-backdrop{background-position:center 30%}}
 </style>
 </head>
 <body>
@@ -361,11 +366,15 @@ const featuredCollections={
  discovery:["dandadan","the-apothecary-diaries","odd-taxi","ranking-of-kings","86-eighty-six","bocchi-the-rock"]
 };
 function renderCinemaHero(){
-  const anime=animeList.find(item=>item[0]==="frieren");
   const backdrop=document.getElementById("heroBackdrop");
-  if(!backdrop||!anime)return;
-  const poster=posterCache[anime[0]];
-  if(poster)backdrop.style.backgroundImage='url("'+poster.replace(/"/g,'%22')+'")';
+  if(!backdrop)return;
+  // High-resolution promotional artwork; use the small catalog poster only as a fallback.
+  const highResArtwork="https://m.media-amazon.com/images/S/pv-target-images/0eaaca5d01575caf2fda5fcad6a09e8c5a35bdcf8f4a2850741e262458273837.jpg";
+  const fallback=posterCache["frieren"]||"";
+  const img=new Image();
+  img.onload=()=>{backdrop.style.backgroundImage='url("'+highResArtwork+'")';backdrop.classList.add("hero-image-ready");};
+  img.onerror=()=>{if(fallback){backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';}};
+  img.src=highResArtwork;
 }
 function renderFeatured(){
   Object.entries(featuredCollections).forEach(([key,ids])=>{

@@ -1,3 +1,4 @@
+
 import os
 import uuid
 import requests
@@ -50,6 +51,31 @@ def get_favorites():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/favorites/list")
+def favorites_list():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Необходимо войти в аккаунт."
+        }), 401
+
+    try:
+        favorites = get_favorites()
+        anime_ids = [item["anime_id"] for item in favorites]
+
+        return jsonify({
+            "success": True,
+            "anime_ids": anime_ids
+        })
+
+    except Exception:
+        app.logger.exception("FAVORITES LIST ERROR")
+        return jsonify({
+            "success": False,
+            "message": "Не удалось загрузить избранное."
+        }), 500
 
 
 @app.route("/anime")

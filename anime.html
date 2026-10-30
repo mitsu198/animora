@@ -31,6 +31,14 @@ select:focus{border-color:#bd72ff}
 .video-empty .play-mark{width:62px;height:62px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:#8e35e8;color:white;font-size:25px}
 .video-empty strong{display:block;color:#fff;font-size:18px;margin-bottom:8px}
 .player-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;background:#100d17;color:#b9abc8;font-size:13px}
+.manual-player{margin:18px 0 22px;padding:18px;border:1px solid #49305f;border-radius:13px;background:#0e0c15}
+.manual-player label{display:block;margin-bottom:10px;color:#d9c9e8;font-weight:bold}
+.manual-player-row{display:flex;gap:10px}
+.manual-player input{flex:1;min-width:0;padding:13px 14px;border:1px solid #49305f;border-radius:10px;background:#100d17;color:#fff;font-size:14px;outline:none}
+.manual-player input:focus{border-color:#bd72ff}
+.manual-player-row .primary{padding:12px 18px;font-size:14px;white-space:nowrap}
+.manual-player-hint{margin:10px 0 0;color:#a99db5;font-size:12px;line-height:1.6}
+@media(max-width:560px){.manual-player-row{flex-direction:column}.manual-player-row .primary{width:100%}}
 .episode-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:18px}
 .episode-item{padding:12px;border:1px solid #49305f;border-radius:10px;background:#0e0c15;color:#ddd;text-align:left;cursor:pointer}
 .episode-item:disabled{opacity:.55;cursor:not-allowed}
@@ -111,6 +119,15 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 <div class="video-empty" id="videoEmpty"><div class="play-mark">▶</div><strong>Плеер ANIMORA</strong>Полные серии будут воспроизводиться здесь, прямо на сайте.<br>Источник видео пока не подключён.</div>
 </div>
 <div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Полноэкранный режим поддерживается</span></div>
+</div>
+
+<div class="manual-player">
+  <label for="manualVideoUrl">Или вставь ссылку на видео</label>
+  <div class="manual-player-row">
+    <input id="manualVideoUrl" type="url" placeholder="Ссылка YouTube, Rutube или VK Видео" autocomplete="url">
+    <button type="button" class="primary" id="loadManualVideo">▶ Открыть</button>
+  </div>
+  <p class="manual-player-hint" id="manualPlayerHint">Видео откроется здесь, если автор разрешил встраивание.</p>
 </div>
 <div class="episode-list" id="episodeList"><button class="episode-item" disabled>Серии появятся после подключения источника</button></div>
 <div class="player-message" id="playerMessage" role="status">Плеер готов к подключению. Нужны легальные ссылки на видео или коды официального встраивания для каждой серии и озвучки.</div>
@@ -216,6 +233,66 @@ function renderEpisode(index){
   document.getElementById('nowPlaying').textContent=title+' · '+episode.name+' · '+source.voice;
   document.querySelectorAll('.episode-item').forEach((button,i)=>button.classList.toggle('active',i===index));
 }
+
+function getAllowedEmbedUrl(raw){
+  let parsed;
+  try{parsed=new URL(raw.trim())}catch(e){throw new Error('Проверь ссылку — формат адреса неверный.')}
+  if(parsed.protocol!=='https:')throw new Error('Нужна безопасная ссылка, начинающаяся с https://');
+  const host=parsed.hostname.toLowerCase();
+  const isYouTube=['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(host);
+  if(isYouTube){
+    let id='';
+    if(host.includes('youtu.be')) id=parsed.pathname.split('/').filter(Boolean)[0]||'';
+    else if(parsed.pathname==='/watch') id=parsed.searchParams.get('v')||'';
+    else {
+      const parts=parsed.pathname.split('/').filter(Boolean);
+      if(['embed','shorts','live'].includes(parts[0])) id=parts[1]||'';
+    }
+    if(!/^[a-zA-Z0-9_-]{11}$/.test(id))throw new Error('Не удалось распознать ссылку YouTube.');
+    return 'https://www.youtube-nocookie.com/embed/'+id;
+  }
+  if(host==='rutube.ru'||host==='www.rutube.ru'||host==='rutube.com'){
+    const parts=parsed.pathname.split('/').filter(Boolean);
+    let id='';
+    if(parts[0]==='video')id=parts[1]||'';
+    if(parts[0]==='play'&&parts[1]==='embed')id=parts[2]||'';
+    if(!/^[a-f0-9-]{12,}$/i.test(id))throw new Error('Не удалось распознать ссылку Rutube.');
+    return 'https://rutube.ru/play/embed/'+encodeURIComponent(id);
+  }
+  if(['vk.com','www.vk.com','vkvideo.ru','www.vkvideo.ru'].includes(host)){
+    if(!parsed.pathname.endsWith('/video_ext.php'))throw new Error('Для VK нужна официальная ссылка video_ext.php из раздела «Поделиться».');
+    const oid=parsed.searchParams.get('oid'),id=parsed.searchParams.get('id');
+    if(!/^-?\d+$/.test(oid||'')||!/^\d+$/.test(id||''))throw new Error('В ссылке VK не хватает параметров oid или id.');
+    return parsed.href;
+  }
+  throw new Error('Пока поддерживаются только YouTube, Rutube и VK Видео.');
+}
+function loadManualVideo(){
+  const input=document.getElementById('manualVideoUrl');
+  const hint=document.getElementById('manualPlayerHint');
+  try{
+    const embedUrl=getAllowedEmbedUrl(input.value);
+    videoStage.replaceChildren();
+    const frame=document.createElement('iframe');
+    frame.src=embedUrl;
+    frame.title=title+' — плеер ANIMORA';
+    frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
+    frame.allowFullscreen=true;
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    videoStage.appendChild(frame);
+    document.getElementById('nowPlaying').textContent=title+' · Внешний плеер';
+    hint.textContent='Плеер загружен. Если видео не запускается, автор мог запретить встраивание или ограничить просмотр.';
+    hint.style.color='#a99db5';
+    playerMessage.textContent='Видео воспроизводится во встроенном плеере стороннего сервиса. ANIMORA не хранит и не раздаёт этот видеоконтент.';
+    playerMessage.classList.add('show');
+  }catch(error){
+    hint.textContent=error.message;
+    hint.style.color='#ff9b9b';
+  }
+}
+document.getElementById('loadManualVideo').addEventListener('click',loadManualVideo);
+document.getElementById('manualVideoUrl').addEventListener('keydown',event=>{if(event.key==='Enter')loadManualVideo()});
+
 function initEpisodeCatalog(){
   if(!episodeCatalog.length){
     episodeSelect.innerHTML='<option>Серии пока не подключены</option>';

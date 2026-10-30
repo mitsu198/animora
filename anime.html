@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,84 +6,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Аниме — ANIMORA</title>
 <style>
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    background: #0c0b13;
-    color: white;
-    font-family: Arial, sans-serif;
-}
-
-header {
-    padding: 22px 6%;
-    background: #15121f;
-}
-
-.logo {
-    color: #bd72ff;
-    font-size: 27px;
-    font-weight: bold;
-}
-
-main { padding: 45px 7%; }
-
-.poster {
-    width: 220px;
-    height: 300px;
-    border-radius: 15px;
-    background: linear-gradient(145deg, #4d2478, #bd4c91);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 75px;
-}
-
-h1 { color: #c58aff; }
-
-.info {
-    color: #bbb;
-    line-height: 1.8;
-}
-
-button {
-    margin-top: 20px;
-    padding: 14px 28px;
-    border: 0;
-    border-radius: 10px;
-    background: #9b4dff;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
+*{box-sizing:border-box}
+body{margin:0;background:#0c0b13;color:white;font-family:Arial,sans-serif}
+header{padding:22px 6%;background:#15121f}
+.logo{color:#bd72ff;font-size:27px;font-weight:bold}
+main{padding:45px 7%}
+.anime-info{display:flex;gap:35px;align-items:flex-start;flex-wrap:wrap}
+.poster{width:240px;height:340px;object-fit:cover;border-radius:15px;background:#24113c}
+.details{max-width:600px}
+h1{color:#c58aff}
+.info{color:#bbb;line-height:1.8}
+button{margin-top:20px;padding:14px 28px;border:0;border-radius:10px;background:#9b4dff;color:white;font-size:16px;cursor:pointer}
+a{color:#bd72ff}
 </style>
 </head>
 <body>
-
-<header>
-    <div class="logo">ANIMORA</div>
-</header>
+<header><div class="logo">ANIMORA</div></header>
 
 <main>
-    <div class="poster" id="poster">⚡</div>
-
-    <h1 id="title">Название аниме</h1>
-
-    <div class="info">
-        <p id="genre">Жанр: приключения</p>
-        <p>Год: 2023</p>
-        <p>Статус: доступно для просмотра</p>
-    </div>
-
-    <p id="description">
-        Добро пожаловать на страницу аниме ANIMORA!
-    </p>
-
-    <button onclick="alert('Плеер Kodik подключим после получения доступа!')">
-        Смотреть
-    </button>
-
-    <p><a href="/" style="color:#bd72ff">← Вернуться в каталог</a></p>
+<div class="anime-info">
+<img class="poster" id="poster" src="" alt="Постер аниме">
+<div class="details">
+<h1 id="title">Название аниме</h1>
+<div class="info">
+<p id="genre">Жанр: приключения</p>
+<p>Год: 2023</p>
+<p>Статус: доступно для просмотра</p>
+</div>
+<p id="description">Описание скоро появится.</p>
+<button onclick="alert('Плеер Kodik подключим после получения доступа!')">Смотреть</button>
+</div>
+</div>
+<p><a href="/">← Вернуться в каталог</a></p>
 </main>
 
 <script>
@@ -91,15 +46,17 @@ const params = new URLSearchParams(window.location.search);
 document.getElementById("title").textContent =
     params.get("title") || "Название аниме";
 
-document.getElementById("poster").textContent =
-    params.get("icon") || "⚡";
+document.getElementById("poster").src =
+    params.get("poster") || "";
 
 document.getElementById("genre").textContent =
     "Жанр: " + (params.get("genre") || "Приключения");
 
 document.getElementById("description").textContent =
     params.get("description") || "Описание скоро появится.";
-</script>
 
+document.title = (params.get("title") || "Аниме") + " — ANIMORA";
+</script>
 </body>
 </html>
+```

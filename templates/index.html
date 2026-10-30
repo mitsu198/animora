@@ -465,8 +465,29 @@ function renderAnime(){
 }
 
 
+const ANIMORA_CATALOG_KEY="animora_expanded_catalog_v1";
+const ANIMORA_JIKAN_PAGE_KEY="animora_jikan_page_v1";
 let jikanPage=1;
+try{
+  const savedCatalog=JSON.parse(localStorage.getItem(ANIMORA_CATALOG_KEY)||"[]");
+  const knownIds=new Set(animeList.map(item=>item[0]));
+  const knownTitles=new Set(animeList.map(item=>item[1].toLowerCase().trim()));
+  savedCatalog.forEach(item=>{
+    if(Array.isArray(item)&&item.length>=3&&!knownIds.has(item[0])&&!knownTitles.has(String(item[1]).toLowerCase().trim())){
+      animeList.push(item);
+      knownIds.add(item[0]);
+      knownTitles.add(String(item[1]).toLowerCase().trim());
+    }
+  });
+  jikanPage=Math.max(1,Number(localStorage.getItem(ANIMORA_JIKAN_PAGE_KEY)||1));
+}catch(error){console.warn("Не удалось восстановить расширенный каталог:",error);}
 let isLoadingMoreAnime=false;
+function saveExpandedCatalog(){
+  try{
+    localStorage.setItem(ANIMORA_CATALOG_KEY,JSON.stringify(animeList.slice(123)));
+    localStorage.setItem(ANIMORA_JIKAN_PAGE_KEY,String(jikanPage));
+  }catch(error){console.warn("Не удалось сохранить расширенный каталог:",error);}
+}
 const MAX_CATALOG_SIZE=1000;
 const jikanGenreNames={
   "Action":"Экшен","Adventure":"Приключения","Fantasy":"Фэнтези",
@@ -508,9 +529,10 @@ async function loadMoreAnime(){
         if(animeList.length>=MAX_CATALOG_SIZE)break;
         if(!item.mal_id)continue;
         const id="mal-"+item.mal_id;
-        if(animeList.some(anime=>anime[0]===id))continue;
         const title=(item.title_english||item.title||"").trim();
         if(!title)continue;
+        const normalizedTitle=title.toLowerCase().trim();
+        if(animeList.some(anime=>anime[0]===id||anime[1].toLowerCase().trim()===normalizedTitle))continue;
         const genreList=[...(item.genres||[]),...(item.themes||[])];
         const genres=[...new Set(genreList.map(g=>jikanGenreNames[g.name]).filter(Boolean))];
         const genreText=genres.slice(0,3).join(", ")||"Аниме";
@@ -523,6 +545,7 @@ async function loadMoreAnime(){
       if(jikanPage>Number(result?.pagination?.last_visible_page||40)){finished=true;break;}
       if(batch<3)await new Promise(resolve=>setTimeout(resolve,430));
     }
+    saveExpandedCatalog();
     renderAnime();
     renderFeatured();
     savePosterCache();
@@ -824,8 +847,11 @@ function openAnimeCard(id){
 renderAnime();
 renderFeatured();
 renderCinemaHero();
-updateCatalogLoadStatus("В каталоге "+animeList.length+" из "+MAX_CATALOG_SIZE+" аниме. Можно постепенно расширить коллекцию до тысячи.");
+updateCatalogLoadStatus("В каталоге "+animeList.length+" из "+MAX_CATALOG_SIZE+" аниме. Загружаем первую дополнительную подборку…");
 loadAnimePosters();
+if(animeList.length<MAX_CATALOG_SIZE){
+  setTimeout(()=>loadMoreAnime(),900);
+}
 </script>
 
 <script>

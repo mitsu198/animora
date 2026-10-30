@@ -79,24 +79,109 @@ html[data-theme="light"] .hero{background:linear-gradient(110deg,#ded0ed,#cbb3e3
 html[data-theme="light"] .hero p,html[data-theme="light"] nav a,html[data-theme="light"] header a{color:#493a55}
 html[data-theme="light"] .anime-info p{color:#716779}
 html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
+
+/* DEEP-inspired cinema homepage */
+body{background:#08090d;color:#f7f6fa}
+header{position:sticky;top:0;z-index:30;padding:13px 5.5%;background:rgba(9,10,15,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07)}
+.logo{font-size:29px;letter-spacing:3px;color:#fff!important}
+.main-nav{display:flex;align-items:center;gap:clamp(12px,2vw,28px)}
+.main-nav a{margin:0;color:#c9c7d0;font-size:14px;transition:color .2s}
+.main-nav a:hover,.main-nav .nav-current{color:#fff}
+.main-nav .nav-current:after{content:"";display:block;height:2px;background:#c58cff;border-radius:3px;margin-top:7px}
+.main-nav .profile-avatar-link{margin-left:4px;flex:none}
+.hero-cinema{position:relative;isolation:isolate;min-height:570px;padding:76px 7% 45px;display:flex;align-items:center;overflow:hidden;background:radial-gradient(ellipse at 75% 40%,#49305f 0,#1c1429 38%,#0b0b11 78%)}
+.hero-backdrop{position:absolute;z-index:-2;inset:0;background-position:center 35%;background-size:cover;opacity:.48;filter:saturate(.82);transition:background-image .4s}
+.hero-cinema:before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#08090df5 0%,#08090ddd 38%,#08090d66 72%,#08090d88 100%),linear-gradient(0deg,#08090d 0%,transparent 34%)}
+.hero-content{max-width:690px;position:relative}
+.hero-kicker{display:block;color:#d1a3ff;font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:30px}
+.hero-label{display:inline-block;border:1px solid #c58cff88;color:#e1c4ff;border-radius:4px;padding:6px 10px;font-size:10px;letter-spacing:2px;margin-bottom:16px}
+.hero-cinema h1{font-size:clamp(38px,5.4vw,68px);line-height:1.04;letter-spacing:-1.8px;margin:0 0 18px;color:#fff!important;max-width:680px}
+.hero-cinema p{font-size:16px;line-height:1.7;color:#d1ced9;max-width:560px}
+.hero-meta{display:flex;gap:10px 18px;flex-wrap:wrap;color:#c4bdce;font-size:12px;margin:22px 0 28px}
+.hero-actions{display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.hero-watch{border:0;border-radius:7px;padding:15px 27px;background:#f4effa;color:#17111f;font-weight:800;font-size:14px;cursor:pointer;transition:.2s}
+.hero-watch:hover{background:#d8b5ff;transform:translateY(-2px)}
+.hero-more{padding:14px 18px;border:1px solid #ffffff45;border-radius:7px;color:white;text-decoration:none;font-weight:600;font-size:14px}
+.hero-more:hover{background:#ffffff12}
+.hero-more span{margin-left:10px;color:#d1a3ff}
+.hero-bottom{position:absolute;bottom:22px;left:7%;right:7%;display:flex;justify-content:space-between;color:#a49eac;font-size:9px;letter-spacing:2px}
+.discover{padding:42px 5.5% 10px;background:#0b0c12}
+.discover-head h2{font-size:30px;letter-spacing:-.6px}
+.eyebrow{color:#c58cff}
+.random-btn{border-radius:7px;background:#21182d;border:1px solid #75539a;color:#e8d8fa}
+.shelf{margin:34px 0 42px}
+.shelf-title{margin-bottom:17px}
+.shelf-title h2{font-size:21px;letter-spacing:-.3px}
+.shelf-title span{font-size:11px;letter-spacing:.5px}
+.shelf-grid{display:flex;overflow-x:auto;gap:15px;padding:3px 2px 16px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:#554064 transparent}
+.shelf-card{flex:0 0 185px;scroll-snap-align:start;background:#14151d;border:1px solid #292832;border-radius:8px}
+.shelf-card:hover{transform:translateY(-5px);border-color:#a879d5;box-shadow:0 12px 28px #0007}
+.shelf-poster{height:245px;background:#1a1622}
+.shelf-poster span{font-size:13px;padding:13px;background:linear-gradient(180deg,transparent 30%,#08090de8)}
+.shelf-card h3{font-size:13px;margin:11px 11px 5px}
+.shelf-card p{font-size:11px;color:#9c98a5;margin:0 11px 13px}
+main{padding:38px 5.5%;max-width:1600px}
+#catalog h2{font-size:29px;letter-spacing:-.5px}
+.search{background:#15151e;border:1px solid #33313d;border-radius:7px;padding:16px 18px}
+.filters button{background:#15151e;border-color:#34313e;border-radius:6px}
+.filters button.active,.filters button:hover{background:#a76de0;border-color:#a76de0}
+.grid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:17px}
+.card{background:#14151d;border-color:#292832;border-radius:8px}
+.card:hover{border-color:#a879d5;box-shadow:0 12px 28px #0007}
+.poster{height:255px}
+.card h3{font-size:14px}
+.card p{font-size:11px}
+footer{background:#090a0f;border-top:1px solid #24222c}
+@media(max-width:700px){
+ header{padding:12px 4%;align-items:center}
+ .logo{font-size:23px}
+ .main-nav{gap:10px}
+ .main-nav a{font-size:11px}
+ .main-nav a:nth-child(2){display:none}
+ .main-nav .profile-avatar-link{width:36px;height:36px}
+ .hero-cinema{min-height:530px;padding:60px 6% 65px}
+ .hero-cinema h1{font-size:40px}
+ .hero-cinema p{font-size:14px}
+ .hero-bottom{left:6%;right:6%;font-size:8px}
+ .discover{padding:30px 4% 5px}
+ .shelf-card{flex-basis:155px}
+ .shelf-poster{height:215px}
+ main{padding:30px 4%}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .poster{height:220px}
+}
+@media(prefers-reduced-motion:reduce){.shelf-card,.hero-watch,.hero-backdrop{transition:none}}
 </style>
 </head>
 <body>
 
 <header>
   <a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a>
-  <nav>
-    <a href="/">Главная</a>
+  <nav class="main-nav">
+    <a class="nav-current" href="/">Главная</a>
+    <a href="#popularGrid">Подборки</a>
     <a href="#catalog">Каталог</a>
+    <a href="/profile#favorites">Избранное</a>
     <a class="profile-avatar-link" href="{{ '/profile' if logged_in else '/login' }}" aria-label="{{ 'Открыть профиль' if logged_in else 'Войти' }}" title="{{ 'Мой профиль' if logged_in else 'Войти' }}">
       {% if avatar_url %}<img src="{{ avatar_url }}" alt="Аватар пользователя">{% else %}<span>👤</span>{% endif %}
     </a>
   </nav>
 </header>
 
-<section class="hero">
-  <h1>Твой мир аниме</h1>
-  <p>Открывай новые истории, находи любимые тайтлы и сохраняй их в избранное.</p>
+<section class="hero hero-cinema" id="heroCinema">
+  <div class="hero-backdrop" id="heroBackdrop"></div>
+  <div class="hero-content">
+    <span class="hero-kicker">ANIMORA ORIGINAL подборка</span>
+    <span class="hero-label">АНИМЕ НЕДЕЛИ</span>
+    <h1 id="heroTitle">Провожающая в последний путь Фрирен</h1>
+    <p id="heroDescription">Большое путешествие не заканчивается вместе с победой. Открой историю, которая останется с тобой.</p>
+    <div class="hero-meta"><span>✦ Фэнтези</span><span>Приключения</span><span>Рекомендация ANIMORA</span></div>
+    <div class="hero-actions">
+      <button class="hero-watch" onclick="openAnimeCard('frieren')">▶ Смотреть</button>
+      <a class="hero-more" href="#popularGrid">Открыть подборки <span>→</span></a>
+    </div>
+  </div>
+  <div class="hero-bottom"><span>ТВОЯ СЛЕДУЮЩАЯ ИСТОРИЯ НАЧИНАЕТСЯ ЗДЕСЬ</span><span class="hero-scroll">ЛИСТАЙ ВНИЗ ↓</span></div>
 </section>
 
 <section class="discover" aria-label="Подборки аниме">
@@ -275,6 +360,13 @@ const featuredCollections={
  recommended:["frieren","fullmetal-alchemist","steins-gate","vinland-saga","violet-evergarden","hunter-x-hunter"],
  discovery:["dandadan","the-apothecary-diaries","odd-taxi","ranking-of-kings","86-eighty-six","bocchi-the-rock"]
 };
+function renderCinemaHero(){
+  const anime=animeList.find(item=>item[0]==="frieren");
+  const backdrop=document.getElementById("heroBackdrop");
+  if(!backdrop||!anime)return;
+  const poster=posterCache[anime[0]];
+  if(poster)backdrop.style.backgroundImage='url("'+poster.replace(/"/g,'%22')+'")';
+}
 function renderFeatured(){
   Object.entries(featuredCollections).forEach(([key,ids])=>{
     const target=document.getElementById(key+"Grid");
@@ -520,6 +612,7 @@ async function loadAnimePosters(){
           });
           savePosterCache();
           renderFeatured();
+          renderCinemaHero();
         }
       }catch(error){
         console.warn('Не удалось загрузить обложку '+anime[1]+':',error);
@@ -610,6 +703,7 @@ function openAnimeCard(id){
 }
 renderAnime();
 renderFeatured();
+renderCinemaHero();
 loadAnimePosters();
 </script>
 

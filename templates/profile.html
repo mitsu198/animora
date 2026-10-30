@@ -171,7 +171,7 @@ button:hover,.link-button:hover{background:#b66cff}
     <div class="favorites-grid" id="favoritesGrid">
 
         {% for anime in favorites %}
-        <div class="anime-card" data-anime-id="{{ anime.anime_id }}">
+        <div class="anime-card" data-anime-id="{{ anime.anime_id }}" data-title="{{ anime.title }}" data-poster="{{ anime.poster or '' }}" data-genre="{{ anime.genre or '' }}" role="link" tabindex="0">
 
             {% if anime.poster %}
                 <img src="{{ anime.poster }}" alt="{{ anime.title }}"
@@ -223,6 +223,18 @@ function showNotice(message){
     },2500);
 }
 
+document.getElementById('favoritesGrid')?.addEventListener('click',event=>{
+if(event.target.closest('.remove-btn'))return;
+const card=event.target.closest('.anime-card');if(card)openFavoriteAnime(card);
+});
+document.getElementById('favoritesGrid')?.addEventListener('keydown',event=>{
+if(event.key!=='Enter'&&event.key!==' ')return;
+const card=event.target.closest('.anime-card');if(!card)return;event.preventDefault();openFavoriteAnime(card);
+});
+function openFavoriteAnime(card){
+const params=new URLSearchParams({id:card.dataset.animeId,title:card.dataset.title,poster:card.dataset.poster,genre:card.dataset.genre});
+window.location.href='/anime?'+params.toString();
+}
 async function removeFavorite(button){
     if(button.disabled)return;
 

@@ -1,3 +1,4 @@
+
 import os
 
 from flask import (
@@ -61,8 +62,8 @@ def register():
             return redirect(url_for("login"))
 
         except Exception:
-    app.logger.exception("SUPABASE REGISTRATION ERROR")
-    flash("Не удалось зарегистрироваться. Проверь почту и попробуй снова.")
+            app.logger.exception("SUPABASE REGISTRATION ERROR")
+            flash("Не удалось зарегистрироваться. Проверь настройки и попробуй снова.")
 
     return render_template("register.html")
 
@@ -86,6 +87,7 @@ def login():
             return redirect(url_for("profile"))
 
         except Exception:
+            app.logger.exception("SUPABASE LOGIN ERROR")
             flash("Не удалось войти. Проверь почту и пароль.")
 
     return render_template("login.html")

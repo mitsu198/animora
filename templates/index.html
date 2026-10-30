@@ -157,6 +157,26 @@ footer{background:#090a0f;border-top:1px solid #24222c}
 .hero-cinema:before{background:linear-gradient(90deg,#08090df7 0%,#08090de8 27%,#08090d99 53%,#08090d36 100%),linear-gradient(0deg,#08090d 0%,transparent 45%)}
 @media(min-width:1100px){.hero-cinema{min-height:620px}.hero-backdrop{background-position:center 30%}}
 </style>
+<style id="animora-animated-logo">
+.logo{
+  display:inline-block;
+  color:transparent!important;
+  background:linear-gradient(100deg,#b56cff 0%,#55c9ff 24%,#67e8a5 48%,#ff8bc5 72%,#b56cff 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:animoraLogoFlow 5s ease-in-out infinite;
+  text-shadow:none!important;
+}
+@keyframes animoraLogoFlow{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+@media(prefers-reduced-motion:reduce){
+  .logo{animation:none;background-position:50% 50%}
+}
+</style>
 </head>
 <body>
 

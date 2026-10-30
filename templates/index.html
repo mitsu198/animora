@@ -190,27 +190,84 @@ function savePosterCache(){
   }
 }
 
-async function fetchAnimePoster(anime){
-  const query=anime[0].replaceAll('-',' ');
-  const url='https://api.tenrai.org/v1/anime?q='+encodeURIComponent(query)+'&limit=5&sfw=true';
-  const response=await fetch(url,{headers:{'Accept':'application/json'}});
-  if(!response.ok)throw new Error('Tenrai HTTP '+response.status);
-  const result=await response.json();
-  const entries=Array.isArray(result.data)?result.data:[];
-  if(!entries.length)return '';
+const animeEnglishTitles={
+  "demon-slayer":"Demon Slayer Kimetsu no Yaiba",
+  "naruto":"Naruto",
+  "one-piece":"One Piece",
+  "attack-on-titan":"Attack on Titan",
+  "jujutsu-kaisen":"Jujutsu Kaisen",
+  "pokemon":"Pokemon",
+  "death-note":"Death Note",
+  "one-punch-man":"One Punch Man",
+  "my-hero-academia":"My Hero Academia",
+  "tokyo-ghoul":"Tokyo Ghoul",
+  "fullmetal-alchemist":"Fullmetal Alchemist Brotherhood",
+  "hunter-x-hunter":"Hunter x Hunter",
+  "bleach":"Bleach",
+  "dragon-ball":"Dragon Ball Z",
+  "chainsaw-man":"Chainsaw Man",
+  "spy-family":"Spy x Family",
+  "blue-lock":"Blue Lock",
+  "haikyuu":"Haikyu",
+  "your-name":"Your Name",
+  "a-silent-voice":"A Silent Voice",
+  "horimiya":"Horimiya",
+  "fruits-basket":"Fruits Basket",
+  "toradora":"Toradora",
+  "suzume":"Suzume",
+  "spirited-away":"Spirited Away",
+  "howls-moving-castle":"Howl's Moving Castle",
+  "princess-mononoke":"Princess Mononoke",
+  "mob-psycho-100":"Mob Psycho 100",
+  "dr-stone":"Dr Stone",
+  "black-clover":"Black Clover",
+  "fairy-tail":"Fairy Tail",
+  "re-zero":"Re Zero Starting Life in Another World",
+  "sword-art-online":"Sword Art Online",
+  "overlord":"Overlord",
+  "no-game-no-life":"No Game No Life",
+  "the-promised-neverland":"The Promised Neverland",
+  "vinland-saga":"Vinland Saga",
+  "bungou-stray-dogs":"Bungo Stray Dogs",
+  "cowboy-bebop":"Cowboy Bebop",
+  "steins-gate":"Steins Gate",
+  "code-geass":"Code Geass",
+  "psycho-pass":"Psycho Pass",
+  "violet-evergarden":"Violet Evergarden",
+  "made-in-abyss":"Made in Abyss",
+  "frieren":"Frieren Beyond Journey's End",
+  "oshi-no-ko":"Oshi no Ko",
+  "solo-leveling":"Solo Leveling",
+  "kaiju-no-8":"Kaiju No 8",
+  "wind-breaker":"Wind Breaker",
+  "classroom-of-the-elite":"Classroom of the Elite"
+};
 
+async function fetchAnimePoster(anime){
+  const englishTitle=animeEnglishTitles[anime[0]]||anime[0].replaceAll('-',' ');
+  const queries=[englishTitle,anime[0].replaceAll('-',' ')];
   const normalize=value=>(value||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-  const wanted=normalize(query);
-  const exact=entries.find(item=>{
-    const titles=[item.title,item.title_english,item.title_japanese,...(item.title_synonyms||[])];
-    return titles.some(title=>normalize(title)===wanted);
-  });
-  const item=exact||entries[0];
-  return item.images?.webp?.large_image_url
-    ||item.images?.jpg?.large_image_url
-    ||item.images?.webp?.image_url
-    ||item.images?.jpg?.image_url
-    ||'';
+  for(const query of [...new Set(queries)]){
+    const url='https://api.tenrai.org/v1/anime?q='+encodeURIComponent(query)+'&limit=10&sfw=true';
+    const response=await fetch(url,{headers:{'Accept':'application/json'}});
+    if(!response.ok)throw new Error('Tenrai HTTP '+response.status);
+    const result=await response.json();
+    const entries=Array.isArray(result.data)?result.data:[];
+    if(!entries.length)continue;
+    const wanted=normalize(englishTitle);
+    const exact=entries.find(item=>{
+      const titles=[item.title,item.title_english,item.title_japanese,...(item.title_synonyms||[])];
+      return titles.some(title=>normalize(title)===wanted);
+    });
+    const item=exact||entries[0];
+    const image=item.images?.webp?.large_image_url
+      ||item.images?.jpg?.large_image_url
+      ||item.images?.webp?.image_url
+      ||item.images?.jpg?.image_url
+      ||'';
+    if(image)return image;
+  }
+  return '';
 }
 
 async function loadAnimePosters(){

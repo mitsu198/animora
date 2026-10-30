@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,9 +6,7 @@
 <title>ANIMORA — мир аниме</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -39,10 +36,6 @@ nav a {
     margin-left: 20px;
 }
 
-nav a:hover {
-    color: #bd72ff;
-}
-
 .hero {
     padding: 75px 7%;
     background: linear-gradient(110deg, #24113c, #531c70);
@@ -58,9 +51,7 @@ nav a:hover {
     font-size: 18px;
 }
 
-main {
-    padding: 35px 6%;
-}
+main { padding: 35px 6%; }
 
 .search {
     width: 100%;
@@ -71,63 +62,8 @@ main {
     background: #191622;
     color: white;
     font-size: 16px;
-    outline: none;
-}
-
-.search:focus {
-    border-color: #bd72ff;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 22px;
-}
-
-.card {
-    display: block;
-    text-decoration: none;
-    color: white;
-    background: #191622;
-    border-radius: 13px;
-    overflow: hidden;
-    transition: .25s;
-}
-
-.card:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 8px 30px #a34cff66;
-}
-
-.poster {
-    height: 260px;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(145deg, #4d2478, #bd4c91);
-}
-
-.poster-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 55px;
-}
-
-.poster img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-    position: relative;
-    z-index: 1;
-    transition: transform .35s;
-}
-
-.card:hover .poster img {
-    transform: scale(1.06);
-}
-
-.card h3 {
-    margin:
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr

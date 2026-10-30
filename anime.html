@@ -165,6 +165,16 @@ function showPlayerMessage(text){
   playerMessage.textContent=text;
   playerMessage.classList.add('show');
 }
+let watchTimePending=0;
+let lastVideoTime=null;
+let watchFlushTimer=null;
+function flushWatchTime(){
+  const seconds=Math.min(30,Math.floor(watchTimePending));
+  if(seconds<1)return;
+  watchTimePending-=seconds;
+  fetch('/watch-time/increment',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({seconds})})
+    .catch(()=>{watchTimePending=Math.min(30,watchTimePending+seconds)});
+}
 function renderEpisode(index){
   const episode=episodeCatalog[index];
   if(!episode) return;
@@ -187,6 +197,17 @@ function renderEpisode(index){
     video.playsInline=true;
     video.preload='metadata';
     video.src=source.url;
+    video.addEventListener('playing',()=>{lastVideoTime=video.currentTime;if(watchFlushTimer)clearInterval(watchFlushTimer);watchFlushTimer=setInterval(flushWatchTime,15000);});
+    video.addEventListener('timeupdate',()=>{
+      if(video.paused||video.seeking)return;
+      if(lastVideoTime!==null){
+        const delta=video.currentTime-lastVideoTime;
+        if(delta>0&&delta<=5)watchTimePending=Math.min(30,watchTimePending+delta);
+      }
+      lastVideoTime=video.currentTime;
+    });
+    video.addEventListener('pause',()=>{lastVideoTime=null;flushWatchTime();});
+    video.addEventListener('ended',()=>{lastVideoTime=null;flushWatchTime();});
     videoStage.appendChild(video);
   }else{
     showPlayerMessage('Для этой серии не указан поддерживаемый источник видео.');
@@ -231,6 +252,8 @@ function initEpisodeCatalog(){
   voiceSelect.addEventListener('change',()=>renderEpisode(currentEpisode));
   renderEpisode(0);
 }
+window.addEventListener('pagehide',flushWatchTime);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushWatchTime()});
 initEpisodeCatalog();
 </script>
 <script>

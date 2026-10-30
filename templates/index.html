@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMORA — мир аниме</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #0c0b13;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            padding: 24px 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #13111d;
+        }
+
+        .logo {
+            color: #b76cff;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        nav a {
+            color: #ddd;
+            text-decoration: none;
+            margin-left: 24px;
+        }
+
+        .hero {
+            padding: 100px 7%;
+            background: linear-gradient(90deg, #171025, #24113b);
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            color: #c7bdd5;
+            font-size: 18px;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 13px 24px;
+            border-radius: 10px;
+            background: #9b4dff;
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            padding: 35px 7%;
+        }
+
+        .empty {
+            color: #aaa;
+            background: #171521;
+            padding: 30px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">ANIMORA</div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="#">Каталог</a>
+            <a href="#">Избранное</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Твой мир аниме</h1>
+        <p>Открывай новые истории и находи любимые тайтлы.</p>
+        <a class="button" href="#catalog">Смотреть аниме</a>
+    </section>
+
+    <main id="catalog">
+        <h2>Популярное аниме</h2>
+        <div class="empty">
+            Каталог скоро появится здесь.
+        </div>
+    </main>
+</body>
+</html>

@@ -4,8 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ANIMORA — мир аниме</title>
-
+<title>ANIMORA — каталог аниме</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0c0b13;color:white;font-family:Arial,sans-serif}
@@ -13,41 +12,32 @@ header{padding:22px 6%;background:#15121f;display:flex;justify-content:space-bet
 .logo{color:#bd72ff;font-size:27px;font-weight:bold;letter-spacing:2px}
 nav a{color:#ddd;text-decoration:none;margin-left:20px}
 nav a:hover{color:#bd72ff}
-.hero{padding:75px 7%;background:linear-gradient(110deg,#24113c,#531c70)}
-.hero h1{font-size:46px;margin:0 0 15px}
-.hero p{color:#e1d3ee;font-size:18px}
-main{padding:35px 6%}
-.search{width:100%;padding:15px;margin:15px 0 30px;border:1px solid #393044;border-radius:10px;background:#191622;color:white;font-size:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px}
+.hero{padding:65px 7%;background:linear-gradient(110deg,#24113c,#531c70)}
+.hero h1{font-size:44px;margin:0 0 12px}
+.hero p{color:#e1d3ee;font-size:17px}
+main{padding:35px 6%;max-width:1500px;margin:auto}
+.search{width:100%;padding:15px;margin:15px 0;border:1px solid #393044;border-radius:10px;background:#191622;color:white;font-size:16px}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin:15px 0 25px}
+.filters button{border:1px solid #49305f;background:#191622;color:#ddd;border-radius:20px;padding:9px 15px;cursor:pointer}
+.filters button.active,.filters button:hover{background:#963fff;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:20px}
 .card{position:relative;background:#191622;border:1px solid #30263c;border-radius:13px;overflow:hidden;transition:.2s}
 .card:hover{transform:translateY(-5px);border-color:#bd72ff}
-.card-link{display:block;text-decoration:none;color:white}
-.card img{width:100%;height:245px;object-fit:cover;display:block;background:#292033}
-.card h3{margin:13px 12px 6px;font-size:17px}
-.card p{margin:0 12px 15px;color:#aaa;font-size:13px}
-.favorite-btn{
-  position:absolute;top:10px;right:10px;width:42px;height:42px;
-  border:1px solid #ffffff40;border-radius:50%;background:#171321dd;
-  color:white;font-size:25px;cursor:pointer;z-index:2;
-  transition:.2s
-}
-.favorite-btn:hover{transform:scale(1.12);background:#39204f}
+.poster{height:235px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;background:linear-gradient(145deg,#28153d,#5b2677);font-size:21px;font-weight:bold;color:#fff;text-shadow:0 2px 8px #000}
+.card:nth-child(3n) .poster{background:linear-gradient(145deg,#152a43,#4b367c)}
+.card:nth-child(3n+1) .poster{background:linear-gradient(145deg,#461b3b,#8b356a)}
+.card:nth-child(3n+2) .poster{background:linear-gradient(145deg,#173b3a,#386b73)}
+.card h3{margin:13px 12px 6px;font-size:16px}
+.card p{margin:0 12px 14px;color:#aaa;font-size:13px}
+.favorite-btn{position:absolute;top:10px;right:10px;width:42px;height:42px;border:1px solid #ffffff40;border-radius:50%;background:#171321dd;color:white;font-size:25px;cursor:pointer;z-index:2}
 .favorite-btn.active{color:#ff4d83}
-.favorite-btn:disabled{opacity:.6;cursor:wait}
-#notice{
-  position:fixed;bottom:25px;left:50%;transform:translateX(-50%);
-  background:#24113c;border:1px solid #bd72ff;border-radius:10px;
-  padding:13px 20px;display:none;z-index:10
-}
-.section-title{font-size:25px;margin-bottom:10px}
+.favorite-btn:disabled{opacity:.6}
+#notice{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#24113c;border:1px solid #bd72ff;border-radius:10px;padding:13px 20px;display:none;z-index:10}
+#counter{color:#aaa;margin:15px 0}
 footer{text-align:center;padding:30px;color:#777}
-@media(max-width:600px){
-  .hero h1{font-size:34px}
-  nav a{margin-left:10px}
-}
+@media(max-width:600px){.hero h1{font-size:34px}nav a{margin-left:10px}}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -61,159 +51,151 @@ footer{text-align:center;padding:30px;color:#777}
 
 <section class="hero">
   <h1>Твой мир аниме</h1>
-  <p>Открывай новые истории, находи любимые тайтлы и погружайся в мир аниме.</p>
+  <p>Открывай новые истории, находи любимые тайтлы и сохраняй их в избранное.</p>
 </section>
 
 <main id="catalog">
-  <h2 class="section-title">Популярное аниме</h2>
+  <h2>Каталог аниме</h2>
+  <input class="search" id="search" placeholder="🔍 Найти аниме..." oninput="renderAnime()">
 
-  <input class="search" id="search" type="text"
-  placeholder="🔍 Найти аниме..." oninput="filterAnime()">
-
-  <div class="grid">
-
-    <div class="card" data-name="клинок рассекающий демонов">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="demon-slayer" data-title="Клинок рассекающий демонов"
-        data-poster="https://cdn.myanimelist.net/images/anime/1286/99889.jpg"
-        data-genre="Экшен · Фэнтези">♡</button>
-      <a class="card-link" href="/anime?title=Клинок%20рассекающий%20демонов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1286%2F99889.jpg">
-        <img src="https://cdn.myanimelist.net/images/anime/1286/99889.jpg" alt="Клинок рассекающий демонов">
-        <h3>Клинок рассекающий демонов</h3>
-        <p>Экшен · Фэнтези</p>
-      </a>
-    </div>
-
-    <div class="card" data-name="наруто">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="naruto" data-title="Наруто"
-        data-poster="https://cdn.myanimelist.net/images/anime/13/17405.jpg"
-        data-genre="Приключения · Экшен">♡</button>
-      <a class="card-link" href="/anime?title=Наруто&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F17405.jpg">
-        <img src="https://cdn.myanimelist.net/images/anime/13/17405.jpg" alt="Наруто">
-        <h3>Наруто</h3>
-        <p>Приключения · Экшен</p>
-      </a>
-    </div>
-
-    <div class="card" data-name="ван пис">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="one-piece" data-title="Ван-Пис"
-        data-poster="https://cdn.myanimelist.net/images/anime/6/73245.jpg"
-        data-genre="Приключения · Фэнтези">♡</button>
-      <a class="card-link" href="/anime?title=Ван-Пис&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F6%2F73245.jpg">
-        <img src="https://cdn.myanimelist.net/images/anime/6/73245.jpg" alt="Ван-Пис">
-        <h3>Ван-Пис</h3>
-        <p>Приключения · Фэнтези</p>
-      </a>
-    </div>
-
-    <div class="card" data-name="атака титанов">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="attack-on-titan" data-title="Атака титанов"
-        data-poster="https://cdn.myanimelist.net/images/anime/10/47347.jpg"
-        data-genre="Экшен · Драма">♡</button>
-      <a class="card-link" href="/anime?title=Атака%20титанов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F10%2F47347.jpg">
-        <img src="https://cdn.myanimelist.net/images/anime/10/47347.jpg" alt="Атака титанов">
-        <h3>Атака титанов</h3>
-        <p>Экшен · Драма</p>
-      </a>
-    </div>
-
-    <div class="card" data-name="магическая битва">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="jujutsu-kaisen" data-title="Магическая битва"
-        data-poster="https://cdn.myanimelist.net/images/anime/1171/109222.jpg"
-        data-genre="Экшен · Сверхъестественное">♡</button>
-      <a class="card-link" href="/anime?title=Магическая%20битва&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1171%2F109222.jpg">
-        <img src="https://cdn.myanimelist.net/images/anime/1171/109222.jpg" alt="Магическая битва">
-        <h3>Магическая битва</h3>
-        <p>Экшен · Сверхъестественное</p>
-      </a>
-    </div>
-
-    <div class="card" data-name="покемон">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="pokemon" data-title="Покемон"
-        data-poster="https://cdn.myanimelist.net/images/anime/13/73834.jpg"
-        data-genre="Приключения · Фэнтези">♡</button>
-      <a class="card-link" href="/anime?title=Покемон&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F73834.jpg">
-        <img src="https://cdn.myanimelist.net/images/anime/13/73834.jpg" alt="Покемон">
-        <h3>Покемон</h3>
-        <p>Приключения · Фэнтези</p>
-      </a>
-    </div>
-
+  <div class="filters" id="filters">
+    <button class="active" onclick="setGenre('Все',this)">Все</button>
+    <button onclick="setGenre('Экшен',this)">Экшен</button>
+    <button onclick="setGenre('Приключения',this)">Приключения</button>
+    <button onclick="setGenre('Фэнтези',this)">Фэнтези</button>
+    <button onclick="setGenre('Романтика',this)">Романтика</button>
+    <button onclick="setGenre('Драма',this)">Драма</button>
+    <button onclick="setGenre('Комедия',this)">Комедия</button>
+    <button onclick="setGenre('Спорт',this)">Спорт</button>
   </div>
+
+  <div id="counter"></div>
+  <div class="grid" id="animeGrid"></div>
 </main>
 
 <div id="notice"></div>
-
-<footer>© 2026 ANIMORA — мир аниме</footer>
+<footer>© 2026 ANIMORA — мир аниме ❤️</footer>
 
 <script>
-function filterAnime(){
-  const query=document.getElementById('search').value.toLowerCase();
+const animeList = [
+["demon-slayer","Клинок, рассекающий демонов","Экшен, Фэнтези"],
+["naruto","Наруто","Экшен, Приключения"],
+["one-piece","Ван-Пис","Приключения, Фэнтези"],
+["attack-on-titan","Атака титанов","Экшен, Драма"],
+["jujutsu-kaisen","Магическая битва","Экшен, Фэнтези"],
+["pokemon","Покемон","Приключения, Фэнтези"],
+["death-note","Тетрадь смерти","Драма, Триллер"],
+["one-punch-man","Ванпанчмен","Экшен, Комедия"],
+["my-hero-academia","Моя геройская академия","Экшен, Фэнтези"],
+["tokyo-ghoul","Токийский гуль","Экшен, Драма"],
+["fullmetal-alchemist","Стальной алхимик","Приключения, Фэнтези"],
+["hunter-x-hunter","Охотник х Охотник","Приключения, Экшен"],
+["bleach","Блич","Экшен, Приключения"],
+["dragon-ball","Драконий жемчуг","Экшен, Приключения"],
+["chainsaw-man","Человек-бензопила","Экшен, Фэнтези"],
+["spy-family","Семья шпиона","Комедия, Экшен"],
+["blue-lock","Синяя тюрьма","Спорт, Драма"],
+["haikyuu","Волейбол!!","Спорт, Комедия"],
+["your-name","Твоё имя","Романтика, Драма"],
+["a-silent-voice","Форма голоса","Драма, Романтика"],
+["horimiya","Хоримия","Романтика, Комедия"],
+["fruits-basket","Корзинка фруктов","Романтика, Драма"],
+["toradora","Торадора!","Романтика, Комедия"],
+["suzume","Судзумэ, закрывающая двери","Приключения, Драма"],
+["spirited-away","Унесённые призраками","Фэнтези, Приключения"],
+["howls-moving-castle","Ходячий замок","Фэнтези, Романтика"],
+["princess-mononoke","Принцесса Мононоке","Приключения, Фэнтези"],
+["mob-psycho-100","Моб Психо 100","Экшен, Комедия"],
+["dr-stone","Доктор Стоун","Приключения, Фэнтези"],
+["black-clover","Чёрный клевер","Экшен, Фэнтези"],
+["fairy-tail","Хвост феи","Приключения, Фэнтези"],
+["re-zero","Re:Zero","Драма, Фэнтези"],
+["sword-art-online","Мастера меча онлайн","Экшен, Фэнтези"],
+["overlord","Повелитель","Экшен, Фэнтези"],
+["no-game-no-life","Нет игры — нет жизни","Приключения, Комедия"],
+["the-promised-neverland","Обещанный Неверленд","Драма, Триллер"],
+["vinland-saga","Сага о Винланде","Экшен, Драма"],
+["bungou-stray-dogs","Великий из бродячих псов","Экшен, Драма"],
+["cowboy-bebop","Ковбой Бибоп","Приключения, Драма"],
+["steins-gate","Врата Штейна","Драма, Фэнтези"],
+["code-geass","Код Гиас","Драма, Экшен"],
+["psycho-pass","Психопаспорт","Драма, Экшен"],
+["violet-evergarden","Вайолет Эвергарден","Драма, Романтика"],
+["made-in-abyss","Созданный в Бездне","Приключения, Фэнтези"],
+["frieren","Провожающая в последний путь Фрирен","Фэнтези, Приключения"],
+["oshi-no-ko","Звёздное дитя","Драма, Романтика"],
+["solo-leveling","Поднятие уровня в одиночку","Экшен, Фэнтези"],
+["kaiju-no-8","Кайдзю номер восемь","Экшен, Фэнтези"],
+["wind-breaker","Ветролом","Экшен, Драма"],
+["classroom-of-the-elite","Добро пожаловать в класс превосходства","Драма, Комедия"]
+];
 
-  document.querySelectorAll('.card').forEach(card=>{
-    card.style.display=card.dataset.name.includes(query)?'block':'none';
+let selectedGenre = "Все";
+
+function setGenre(genre,button){
+  selectedGenre=genre;
+  document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));
+  button.classList.add('active');
+  renderAnime();
+}
+
+function renderAnime(){
+  const query=document.getElementById('search').value.toLowerCase().trim();
+  const grid=document.getElementById('animeGrid');
+
+  const filtered=animeList.filter(anime=>{
+    const matchesName=anime[1].toLowerCase().includes(query);
+    const matchesGenre=selectedGenre==='Все'||anime[2].includes(selectedGenre);
+    return matchesName&&matchesGenre;
   });
+
+  grid.innerHTML=filtered.map(anime=>`
+    <div class="card" data-id="${anime[0]}">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="${anime[0]}"
+        data-title="${anime[1]}"
+        data-poster=""
+        data-genre="${anime[2]}">♡</button>
+      <div class="poster">${anime[1]}</div>
+      <h3>${anime[1]}</h3>
+      <p>${anime[2].replaceAll(', ',' · ')}</p>
+    </div>
+  `).join('');
+
+  document.getElementById('counter').textContent=
+    `Найдено аниме: ${filtered.length} из ${animeList.length}`;
+
+  loadFavorites();
 }
 
 function showNotice(message){
   const notice=document.getElementById('notice');
   notice.textContent=message;
   notice.style.display='block';
-
   clearTimeout(window.noticeTimer);
-  window.noticeTimer=setTimeout(()=>{
-    notice.style.display='none';
-  },2500);
+  window.noticeTimer=setTimeout(()=>notice.style.display='none',2500);
 }
 
-// Загружаем избранное из Supabase
 async function loadFavorites(){
-  const buttons=document.querySelectorAll('.favorite-btn');
-
   try{
-    const response=await fetch('/favorites/list',{
-      credentials:'same-origin',
-      cache:'no-store'
-    });
-
-    if(!response.ok){
-      console.log('Не удалось загрузить избранное:',response.status);
-      return;
-    }
-
+    const response=await fetch('/favorites/list',{credentials:'same-origin',cache:'no-store'});
+    if(!response.ok)return;
     const result=await response.json();
+    if(!result.success)return;
 
-    if(!result.success || !Array.isArray(result.anime_ids)){
-      console.log('Некорректный ответ избранного:',result);
-      return;
-    }
-
-    const favoriteIds=new Set(result.anime_ids.map(String));
-
-    buttons.forEach(button=>{
-      const isFavorite=favoriteIds.has(button.dataset.id);
-
-      button.classList.toggle('active',isFavorite);
-      button.textContent=isFavorite?'♥':'♡';
+    document.querySelectorAll('.favorite-btn').forEach(button=>{
+      const active=result.anime_ids.includes(button.dataset.id);
+      button.classList.toggle('active',active);
+      button.textContent=active?'♥':'♡';
     });
-
-    console.log('Избранное загружено:',[...favoriteIds]);
-
   }catch(error){
     console.error('Ошибка загрузки избранного:',error);
   }
 }
 
-// Добавление и удаление из избранного
 async function toggleFavorite(event,button){
   event.preventDefault();
   event.stopPropagation();
-
   if(button.disabled)return;
   button.disabled=true;
 
@@ -232,20 +214,14 @@ async function toggleFavorite(event,button){
 
     const result=await response.json();
 
-    if(!response.ok || !result.success){
-      showNotice(result.message || 'Не удалось изменить избранное');
+    if(!response.ok||!result.success){
+      showNotice(result.message||'Не удалось изменить избранное');
       return;
     }
 
     button.classList.toggle('active',result.favorited);
     button.textContent=result.favorited?'♥':'♡';
-
-    showNotice(
-      result.favorited
-      ?'Добавлено в избранное ❤️'
-      :'Удалено из избранного'
-    );
-
+    showNotice(result.favorited?'Добавлено в избранное ❤️':'Удалено из избранного');
   }catch(error){
     console.error(error);
     showNotice('Ошибка соединения. Попробуй ещё раз.');
@@ -254,12 +230,7 @@ async function toggleFavorite(event,button){
   }
 }
 
-// Запуск после загрузки HTML
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',loadFavorites);
-}else{
-  loadFavorites();
-}
+renderAnime();
 </script>
 
 </body>

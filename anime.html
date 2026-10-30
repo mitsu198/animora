@@ -227,6 +227,7 @@ function renderEpisode(index){
     video.playsInline=true;
     video.preload='metadata';
     video.src=source.url;
+    video.addEventListener('error',()=>showPlayerMessage('Не удалось воспроизвести этот источник. Проверь ссылку, формат файла и разрешение на встраивание; можно переключиться на другой источник в списке.'));
     video.addEventListener('playing',()=>{lastVideoTime=video.currentTime;if(watchFlushTimer)clearInterval(watchFlushTimer);watchFlushTimer=setInterval(flushWatchTime,15000);});
     video.addEventListener('timeupdate',()=>{
       if(video.paused||video.seeking)return;

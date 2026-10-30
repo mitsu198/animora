@@ -23,7 +23,7 @@ main{padding:35px 6%;max-width:1500px;margin:auto}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:20px}
 .card{position:relative;background:#191622;border:1px solid #30263c;border-radius:13px;overflow:hidden;transition:.2s}
 .card:hover{transform:translateY(-5px);border-color:#bd72ff}
-.poster{height:235px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;background:linear-gradient(145deg,#28153d,#5b2677);font-size:21px;font-weight:bold;color:#fff;text-shadow:0 2px 8px #000}
+.poster{height:235px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#28153d,#5b2677);font-size:21px;font-weight:bold;color:#fff;text-align:center;text-shadow:0 2px 8px #000}.poster img{width:100%;height:100%;object-fit:cover;display:block}.poster span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:linear-gradient(180deg,transparent 35%,#090610b8)}
 .card:nth-child(3n) .poster{background:linear-gradient(145deg,#152a43,#4b367c)}
 .card:nth-child(3n+1) .poster{background:linear-gradient(145deg,#461b3b,#8b356a)}
 .card:nth-child(3n+2) .poster{background:linear-gradient(145deg,#173b3a,#386b73)}
@@ -149,18 +149,24 @@ function renderAnime(){
     return matchesName&&matchesGenre;
   });
 
-  grid.innerHTML=filtered.map(anime=>`
-    <div class="card" data-id="${anime[0]}">
-      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-        data-id="${anime[0]}"
-        data-title="${anime[1]}"
-        data-poster=""
-        data-genre="${anime[2]}">♡</button>
-      <div class="poster">${anime[1]}</div>
-      <h3>${anime[1]}</h3>
-      <p>${anime[2].replaceAll(', ',' · ')}</p>
-    </div>
-  `).join('');
+  grid.innerHTML=filtered.map(anime=>{
+    const poster=posterCache[anime[0]]||'';
+    return `
+      <div class="card" data-id="${anime[0]}">
+        <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+          data-id="${anime[0]}"
+          data-title="${anime[1]}"
+          data-poster="${poster}"
+          data-genre="${anime[2]}">♡</button>
+        <div class="poster">
+          ${poster?'<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy" onerror="this.remove()">':''}
+          <span>${anime[1]}</span>
+        </div>
+        <h3>${anime[1]}</h3>
+        <p>${anime[2].replaceAll(', ',' · ')}</p>
+      </div>
+    `;
+  }).join('');
 
   document.getElementById('counter').textContent=
     `Найдено аниме: ${filtered.length} из ${animeList.length}`;
@@ -168,6 +174,70 @@ function renderAnime(){
   loadFavorites();
 }
 
+const POSTER_CACHE_KEY='animora_mal_posters_v1';
+let posterCache={};
+try{
+  posterCache=JSON.parse(localStorage.getItem(POSTER_CACHE_KEY)||'{}')||{};
+}catch(error){
+  console.warn('Не удалось прочитать кэш обложек:',error);
+}
+
+function savePosterCache(){
+  try{
+    localStorage.setItem(POSTER_CACHE_KEY,JSON.stringify(posterCache));
+  }catch(error){
+    console.warn('Не удалось сохранить кэш обложек:',error);
+  }
+}
+
+async function fetchAnimePoster(anime){
+  const query=anime[0].replaceAll('-',' ');
+  const url='https://api.tenrai.org/v1/anime?q='+encodeURIComponent(query)+'&limit=5&sfw=true';
+  const response=await fetch(url,{headers:{'Accept':'application/json'}});
+  if(!response.ok)throw new Error('Tenrai HTTP '+response.status);
+  const result=await response.json();
+  const entries=Array.isArray(result.data)?result.data:[];
+  if(!entries.length)return '';
+
+  const normalize=value=>(value||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  const wanted=normalize(query);
+  const exact=entries.find(item=>{
+    const titles=[item.title,item.title_english,item.title_japanese,...(item.title_synonyms||[])];
+    return titles.some(title=>normalize(title)===wanted);
+  });
+  const item=exact||entries[0];
+  return item.images?.webp?.large_image_url
+    ||item.images?.jpg?.large_image_url
+    ||item.images?.webp?.image_url
+    ||item.images?.jpg?.image_url
+    ||'';
+}
+
+async function loadAnimePosters(){
+  const missing=animeList.filter(anime=>!posterCache[anime[0]]);
+  let index=0;
+  async function worker(){
+    while(index<missing.length){
+      const anime=missing[index++];
+      try{
+        const poster=await fetchAnimePoster(anime);
+        if(poster){
+          posterCache[anime[0]]=poster;
+          document.querySelectorAll('.card[data-id="'+anime[0]+'"] .poster').forEach(container=>{
+            container.innerHTML='<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy"><span>'+anime[1]+'</span>';
+          });
+          document.querySelectorAll('.favorite-btn[data-id="'+anime[0]+'"]').forEach(button=>{
+            button.dataset.poster=poster;
+          });
+          savePosterCache();
+        }
+      }catch(error){
+        console.warn('Не удалось загрузить обложку '+anime[1]+':',error);
+      }
+    }
+  }
+  await Promise.all([worker(),worker(),worker()]);
+}
 function showNotice(message){
   const notice=document.getElementById('notice');
   notice.textContent=message;
@@ -231,6 +301,7 @@ async function toggleFavorite(event,button){
 }
 
 renderAnime();
+loadAnimePosters();
 </script>
 
 </body>

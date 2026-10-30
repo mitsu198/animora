@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -64,6 +65,9 @@ main { padding: 35px 6%; }
 }
 
 .card {
+    display: block;
+    text-decoration: none;
+    color: white;
     background: #191622;
     border-radius: 13px;
     overflow: hidden;
@@ -120,57 +124,37 @@ footer {
 
     <div class="grid" id="animeList">
 
-        <div class="card">
+        <a class="card" href="/anime?title=Демон-убийца&icon=⚡&genre=Фэнтези">
             <div class="poster">⚡</div>
             <h3>Демон-убийца</h3>
             <p>Приключения · Фэнтези</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="/anime?title=Наруто&icon=🍥&genre=Экшен">
             <div class="poster">🍥</div>
             <h3>Наруто</h3>
             <p>Приключения · Экшен</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="/anime?title=Ван-Пис&icon=🌊&genre=Фэнтези">
             <div class="poster">🌊</div>
             <h3>Ван-Пис</h3>
             <p>Приключения · Фэнтези</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="/anime?title=Атака%20титанов&icon=⚔️&genre=Драма">
             <div class="poster">⚔️</div>
             <h3>Атака титанов</h3>
             <p>Экшен · Драма</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="/anime?title=Магическая%20битва&icon=🔥&genre=Фэнтези">
             <div class="poster">🔥</div>
             <h3>Магическая битва</h3>
             <p>Экшен · Фэнтези</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="/anime?title=Покемон&icon=🏴‍☠️&genre=Приключения">
             <div class="poster">🏴‍☠️</div>
             <h3>Покемон</h3>
-            <p>Приключения · Фэнтези</p>
-        </div>
-
-    </div>
-</main>
-
-<footer>ANIMORA © 2026</footer>
-
-<script>
-function filterAnime() {
-    const query = document.getElementById("search").value.toLowerCase();
-
-    document.querySelectorAll(".card").forEach(card => {
-        card.style.display =
-            card.innerText.toLowerCase().includes(query) ? "" : "none";
-    });
-}
-</script>
-
-</body>
-</html>
+            <p

@@ -16,6 +16,33 @@ nav a:hover{color:#bd72ff}
 .hero h1{font-size:44px;margin:0 0 12px}
 .hero p{color:#e1d3ee;font-size:17px}
 main{padding:35px 6%;max-width:1500px;margin:auto}
+.discover{padding:34px 6% 8px;background:linear-gradient(180deg,#151020,#0c0b13)}
+.discover-inner{max-width:1500px;margin:auto}
+.discover-head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:24px}
+.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#bd72ff;font-weight:bold}
+.discover-head h2{font-size:28px;margin:8px 0}
+.discover-head p{color:#b9adca;margin:0;max-width:650px;line-height:1.5}
+.random-btn{border:0;border-radius:12px;padding:14px 20px;background:linear-gradient(110deg,#8535d6,#bd72ff);color:white;font-weight:bold;font-size:15px;cursor:pointer;white-space:nowrap}
+.random-btn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+.shelf{margin:28px 0 36px}
+.shelf-title{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+.shelf-title h2{margin:0;font-size:22px}
+.shelf-title span{color:#8f849c;font-size:13px}
+.shelf-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.shelf-card{min-width:0;cursor:pointer;background:#191622;border:1px solid #30263c;border-radius:12px;overflow:hidden;transition:.2s}
+.shelf-card:hover{transform:translateY(-4px);border-color:#bd72ff}
+.shelf-poster{height:190px;position:relative;background:linear-gradient(145deg,#28153d,#5b2677);overflow:hidden}
+.shelf-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.shelf-poster span{position:absolute;inset:0;display:flex;align-items:flex-end;padding:10px;background:linear-gradient(180deg,transparent 35%,#090610a8);font-weight:bold;font-size:13px}
+.shelf-card h3{font-size:14px;line-height:1.35;margin:10px 10px 5px}
+.shelf-card p{font-size:12px;color:#aaa;margin:0 10px 12px}
+#catalog h2{margin-top:0}
+html[data-theme] .discover{background:var(--site-bg)}
+html[data-theme] .shelf-card{background:var(--site-panel);border-color:var(--site-border);color:var(--site-text)}
+html[data-theme] .discover-head p,html[data-theme] .shelf-title span{color:var(--site-muted)}
+@media(max-width:1000px){.shelf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.discover-head{align-items:flex-start;flex-direction:column}.discover-head h2{font-size:23px}.shelf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shelf-poster{height:180px}.shelf-title{flex-wrap:wrap}}
+
 .search{width:100%;padding:15px;margin:15px 0;border:1px solid #393044;border-radius:10px;background:#191622;color:white;font-size:16px}
 .filters{display:flex;gap:9px;flex-wrap:wrap;margin:15px 0 25px}
 .filters button{border:1px solid #49305f;background:#191622;color:#ddd;border-radius:20px;padding:9px 15px;cursor:pointer}
@@ -68,6 +95,18 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 <section class="hero">
   <h1>Твой мир аниме</h1>
   <p>Открывай новые истории, находи любимые тайтлы и сохраняй их в избранное.</p>
+</section>
+
+<section class="discover" aria-label="Подборки аниме">
+  <div class="discover-inner">
+    <div class="discover-head">
+      <div><span class="eyebrow">ANIMORA подборки</span><h2>Найди свою следующую историю</h2><p>Подборки для любого настроения — от захватывающих приключений до уютной романтики.</p></div>
+      <button class="random-btn" onclick="pickRandomAnime()">🎲 Случайное аниме</button>
+    </div>
+    <section class="shelf"><div class="shelf-title"><h2>🔥 Популярное</h2><span>Выбор зрителей</span></div><div class="shelf-grid" id="popularGrid"></div></section>
+    <section class="shelf"><div class="shelf-title"><h2>✨ Советуем посмотреть</h2><span>Наши рекомендации</span></div><div class="shelf-grid" id="recommendedGrid"></div></section>
+    <section class="shelf"><div class="shelf-title"><h2>🌟 Ещё интересное</h2><span>Открой что-то новое</span></div><div class="shelf-grid" id="discoveryGrid"></div></section>
+  </div>
 </section>
 
 <main id="catalog">
@@ -143,7 +182,80 @@ const animeList = [
 ["solo-leveling","Поднятие уровня в одиночку","Экшен, Фэнтези"],
 ["kaiju-no-8","Кайдзю номер восемь","Экшен, Фэнтези"],
 ["wind-breaker","Ветролом","Экшен, Драма"],
-["classroom-of-the-elite","Добро пожаловать в класс превосходства","Драма, Комедия"]
+["classroom-of-the-elite","Добро пожаловать в класс превосходства","Драма, Комедия"],
+["naruto-shippuden","Наруто: Ураганные хроники","Экшен, Приключения"],
+["evangelion","Евангелион","Драма, Фантастика"],
+["gintama","Гинтама","Комедия, Экшен"],
+["monster","Монстр","Драма, Триллер"],
+["bungou-stray-dogs","Великий из бродячих псов","Экшен, Драма"],
+["the-apothecary-diaries","Монолог фармацевта","Драма, Детектив"],
+["delicious-in-dungeon","Подземелье вкусностей","Приключения, Фэнтези"],
+["dandadan","Дандадан","Экшен, Комедия"],
+["blue-period","Голубой период","Драма"],
+["bocchi-the-rock","Одинокий рокер!","Комедия, Музыка"],
+["kaguya-sama","Госпожа Кагуя: в любви как на войне","Романтика, Комедия"],
+["my-dress-up-darling","Эта фарфоровая кукла влюбилась","Романтика, Комедия"],
+["rascal-does-not-dream","Этот глупый свин не понимает мечту девочки-зайки","Романтика, Драма"],
+["clannad","Кланнад","Драма, Романтика"],
+["anohana","Невиданный цветок","Драма"],
+["angel-beats","Ангельские ритмы!","Драма, Комедия"],
+["erased","Город, в котором меня нет","Драма, Триллер"],
+["odd-taxi","Необычное такси","Драма, Детектив"],
+["summer-time-render","Летнее время","Драма, Триллер"],
+["parasyte","Паразит","Экшен, Ужасы"],
+["hells-paradise","Адский рай","Экшен, Фэнтези"],
+["fire-force","Пламенная бригада пожарных","Экшен, Фэнтези"],
+["soul-eater","Пожиратель душ","Экшен, Фэнтези"],
+["noragami","Бездомный бог","Экшен, Фэнтези"],
+["assassination-classroom","Класс убийц","Комедия, Экшен"],
+["dramatical-murder","Драматическое убийство","Фантастика, Драма"],
+["mushoku-tensei","Реинкарнация безработного","Приключения, Фэнтези"],
+["that-time-slime","О моём перерождении в слизь","Приключения, Фэнтези"],
+["konosuba","Этот замечательный мир!","Фэнтези, Комедия"],
+["eminence-shadow","Восхождение в тени","Экшен, Фэнтези"],
+["shield-hero","Восхождение героя щита","Приключения, Фэнтези"],
+["log-horizon","Лог Горизонт","Приключения, Фэнтези"],
+["magi","Маги: Лабиринт магии","Приключения, Фэнтези"],
+["ranking-of-kings","Рейтинг короля","Приключения, Фэнтези"],
+["to-your-eternity","Для тебя, Бессмертный","Приключения, Драма"],
+["ancient-magus-bride","Невеста чародея","Фэнтези, Романтика"],
+["the-girl-who-leapt","Девочка, покорившая время","Фантастика, Романтика"],
+["weathering-with-you","Дитя погоды","Романтика, Фэнтези"],
+["5-centimeters","Пять сантиметров в секунду","Драма, Романтика"],
+["wolf-children","Волчьи дети Амэ и Юки","Драма, Фэнтези"],
+["perfect-blue","Истинная грусть","Триллер, Драма"],
+["paprika","Паприка","Фантастика, Триллер"],
+["akira","Акира","Фантастика, Экшен"],
+["ghost-in-shell","Призрак в доспехах","Фантастика, Экшен"],
+["trigun","Триган","Экшен, Приключения"],
+["samurai-champloo","Самурай Чамплу","Экшен, Приключения"],
+["great-teacher-onizuka","Крутой учитель Онидзука","Комедия, Драма"],
+["initial-d","Инициал Ди","Спорт, Драма"],
+["yuri-on-ice","Юри на льду","Спорт, Романтика"],
+["kuroko-basket","Баскетбол Куроко","Спорт, Драма"],
+["run-wind","Беги с ветром","Спорт, Драма"],
+["free-iwatobi","Вольный стиль!","Спорт, Драма"],
+["sk8-infinity","SK8: На скейте в бесконечность","Спорт, Комедия"],
+["yona-dawn","Йона на заре","Приключения, Романтика"],
+["ouran-host","Президент студсовета — горничная!","Романтика, Комедия"],
+["maid-sama","Президент студсовета — горничная!","Романтика, Комедия"],
+["wotakoi","Любовь — проблема для отаку","Романтика, Комедия"],
+["relife","Перезапуск","Романтика, Драма"],
+["komi-cant-communicate","У Коми проблемы с общением","Комедия, Романтика"],
+["nichijou","Мелочи жизни","Комедия"],
+["asobi-asobase","Игры дружбы","Комедия"],
+["daily-lives","Повседневная жизнь старшеклассников","Комедия"],
+["lucky-star","Счастливая звезда","Комедия"],
+["the-disastrous-life","Ох уж этот экстрасенс Сайки Кусуо!","Комедия"],
+["promare","Промар","Экшен, Фантастика"],
+["kill-la-kill","Убей или умри","Экшен, Комедия"],
+["gurren-lagann","Гуррен-Лаганн","Экшен, Фантастика"],
+["86-eighty-six","Восемьдесят шесть","Драма, Фантастика"],
+["cyberpunk-edgerunners","Киберпанк: Бегущие по краю","Экшен, Фантастика"],
+["pluto","Плутон","Драма, Фантастика"],
+["heavenly-delusion","Иллюзия рая","Приключения, Фантастика"],
+["dororo","Дороро","Экшен, Приключения"],
+["golden-kamuy","Золотое божество","Приключения, Экшен"]
 ];
 
 let selectedGenre = "Все";
@@ -153,6 +265,35 @@ function setGenre(genre,button){
   document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));
   button.classList.add('active');
   renderAnime();
+}
+
+
+const featuredCollections={
+ popular:["demon-slayer","attack-on-titan","jujutsu-kaisen","one-piece","death-note","solo-leveling"],
+ recommended:["frieren","fullmetal-alchemist","steins-gate","vinland-saga","violet-evergarden","hunter-x-hunter"],
+ discovery:["dandadan","the-apothecary-diaries","odd-taxi","ranking-of-kings","86-eighty-six","bocchi-the-rock"]
+};
+function renderFeatured(){
+  Object.entries(featuredCollections).forEach(([key,ids])=>{
+    const target=document.getElementById(key+"Grid");
+    if(!target)return;
+    target.innerHTML=ids.map(id=>{
+      const anime=animeList.find(item=>item[0]===id);
+      if(!anime)return "";
+      const poster=posterCache[id]||"";
+      return `<article class="shelf-card" role="link" tabindex="0" onclick="openAnimeCard('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAnimeCard('${id}')}">
+        <div class="shelf-poster">${poster?'<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy" onerror="this.remove()">':''}<span>${anime[1]}</span></div>
+        <h3>${anime[1]}</h3><p>${anime[2].replaceAll(", "," · ")}</p>
+      </article>`;
+    }).join("");
+  });
+}
+function pickRandomAnime(){
+  const query=document.getElementById("search").value.trim();
+  const candidates=animeList.filter(anime=>(selectedGenre==="Все"||anime[2].includes(selectedGenre))&&(!query||anime[1].toLowerCase().includes(query.toLowerCase())));
+  if(!candidates.length){showNotice("По этому запросу ничего не найдено");return;}
+  const anime=candidates[Math.floor(Math.random()*candidates.length)];
+  openAnimeCard(anime[0]);
 }
 
 function renderAnime(){
@@ -256,7 +397,80 @@ const animeEnglishTitles={
   "solo-leveling":"Solo Leveling",
   "kaiju-no-8":"Kaiju No 8",
   "wind-breaker":"Wind Breaker",
-  "classroom-of-the-elite":"Classroom of the Elite"
+  "classroom-of-the-elite":"Classroom of the Elite",
+  "naruto-shippuden":"Naruto Shippuden",
+  "evangelion":"Neon Genesis Evangelion",
+  "gintama":"Gintama",
+  "monster":"Monster",
+  "bungou-stray-dogs":"Bungo Stray Dogs",
+  "the-apothecary-diaries":"The Apothecary Diaries",
+  "delicious-in-dungeon":"Delicious in Dungeon",
+  "dandadan":"Dandadan",
+  "blue-period":"Blue Period",
+  "bocchi-the-rock":"Bocchi the Rock",
+  "kaguya-sama":"Kaguya-sama Love Is War",
+  "my-dress-up-darling":"My Dress-Up Darling",
+  "rascal-does-not-dream":"Rascal Does Not Dream of Bunny Girl Senpai",
+  "clannad":"Clannad",
+  "anohana":"Anohana",
+  "angel-beats":"Angel Beats",
+  "erased":"Erased",
+  "odd-taxi":"Odd Taxi",
+  "summer-time-render":"Summer Time Rendering",
+  "parasyte":"Parasyte The Maxim",
+  "hells-paradise":"Hell's Paradise",
+  "fire-force":"Fire Force",
+  "soul-eater":"Soul Eater",
+  "noragami":"Noragami",
+  "assassination-classroom":"Assassination Classroom",
+  "dramatical-murder":"DRAMAtical Murder",
+  "mushoku-tensei":"Mushoku Tensei Jobless Reincarnation",
+  "that-time-slime":"That Time I Got Reincarnated as a Slime",
+  "konosuba":"KonoSuba",
+  "eminence-shadow":"The Eminence in Shadow",
+  "shield-hero":"The Rising of the Shield Hero",
+  "log-horizon":"Log Horizon",
+  "magi":"Magi The Labyrinth of Magic",
+  "ranking-of-kings":"Ranking of Kings",
+  "to-your-eternity":"To Your Eternity",
+  "ancient-magus-bride":"The Ancient Magus' Bride",
+  "the-girl-who-leapt":"The Girl Who Leapt Through Time",
+  "weathering-with-you":"Weathering With You",
+  "5-centimeters":"5 Centimeters per Second",
+  "wolf-children":"Wolf Children",
+  "perfect-blue":"Perfect Blue",
+  "paprika":"Paprika",
+  "akira":"Akira",
+  "ghost-in-shell":"Ghost in the Shell",
+  "trigun":"Trigun",
+  "samurai-champloo":"Samurai Champloo",
+  "great-teacher-onizuka":"Great Teacher Onizuka",
+  "initial-d":"Initial D",
+  "yuri-on-ice":"Yuri on Ice",
+  "kuroko-basket":"Kuroko's Basketball",
+  "run-wind":"Run with the Wind",
+  "free-iwatobi":"Free Iwatobi Swim Club",
+  "sk8-infinity":"SK8 the Infinity",
+  "yona-dawn":"Yona of the Dawn",
+  "ouran-host":"Ouran High School Host Club",
+  "maid-sama":"Maid Sama",
+  "wotakoi":"Wotakoi Love Is Hard for Otaku",
+  "relife":"ReLIFE",
+  "komi-cant-communicate":"Komi Can't Communicate",
+  "nichijou":"Nichijou",
+  "asobi-asobase":"Asobi Asobase",
+  "daily-lives":"Daily Lives of High School Boys",
+  "lucky-star":"Lucky Star",
+  "the-disastrous-life":"The Disastrous Life of Saiki K",
+  "promare":"Promare",
+  "kill-la-kill":"Kill la Kill",
+  "gurren-lagann":"Gurren Lagann",
+  "86-eighty-six":"86 Eighty Six",
+  "cyberpunk-edgerunners":"Cyberpunk Edgerunners",
+  "pluto":"Pluto",
+  "heavenly-delusion":"Heavenly Delusion",
+  "dororo":"Dororo",
+  "golden-kamuy":"Golden Kamuy"
 };
 
 async function fetchAnimePoster(anime){
@@ -303,6 +517,7 @@ async function loadAnimePosters(){
             button.dataset.poster=poster;
           });
           savePosterCache();
+          renderFeatured();
         }
       }catch(error){
         console.warn('Не удалось загрузить обложку '+anime[1]+':',error);
@@ -392,6 +607,7 @@ function openAnimeCard(id){
   window.location.href='/anime?'+params.toString();
 }
 renderAnime();
+renderFeatured();
 loadAnimePosters();
 </script>
 

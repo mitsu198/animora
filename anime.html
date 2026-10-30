@@ -23,8 +23,21 @@ h1{font-size:clamp(30px,5vw,48px);margin:12px 0}.genre{color:#c9b8d8;line-height
 .watch h2{margin:0 0 8px;font-size:25px}.sub{color:#a99db5;margin:0 0 24px;line-height:1.6}
 .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.control label{display:block;margin-bottom:9px;color:#d9c9e8;font-weight:bold}
 select{width:100%;padding:14px;border:1px solid #49305f;border-radius:11px;background:#0e0c15;color:white;font-size:15px;outline:none}
-select:focus{border-color:#bd72ff}.watch-action{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:22px}
-.status{color:#a99db5;font-size:13px;line-height:1.6}.player-message{display:none;margin-top:22px;padding:18px;border:1px solid #5a3b70;border-radius:12px;background:#21152d;color:#dfc9f4;line-height:1.7}
+select:focus{border-color:#bd72ff}
+.player-shell{margin:22px 0 24px;border:1px solid #49305f;border-radius:16px;overflow:hidden;background:#050408}
+.video-stage{position:relative;aspect-ratio:16/9;min-height:220px;background:#050408;display:flex;align-items:center;justify-content:center}
+.video-stage video,.video-stage iframe{width:100%;height:100%;position:absolute;inset:0;border:0;object-fit:contain;background:#050408}
+.video-empty{max-width:520px;padding:28px;text-align:center;color:#b8a9c8;line-height:1.7}
+.video-empty .play-mark{width:62px;height:62px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:#8e35e8;color:white;font-size:25px}
+.video-empty strong{display:block;color:#fff;font-size:18px;margin-bottom:8px}
+.player-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;background:#100d17;color:#b9abc8;font-size:13px}
+.episode-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:18px}
+.episode-item{padding:12px;border:1px solid #49305f;border-radius:10px;background:#0e0c15;color:#ddd;text-align:left;cursor:pointer}
+.episode-item:disabled{opacity:.55;cursor:not-allowed}
+.episode-item.active{border-color:#bd72ff;background:#241432;color:#fff}
+.watch-action{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:22px}
+.status{color:#a99db5;font-size:13px;line-height:1.6}.player-message{margin-top:18px;padding:16px;border:1px solid #5a3b70;border-radius:12px;background:#21152d;color:#dfc9f4;line-height:1.7}
+.player-message a{color:#d9aaff}
 .player-message.show{display:block}
 @media(max-width:700px){header{padding:18px 5%}.hero{grid-template-columns:1fr;padding:18px}.poster-wrap{height:360px;max-width:260px;width:100%;margin:auto}.info{text-align:center}.controls{grid-template-columns:1fr}main{padding:25px 5%}.watch{padding:20px}}
 
@@ -54,11 +67,17 @@ select:focus{border-color:#bd72ff}.watch-action{display:flex;align-items:center;
 </section>
 <section class="watch" id="watch"><h2>Настроить просмотр</h2><p class="sub">Выбери озвучку и плеер, который тебе удобнее.</p>
 <div class="controls">
-<div class="control"><label for="voice">Озвучка</label><select id="voice"><option value="Не выбрана">Выбрать озвучку</option><option>AniLibria</option><option>AnimeVost</option><option>Субтитры</option><option>Оригинальная дорожка</option></select></div>
-<div class="control"><label for="player">Плеер</label><select id="player"><option value="Не выбран">Выбрать плеер</option><option>Плеер 1</option><option>Плеер 2</option><option>Плеер 3</option></select></div>
+<div class="control"><label for="episodeSelect">Серия</label><select id="episodeSelect" disabled><option>Серии пока не подключены</option></select></div>
+<div class="control"><label for="voice">Озвучка</label><select id="voice" disabled><option>Сначала подключи источник серий</option></select></div>
 </div>
-<div class="watch-action"><button class="primary" id="startWatch">▶ Начать просмотр</button><span class="status">Настройки можно будет поменять в любой момент.</span></div>
-<div class="player-message" id="playerMessage" role="status">Интерфейс выбора готов. Чтобы видео действительно запускалось, нужно подключить легальный источник серий и его варианты озвучки. Сейчас ни один видеопоток ещё не подключён.</div>
+<div class="player-shell">
+<div class="video-stage" id="videoStage">
+<div class="video-empty" id="videoEmpty"><div class="play-mark">▶</div><strong>Плеер ANIMORA</strong>Полные серии будут воспроизводиться здесь, прямо на сайте.<br>Источник видео пока не подключён.</div>
+</div>
+<div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Полноэкранный режим поддерживается</span></div>
+</div>
+<div class="episode-list" id="episodeList"><button class="episode-item" disabled>Серии появятся после подключения источника</button></div>
+<div class="player-message" id="playerMessage" role="status">Плеер готов к подключению. Нужны легальные ссылки на видео или коды официального встраивания для каждой серии и озвучки.</div>
 
 <section class="watch" id="legalServices">
 <h2>Где смотреть легально</h2>
@@ -90,10 +109,92 @@ document.getElementById('netflixLink').href='https://www.netflix.com/search?q='+
 document.getElementById('crunchyrollLink').href='https://www.crunchyroll.com/search?q='+encodedTitle;
 document.getElementById('primeLink').href='https://www.primevideo.com/search/ref=atv_nb_sr?phrase='+encodedTitle;
 if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;img.onerror=()=>{img.remove();document.getElementById('posterFallback').style.display='flex'};document.getElementById('posterFallback').style.display='none';document.getElementById('posterWrap').appendChild(img);}
-document.getElementById('startWatch').addEventListener('click',()=>{
-const voice=document.getElementById('voice').value,player=document.getElementById('player').value,message=document.getElementById('playerMessage');
-message.textContent=voice==='Не выбрана'||player==='Не выбран'?'Сначала выбери озвучку и плеер. После подключения видеосервиса здесь запустится выбранная серия.':'Выбрано: '+voice+' · '+player+'. Интерфейс готов, но источник видео пока не подключён — поэтому воспроизведение ещё недоступно.';
-message.classList.add('show');message.scrollIntoView({behavior:'smooth',block:'nearest'});
-});
+
+/*
+  Каталог источников серий.
+  Добавляй сюда только видео, которые разрешено показывать на ANIMORA.
+  type: "file" — прямая ссылка на MP4/WebM.
+  type: "embed" — официальный URL встраивания, который разрешает владелец видео.
+  Для каждой серии можно добавить несколько озвучек.
+*/
+const episodeCatalog = [];
+const episodeSelect=document.getElementById('episodeSelect');
+const voiceSelect=document.getElementById('voice');
+const episodeList=document.getElementById('episodeList');
+const videoStage=document.getElementById('videoStage');
+const playerMessage=document.getElementById('playerMessage');
+let currentEpisode=null;
+
+function showPlayerMessage(text){
+  playerMessage.textContent=text;
+  playerMessage.classList.add('show');
+}
+function renderEpisode(index){
+  const episode=episodeCatalog[index];
+  if(!episode) return;
+  currentEpisode=index;
+  const voiceName=voiceSelect.value;
+  const source=episode.sources.find(item=>item.voice===voiceName)||episode.sources[0];
+  if(!source) return;
+  videoStage.replaceChildren();
+  if(source.type==='embed'){
+    const frame=document.createElement('iframe');
+    frame.src=source.url;
+    frame.title=title+' — '+episode.name;
+    frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+    frame.allowFullscreen=true;
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    videoStage.appendChild(frame);
+  }else if(source.type==='file'){
+    const video=document.createElement('video');
+    video.controls=true;
+    video.playsInline=true;
+    video.preload='metadata';
+    video.src=source.url;
+    videoStage.appendChild(video);
+  }else{
+    showPlayerMessage('Для этой серии не указан поддерживаемый источник видео.');
+    return;
+  }
+  document.getElementById('nowPlaying').textContent=title+' · '+episode.name+' · '+source.voice;
+  document.querySelectorAll('.episode-item').forEach((button,i)=>button.classList.toggle('active',i===index));
+}
+function initEpisodeCatalog(){
+  if(!episodeCatalog.length){
+    episodeSelect.innerHTML='<option>Серии пока не подключены</option>';
+    voiceSelect.innerHTML='<option>Озвучка появится вместе с сериями</option>';
+    showPlayerMessage('Плеер ANIMORA уже встроен в страницу. Чтобы запустить полные серии, добавь разрешённые ссылки на видео или официальные embed-ссылки в каталог источников. Сам плеер не создаёт доступ к чужим сериалам.');
+    return;
+  }
+  episodeSelect.disabled=false;
+  voiceSelect.disabled=false;
+  episodeSelect.innerHTML='';
+  episodeCatalog.forEach((episode,index)=>{
+    const option=document.createElement('option');
+    option.value=String(index);
+    option.textContent=episode.name;
+    episodeSelect.appendChild(option);
+  });
+  const voices=[...new Set(episodeCatalog.flatMap(episode=>episode.sources.map(source=>source.voice)))];
+  voiceSelect.innerHTML='';
+  voices.forEach(voice=>{
+    const option=document.createElement('option');
+    option.value=voice;
+    option.textContent=voice;
+    voiceSelect.appendChild(option);
+  });
+  episodeList.replaceChildren();
+  episodeCatalog.forEach((episode,index)=>{
+    const button=document.createElement('button');
+    button.className='episode-item';
+    button.textContent=episode.name;
+    button.addEventListener('click',()=>{episodeSelect.value=String(index);renderEpisode(index);});
+    episodeList.appendChild(button);
+  });
+  episodeSelect.addEventListener('change',()=>renderEpisode(Number(episodeSelect.value)));
+  voiceSelect.addEventListener('change',()=>renderEpisode(currentEpisode));
+  renderEpisode(0);
+}
+initEpisodeCatalog();
 </script>
 </body></html>

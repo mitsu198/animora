@@ -121,14 +121,7 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 <div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Полноэкранный режим поддерживается</span></div>
 </div>
 
-<div class="manual-player">
-  <label for="manualVideoUrl">Или вставь ссылку на видео</label>
-  <div class="manual-player-row">
-    <input id="manualVideoUrl" type="url" placeholder="YouTube, Rutube, VK или публичный пост Telegram" autocomplete="url">
-    <button type="button" class="primary" id="loadManualVideo">▶ Открыть</button>
-  </div>
-  <p class="manual-player-hint" id="manualPlayerHint">Публичные посты Telegram можно встроить по ссылке t.me/канал/номер; закрытые каналы недоступны.</p>
-</div><div class="episode-list" id="episodeList"><button class="episode-item" disabled>Серии появятся после подключения источника</button></div>
+<div class="episode-list" id="episodeList"><button class="episode-item" disabled>Серии появятся после подключения источника</button></div>
 <div class="player-message" id="playerMessage" role="status">Плеер готов к подключению. Нужны легальные ссылки на видео или коды официального встраивания для каждой серии и озвучки.</div>
 
 <section class="watch" id="legalServices">
@@ -241,76 +234,6 @@ function renderEpisode(index){
   document.getElementById('nowPlaying').textContent=title+' · '+episode.name+' · '+source.voice;
   document.querySelectorAll('.episode-item').forEach((button,i)=>button.classList.toggle('active',i===index));
 }
-
-function getAllowedEmbedUrl(raw){
-  let parsed;
-  try{parsed=new URL(raw.trim())}catch(e){throw new Error('Проверь ссылку — формат адреса неверный.')}
-  if(parsed.protocol!=='https:')throw new Error('Нужна безопасная ссылка, начинающаяся с https://');
-  const host=parsed.hostname.toLowerCase();
-  const isYouTube=['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(host);
-  if(isYouTube){
-    let id='';
-    if(host.includes('youtu.be')) id=parsed.pathname.split('/').filter(Boolean)[0]||'';
-    else if(parsed.pathname==='/watch') id=parsed.searchParams.get('v')||'';
-    else {
-      const parts=parsed.pathname.split('/').filter(Boolean);
-      if(['embed','shorts','live'].includes(parts[0])) id=parts[1]||'';
-    }
-    if(!/^[a-zA-Z0-9_-]{11}$/.test(id))throw new Error('Не удалось распознать ссылку YouTube.');
-    return 'https://www.youtube-nocookie.com/embed/'+id;
-  }
-  if(host==='rutube.ru'||host==='www.rutube.ru'||host==='rutube.com'){
-    const parts=parsed.pathname.split('/').filter(Boolean);
-    let id='';
-    if(parts[0]==='video')id=parts[1]||'';
-    if(parts[0]==='play'&&parts[1]==='embed')id=parts[2]||'';
-    if(!/^[a-f0-9-]{12,}$/i.test(id))throw new Error('Не удалось распознать ссылку Rutube.');
-    return 'https://rutube.ru/play/embed/'+encodeURIComponent(id);
-  }
-  if(['vk.com','www.vk.com','vkvideo.ru','www.vkvideo.ru'].includes(host)){
-    if(!parsed.pathname.endsWith('/video_ext.php'))throw new Error('Для VK нужна официальная ссылка video_ext.php из раздела «Поделиться».');
-    const oid=parsed.searchParams.get('oid'),id=parsed.searchParams.get('id');
-    if(!/^-?\d+$/.test(oid||'')||!/^\d+$/.test(id||''))throw new Error('В ссылке VK не хватает параметров oid или id.');
-    return parsed.href;
-  }
-  if(['t.me','www.t.me','telegram.me','www.telegram.me'].includes(host)){
-    const parts=parsed.pathname.split('/').filter(Boolean);
-    if(parts[0]==='s')parts.shift();
-    if(parts.length!==2||!/^\d+$/.test(parts[1])||! /^[a-zA-Z][a-zA-Z0-9_]{3,31}$/.test(parts[0])||['c','joinchat','addstickers','proxy','socks'].includes(parts[0].toLowerCase())){
-      throw new Error('Нужна публичная ссылка на конкретный пост: https://t.me/имя_канала/номер_поста. Приватные каналы и приглашения не поддерживаются.');
-    }
-    const telegramUrl=new URL('https://t.me/'+parts[0]+'/'+parts[1]);
-    telegramUrl.searchParams.set('embed','1');
-    telegramUrl.searchParams.set('mode','tme');
-    return telegramUrl.href;
-  }
-  throw new Error('Поддерживаются YouTube, Rutube, VK Видео и публичные посты Telegram.');
-}
-function loadManualVideo(){
-  const input=document.getElementById('manualVideoUrl');
-  const hint=document.getElementById('manualPlayerHint');
-  try{
-    const embedUrl=getAllowedEmbedUrl(input.value);
-    videoStage.replaceChildren();
-    const frame=document.createElement('iframe');
-    frame.src=embedUrl;
-    frame.title=title+' — плеер ANIMORA';
-    frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
-    frame.allowFullscreen=true;
-    frame.referrerPolicy='strict-origin-when-cross-origin';
-    videoStage.appendChild(frame);
-    document.getElementById('nowPlaying').textContent=title+' · Внешний плеер';
-    hint.textContent='Плеер загружен. Если видео не запускается, автор мог запретить встраивание или ограничить просмотр.';
-    hint.style.color='#a99db5';
-    playerMessage.textContent='Видео воспроизводится во встроенном плеере стороннего сервиса. ANIMORA не хранит и не раздаёт этот видеоконтент.';
-    playerMessage.classList.add('show');
-  }catch(error){
-    hint.textContent=error.message;
-    hint.style.color='#ff9b9b';
-  }
-}
-document.getElementById('loadManualVideo').addEventListener('click',loadManualVideo);
-document.getElementById('manualVideoUrl').addEventListener('keydown',event=>{if(event.key==='Enter')loadManualVideo()});
 
 function initEpisodeCatalog(){
   if(!episodeCatalog.length){

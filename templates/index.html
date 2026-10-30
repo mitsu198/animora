@@ -152,7 +152,7 @@ function renderAnime(){
   grid.innerHTML=filtered.map(anime=>{
     const poster=posterCache[anime[0]]||'';
     return `
-      <div class="card" data-id="${anime[0]}">
+      <div class="card" data-id="${anime[0]}" role="link" tabindex="0" aria-label="Открыть ${anime[1]}">
         <button class="favorite-btn" onclick="toggleFavorite(event,this)"
           data-id="${anime[0]}"
           data-title="${anime[1]}"
@@ -357,6 +357,24 @@ async function toggleFavorite(event,button){
   }
 }
 
+document.getElementById('animeGrid').addEventListener('click',event=>{
+  if(event.target.closest('.favorite-btn'))return;
+  const card=event.target.closest('.card[data-id]');
+  if(card)openAnimeCard(card.dataset.id);
+});
+document.getElementById('animeGrid').addEventListener('keydown',event=>{
+  if(event.key!=='Enter'&&event.key!==' ')return;
+  const card=event.target.closest('.card[data-id]');
+  if(!card)return;
+  event.preventDefault();
+  openAnimeCard(card.dataset.id);
+});
+function openAnimeCard(id){
+  const anime=animeList.find(item=>item[0]===id);
+  if(!anime)return;
+  const params=new URLSearchParams({id:anime[0],title:anime[1],genre:anime[2],poster:posterCache[anime[0]]||''});
+  window.location.href='/anime?'+params.toString();
+}
 renderAnime();
 loadAnimePosters();
 </script>

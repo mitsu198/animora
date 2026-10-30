@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мой профиль — ANIMORA</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0c0b13;color:white;font-family:Arial,sans-serif}
+header{padding:22px 7%;background:#171321;border-bottom:1px solid #342440}
+.logo{color:#c58aff;font-size:29px;font-weight:bold}
+main{max-width:750px;margin:55px auto;padding:20px}
+.card{background:#171321;border:1px solid #49305f;border-radius:20px;padding:35px;text-align:center;box-shadow:0 15px 50px #0006}
+.avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#a34dff,#5420a0);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px}
+h1{color:#c58aff}
+.email{color:#aaa;overflow-wrap:anywhere}
+.buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+a{padding:13px 22px;border-radius:10px;text-decoration:none;background:#963fff;color:white}
+a:hover{background:#b66cff}
+.secondary{background:#30223d}
+</style>
+</head>
+<body>
+<header><div class="logo">ANIMORA</div></header>
+<main>
+<div class="card">
+<div class="avatar">👤</div>
+<h1>Мой профиль</h1>
+<p class="email">{{ email }}</p>
+<p>Добро пожаловать в ANIMORA!</p>
+<div class="buttons">
+<a href="/">Открыть каталог</a>
+<a href="/logout" class="secondary">Выйти</a>
+</div>
+</div>
+</main>
+</body>
+</html>

@@ -58,6 +58,12 @@ def register():
                 session["user_email"] = result.user.email
                 session["user_id"] = result.user.id
                 session["access_token"] = result.session.access_token
+
+                metadata = result.user.user_metadata or {}
+                session["display_name"] = metadata.get(
+                    "display_name", email.split("@")[0]
+                )
+
                 return redirect(url_for("profile"))
 
             flash("Теперь войди в аккаунт.")
@@ -86,6 +92,11 @@ def login():
             session["user_id"] = result.user.id
             session["access_token"] = result.session.access_token
 
+            metadata = result.user.user_metadata or {}
+            session["display_name"] = metadata.get(
+                "display_name", email.split("@")[0]
+            )
+
             return redirect(url_for("profile"))
 
         except Exception:
@@ -102,70 +113,121 @@ def profile():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        image = request.files.get("avatar")
+        action = request.form.get("action")
 
-        if not image or not image.filename:
-            flash("Сначала выбери изображение.")
+        # Изменение имени пользователя
+        if action == "update_name":
+            display_name = request.form.get("display_name", "").strip()
+
+            if len(display_name) < 2 or len(display_name) > 24:
+                flash("Имя должно содержать от 2 до 24 символов.")
+                return redirect(url_for("profile"))
+
+            try:
+                base_url = os.environ["SUPABASE_URL"].rstrip("/")
+                api_key = os.environ["SUPABASE_KEY"]
+                token = session["access_token"]
+
+                response = requests.patch(
+                    f"{base_url}/auth/v1/user",
+                    headers={
+                        "apikey": api_key,
+                        "Authorization": f"Bearer {token}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "data": {
+                            "display_name": display_name
+                        }
+                    },
+                    timeout=30
+                )
+
+                if not response.ok:
+                    raise RuntimeError(
+                        f"Supabase: {response.status_code} {response.text}"
+                    )
+
+                session["display_name"] = display_name
+                flash("Имя пользователя успешно изменено!")
+
+            except Exception:
+                app.logger.exception("PROFILE NAME UPDATE ERROR")
+                flash("Не удалось изменить имя. Попробуй войти заново.")
+
             return redirect(url_for("profile"))
 
-        allowed_types = {
-            "image/jpeg": "jpg",
-            "image/png": "png",
-            "image/webp": "webp",
-            "image/gif": "gif"
-        }
+        # Загрузка аватара
+        if action == "upload_avatar":
+            image = request.files.get("avatar")
 
-        extension = allowed_types.get(image.mimetype)
+            if not image or not image.filename:
+                flash("Сначала выбери изображение.")
+                return redirect(url_for("profile"))
 
-        if not extension:
-            flash("Можно загружать только JPG, PNG, WEBP или GIF.")
+            allowed_types = {
+                "image/jpeg": "jpg",
+                "image/png": "png",
+                "image/webp": "webp",
+                "image/gif": "gif"
+            }
+
+            if image.mimetype not in allowed_types:
+                flash("Можно загружать только JPG, PNG, WEBP или GIF.")
+                return redirect(url_for("profile"))
+
+            image_data = image.read()
+
+            if len(image_data) > 5 * 1024 * 1024:
+                flash("Изображение должно быть не больше 5 МБ.")
+                return redirect(url_for("profile"))
+
+            try:
+                base_url = os.environ["SUPABASE_URL"].rstrip("/")
+                api_key = os.environ["SUPABASE_KEY"]
+                user_id = session["user_id"]
+                token = session["access_token"]
+
+                file_url = (
+                    f"{base_url}/storage/v1/object/avatars/"
+                    f"{user_id}/avatar"
+                )
+
+                response = requests.post(
+                    file_url,
+                    headers={
+                        "apikey": api_key,
+                        "Authorization": f"Bearer {token}",
+                        "Content-Type": image.mimetype,
+                        "x-upsert": "true"
+                    },
+                    data=image_data,
+                    timeout=30
+                )
+
+                if not response.ok:
+                    raise RuntimeError(
+                        f"Supabase: {response.status_code} {response.text}"
+                    )
+
+                session["avatar_url"] = (
+                    f"{base_url}/storage/v1/object/public/avatars/"
+                    f"{user_id}/avatar?v={uuid.uuid4().hex}"
+                )
+
+                flash("Аватар успешно обновлён!")
+
+            except Exception:
+                app.logger.exception("AVATAR UPLOAD ERROR")
+                flash("Не удалось загрузить аватар. Попробуй снова.")
+
             return redirect(url_for("profile"))
-
-        image_data = image.read()
-
-        if len(image_data) > 5 * 1024 * 1024:
-            flash("Изображение должно быть не больше 5 МБ.")
-            return redirect(url_for("profile"))
-
-        try:
-            base_url = os.environ["SUPABASE_URL"].rstrip("/")
-            api_key = os.environ["SUPABASE_KEY"]
-            user_id = session["user_id"]
-            token = session["access_token"]
-
-            file_url = f"{base_url}/storage/v1/object/avatars/{user_id}/avatar"
-
-            response = requests.post(
-                file_url,
-                headers={
-                    "apikey": api_key,
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": image.mimetype,
-                    "x-upsert": "true"
-                },
-                data=image_data,
-                timeout=30
-            )
-
-            response.raise_for_status()
-
-            session["avatar_url"] = (
-                f"{base_url}/storage/v1/object/public/avatars/"
-                f"{user_id}/avatar?v={uuid.uuid4().hex}"
-            )
-
-            flash("Аватар успешно обновлён!")
-
-        except Exception:
-            app.logger.exception("AVATAR UPLOAD ERROR")
-            flash("Не удалось загрузить аватар. Попробуй войти в аккаунт заново.")
-
-        return redirect(url_for("profile"))
 
     return render_template(
         "profile.html",
         email=session.get("user_email"),
-        avatar_url=session.get("avatar_url")
+        avatar_url=session.get("avatar_url"),
+        display_name=session.get("display_name", "Пользователь")
     )
 
 

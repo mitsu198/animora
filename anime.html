@@ -124,10 +124,10 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 <div class="manual-player">
   <label for="manualVideoUrl">Или вставь ссылку на видео</label>
   <div class="manual-player-row">
-    <input id="manualVideoUrl" type="url" placeholder="Ссылка YouTube, Rutube или VK Видео" autocomplete="url">
+    <input id="manualVideoUrl" type="url" placeholder="YouTube, Rutube, VK или публичный пост Telegram" autocomplete="url">
     <button type="button" class="primary" id="loadManualVideo">▶ Открыть</button>
   </div>
-  <p class="manual-player-hint" id="manualPlayerHint">Видео откроется здесь, если автор разрешил встраивание.</p>
+  <p class="manual-player-hint" id="manualPlayerHint">Публичные посты Telegram можно встроить по ссылке t.me/канал/номер; закрытые каналы недоступны.</p>
 </div><div class="episode-list" id="episodeList"><button class="episode-item" disabled>Серии появятся после подключения источника</button></div>
 <div class="player-message" id="playerMessage" role="status">Плеер готов к подключению. Нужны легальные ссылки на видео или коды официального встраивания для каждой серии и озвучки.</div>
 
@@ -206,6 +206,14 @@ function renderEpisode(index){
     frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
     frame.allowFullscreen=true;
     frame.referrerPolicy='strict-origin-when-cross-origin';
+    if(new URL(embedUrl).hostname==='t.me'){
+      frame.style.width='100%';
+      frame.style.height='600px';
+      frame.style.minHeight='420px';
+      frame.style.border='0';
+      frame.style.background='#fff';
+      frame.title=title+' — публичный пост Telegram';
+    }
     videoStage.appendChild(frame);
   }else if(source.type==='file'){
     const video=document.createElement('video');
@@ -265,7 +273,18 @@ function getAllowedEmbedUrl(raw){
     if(!/^-?\d+$/.test(oid||'')||!/^\d+$/.test(id||''))throw new Error('В ссылке VK не хватает параметров oid или id.');
     return parsed.href;
   }
-  throw new Error('Пока поддерживаются только YouTube, Rutube и VK Видео.');
+  if(['t.me','www.t.me','telegram.me','www.telegram.me'].includes(host)){
+    const parts=parsed.pathname.split('/').filter(Boolean);
+    if(parts[0]==='s')parts.shift();
+    if(parts.length!==2||!/^\d+$/.test(parts[1])||! /^[a-zA-Z][a-zA-Z0-9_]{3,31}$/.test(parts[0])||['c','joinchat','addstickers','proxy','socks'].includes(parts[0].toLowerCase())){
+      throw new Error('Нужна публичная ссылка на конкретный пост: https://t.me/имя_канала/номер_поста. Приватные каналы и приглашения не поддерживаются.');
+    }
+    const telegramUrl=new URL('https://t.me/'+parts[0]+'/'+parts[1]);
+    telegramUrl.searchParams.set('embed','1');
+    telegramUrl.searchParams.set('mode','tme');
+    return telegramUrl.href;
+  }
+  throw new Error('Поддерживаются YouTube, Rutube, VK Видео и публичные посты Telegram.');
 }
 function loadManualVideo(){
   const input=document.getElementById('manualVideoUrl');

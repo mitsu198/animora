@@ -128,6 +128,16 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
     <button type="button" class="primary" id="loadManualVideo">▶ Открыть</button>
   </div>
   <p class="manual-player-hint" id="manualPlayerHint">Видео откроется здесь, если автор разрешил встраивание.</p>
+</div><div class="manual-player" id="sourceManager">
+<label>Добавить серию или резервный источник</label>
+<div class="controls">
+<div class="control"><label for="sourceEpisodeName">Название серии</label><input id="sourceEpisodeName" type="text" placeholder="Например, Серия 1"></div>
+<div class="control"><label for="sourceVoice">Название источника</label><input id="sourceVoice" type="text" placeholder="Например, Источник 1 / Субтитры"></div>
+</div>
+<div class="manual-player-row" style="margin-top:12px"><input id="sourceUrl" type="url" placeholder="HTTPS: YouTube / Rutube / VK / MP4"><button type="button" class="primary" id="addSource">＋ Добавить</button></div>
+<p class="manual-player-hint" id="sourceManagerHint">Источники сохраняются в этом браузере. Для резервного варианта добавь ту же серию с другим названием источника.</p>
+<div class="manual-player-row" style="margin-top:12px"><input id="localVideoFile" type="file" accept="video/mp4,video/webm,video/ogg"><button type="button" class="primary" id="openLocalVideo">▶ Открыть файл</button></div>
+<p class="manual-player-hint">Локальный файл воспроизводится только на этом устройстве и не загружается на сервер.</p>
 </div>
 <div class="episode-list" id="episodeList"><button class="episode-item" disabled>Серии появятся после подключения источника</button></div>
 <div class="player-message" id="playerMessage" role="status">Плеер готов к подключению. Нужны легальные ссылки на видео или коды официального встраивания для каждой серии и озвучки.</div>
@@ -170,7 +180,10 @@ if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;
   type: "embed" — официальный URL встраивания, который разрешает владелец видео.
   Для каждой серии можно добавить несколько озвучек.
 */
-const episodeCatalog = [];
+const SOURCE_STORAGE_KEY='animora_episode_sources_v1';
+let episodeCatalog=[];
+try{episodeCatalog=JSON.parse(localStorage.getItem(SOURCE_STORAGE_KEY)||'[]');if(!Array.isArray(episodeCatalog))episodeCatalog=[];}catch(e){episodeCatalog=[];}
+function saveEpisodeCatalog(){try{localStorage.setItem(SOURCE_STORAGE_KEY,JSON.stringify(episodeCatalog));}catch(e){showPlayerMessage('Не удалось сохранить источники в браузере.');}}
 const episodeSelect=document.getElementById('episodeSelect');
 const voiceSelect=document.getElementById('voice');
 const episodeList=document.getElementById('episodeList');
@@ -300,7 +313,7 @@ function initEpisodeCatalog(){
     voiceSelect.innerHTML='<option>Источники появятся после добавления</option>';
     episodeSelect.disabled=true;voiceSelect.disabled=true;
     const button=document.createElement('button');button.className='episode-item';button.disabled=true;button.textContent='Серии появятся после добавления источника';episodeList.appendChild(button);
-    showPlayerMessage('Добавь ссылку на разрешённое видео ниже. Для одной серии можно добавить несколько источников — они станут вариантами и резервами.');
+    showPlayerMessage('Добавь ссылку на разрешённое видео ниже. Для одной серии можно добавить несколько источников — переключай их в списке озвучки/источника.');
     return;
   }
   episodeSelect.disabled=false;voiceSelect.disabled=false;episodeSelect.innerHTML='';
@@ -316,7 +329,7 @@ episodeSelect.addEventListener('change',()=>renderEpisode(Number(episodeSelect.v
 voiceSelect.addEventListener('change',()=>renderEpisode(Number(episodeSelect.value)));
 function detectSource(raw){
   const value=raw.trim();
-  if(/\\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(value)){
+  if(/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(value)){
     const url=new URL(value);if(url.protocol!=='https:')throw new Error('Для удалённого видео нужна HTTPS-ссылка.');
     return {type:'file',url:url.href};
   }
@@ -336,14 +349,13 @@ document.getElementById('addSource').addEventListener('click',()=>{
     episode.sources.push(source);saveEpisodeCatalog();initEpisodeCatalog();
     const index=episodeCatalog.indexOf(episode);episodeSelect.value=String(index);voiceSelect.value=voice;renderEpisode(index);
     document.getElementById('sourceUrl').value='';
-    hint.textContent='Источник добавлен. Для этой серии можно добавить резервный источник.';hint.style.color='#a99db5';
+    hint.textContent='Источник добавлен. Можно добавить резервный источник с другим названием.';hint.style.color='#a99db5';
   }catch(error){hint.textContent=error.message;hint.style.color='#ff9b9b';}
 });
 document.getElementById('openLocalVideo').addEventListener('click',()=>{
-  const file=document.getElementById('localVideoFile').files[0];
-  const hint=document.getElementById('sourceManagerHint');
+  const file=document.getElementById('localVideoFile').files[0],hint=document.getElementById('sourceManagerHint');
   if(!file){hint.textContent='Сначала выбери видеофайл.';return;}
-  if(!/^video\\/(mp4|webm|ogg)$/.test(file.type)){hint.textContent='Поддерживаются MP4, WebM и OGG.';return;}
+  if(!/^video\/(mp4|webm|ogg)$/.test(file.type)){hint.textContent='Поддерживаются MP4, WebM и OGG.';return;}
   const objectUrl=URL.createObjectURL(file);videoStage.replaceChildren();
   const video=document.createElement('video');video.controls=true;video.playsInline=true;video.preload='metadata';video.src=objectUrl;
   video.addEventListener('playing',()=>{lastVideoTime=video.currentTime;if(watchFlushTimer)clearInterval(watchFlushTimer);watchFlushTimer=setInterval(flushWatchTime,15000);});
@@ -352,6 +364,7 @@ document.getElementById('openLocalVideo').addEventListener('click',()=>{
   videoStage.appendChild(video);document.getElementById('nowPlaying').textContent=title+' · Локальный файл';
   hint.textContent='Файл открыт локально. Он не загружен на ANIMORA и исчезнет после обновления страницы.';
 });
+
 window.addEventListener('pagehide',flushWatchTime);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flushWatchTime()});
 initEpisodeCatalog();

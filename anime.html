@@ -294,41 +294,64 @@ document.getElementById('loadManualVideo').addEventListener('click',loadManualVi
 document.getElementById('manualVideoUrl').addEventListener('keydown',event=>{if(event.key==='Enter')loadManualVideo()});
 
 function initEpisodeCatalog(){
+  episodeList.replaceChildren();
   if(!episodeCatalog.length){
-    episodeSelect.innerHTML='<option>Серии пока не подключены</option>';
-    voiceSelect.innerHTML='<option>Озвучка появится вместе с сериями</option>';
-    showPlayerMessage('Плеер ANIMORA уже встроен в страницу. Чтобы запустить полные серии, добавь разрешённые ссылки на видео или официальные embed-ссылки в каталог источников. Сам плеер не создаёт доступ к чужим сериалам.');
+    episodeSelect.innerHTML='<option>Добавь первую серию ниже</option>';
+    voiceSelect.innerHTML='<option>Источники появятся после добавления</option>';
+    episodeSelect.disabled=true;voiceSelect.disabled=true;
+    const button=document.createElement('button');button.className='episode-item';button.disabled=true;button.textContent='Серии появятся после добавления источника';episodeList.appendChild(button);
+    showPlayerMessage('Добавь ссылку на разрешённое видео ниже. Для одной серии можно добавить несколько источников — они станут вариантами и резервами.');
     return;
   }
-  episodeSelect.disabled=false;
-  voiceSelect.disabled=false;
-  episodeSelect.innerHTML='';
-  episodeCatalog.forEach((episode,index)=>{
-    const option=document.createElement('option');
-    option.value=String(index);
-    option.textContent=episode.name;
-    episodeSelect.appendChild(option);
-  });
+  episodeSelect.disabled=false;voiceSelect.disabled=false;episodeSelect.innerHTML='';
+  episodeCatalog.forEach((episode,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=episode.name;episodeSelect.appendChild(option);});
   const voices=[...new Set(episodeCatalog.flatMap(episode=>episode.sources.map(source=>source.voice)))];
-  voiceSelect.innerHTML='';
-  voices.forEach(voice=>{
-    const option=document.createElement('option');
-    option.value=voice;
-    option.textContent=voice;
-    voiceSelect.appendChild(option);
-  });
-  episodeList.replaceChildren();
-  episodeCatalog.forEach((episode,index)=>{
-    const button=document.createElement('button');
-    button.className='episode-item';
-    button.textContent=episode.name;
-    button.addEventListener('click',()=>{episodeSelect.value=String(index);renderEpisode(index);});
-    episodeList.appendChild(button);
-  });
-  episodeSelect.addEventListener('change',()=>renderEpisode(Number(episodeSelect.value)));
-  voiceSelect.addEventListener('change',()=>renderEpisode(currentEpisode));
-  renderEpisode(0);
+  const previousVoice=voiceSelect.value;voiceSelect.innerHTML='';
+  voices.forEach(voice=>{const option=document.createElement('option');option.value=voice;option.textContent=voice;voiceSelect.appendChild(option);});
+  if(voices.includes(previousVoice))voiceSelect.value=previousVoice;
+  episodeCatalog.forEach((episode,index)=>{const button=document.createElement('button');button.className='episode-item';button.textContent=episode.name;button.addEventListener('click',()=>{episodeSelect.value=String(index);renderEpisode(index);});episodeList.appendChild(button);});
+  renderEpisode(Math.min(currentEpisode<0?0:currentEpisode,episodeCatalog.length-1));
 }
+episodeSelect.addEventListener('change',()=>renderEpisode(Number(episodeSelect.value)));
+voiceSelect.addEventListener('change',()=>renderEpisode(Number(episodeSelect.value)));
+function detectSource(raw){
+  const value=raw.trim();
+  if(/\\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(value)){
+    const url=new URL(value);if(url.protocol!=='https:')throw new Error('Для удалённого видео нужна HTTPS-ссылка.');
+    return {type:'file',url:url.href};
+  }
+  return {type:'embed',url:getAllowedEmbedUrl(value)};
+}
+document.getElementById('addSource').addEventListener('click',()=>{
+  const name=document.getElementById('sourceEpisodeName').value.trim();
+  const voice=document.getElementById('sourceVoice').value.trim()||'Основной источник';
+  const raw=document.getElementById('sourceUrl').value.trim();
+  const hint=document.getElementById('sourceManagerHint');
+  if(!name||!raw){hint.textContent='Укажи название серии и ссылку.';hint.style.color='#ff9b9b';return;}
+  try{
+    const source=detectSource(raw);source.voice=voice;
+    let episode=episodeCatalog.find(item=>item.name.toLowerCase()===name.toLowerCase());
+    if(!episode){episode={name:name,sources:[]};episodeCatalog.push(episode);}
+    if(episode.sources.some(item=>item.url===source.url&&item.voice===voice)){hint.textContent='Такой источник уже добавлен.';return;}
+    episode.sources.push(source);saveEpisodeCatalog();initEpisodeCatalog();
+    const index=episodeCatalog.indexOf(episode);episodeSelect.value=String(index);voiceSelect.value=voice;renderEpisode(index);
+    document.getElementById('sourceUrl').value='';
+    hint.textContent='Источник добавлен. Для этой серии можно добавить резервный источник.';hint.style.color='#a99db5';
+  }catch(error){hint.textContent=error.message;hint.style.color='#ff9b9b';}
+});
+document.getElementById('openLocalVideo').addEventListener('click',()=>{
+  const file=document.getElementById('localVideoFile').files[0];
+  const hint=document.getElementById('sourceManagerHint');
+  if(!file){hint.textContent='Сначала выбери видеофайл.';return;}
+  if(!/^video\\/(mp4|webm|ogg)$/.test(file.type)){hint.textContent='Поддерживаются MP4, WebM и OGG.';return;}
+  const objectUrl=URL.createObjectURL(file);videoStage.replaceChildren();
+  const video=document.createElement('video');video.controls=true;video.playsInline=true;video.preload='metadata';video.src=objectUrl;
+  video.addEventListener('playing',()=>{lastVideoTime=video.currentTime;if(watchFlushTimer)clearInterval(watchFlushTimer);watchFlushTimer=setInterval(flushWatchTime,15000);});
+  video.addEventListener('timeupdate',()=>{if(video.paused||video.seeking)return;if(lastVideoTime!==null){const delta=video.currentTime-lastVideoTime;if(delta>0&&delta<=5)watchTimePending=Math.min(30,watchTimePending+delta);}lastVideoTime=video.currentTime;});
+  video.addEventListener('pause',()=>{lastVideoTime=null;flushWatchTime();});video.addEventListener('ended',()=>{lastVideoTime=null;flushWatchTime();});
+  videoStage.appendChild(video);document.getElementById('nowPlaying').textContent=title+' · Локальный файл';
+  hint.textContent='Файл открыт локально. Он не загружен на ANIMORA и исчезнет после обновления страницы.';
+});
 window.addEventListener('pagehide',flushWatchTime);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flushWatchTime()});
 initEpisodeCatalog();

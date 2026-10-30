@@ -41,6 +41,7 @@ main{max-width:1000px;margin:35px auto;padding:20px}
 }
 h1{color:#c58aff;margin:12px 0 6px}
 .email{color:#aaa;overflow-wrap:anywhere}
+.admin-tag{display:inline-flex;align-items:center;gap:7px;margin:12px 0 0 8px;padding:8px 14px;border:1px solid #f2c45c;border-radius:999px;background:linear-gradient(110deg,#4a3511,#8b6420);color:#ffe5a0;font-size:12px;font-weight:800;letter-spacing:1px;box-shadow:0 0 18px #eab94a30}
 .profile-tag{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid #49305f;border-radius:99px;background:#21152d;color:#d9b7ff;font-size:12px;margin-top:8px}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:26px 0 4px}
 .stat{padding:16px 10px;border:1px solid #49305f;border-radius:14px;background:#100d17}
@@ -224,7 +225,7 @@ html[data-theme] a.logo,html:not([data-theme]) a.logo{
     <h1>{{ display_name }}</h1>
     <p class="email">{{ email }}</p>
     <p>Добро пожаловать в ANIMORA!</p>
-    <div class="profile-tag">✦ Участник ANIMORA</div>
+    {% if is_admin %}<div class="admin-tag">👑 ADMIN</div>{% else %}<div class="profile-tag">✦ Участник ANIMORA</div>{% endif %}
     <div class="stats">
         <div class="stat"><strong>{{ favorites|length }}</strong><span>В избранном</span></div>
         <div class="stat"><strong>♥</strong><span>Любимые тайтлы</span></div>

@@ -203,6 +203,62 @@ html[data-theme] a.logo,html:not([data-theme]) a.logo{
   50%{background-position:100% 50%}
 }
 </style>
+
+<style id="animora-liquid-glass">
+html[data-theme="glass"]{
+ --site-bg:#101827;--site-panel:rgba(222,238,255,.12);--site-panel-2:rgba(210,232,255,.09);
+ --site-border:rgba(221,241,255,.28);--site-accent:#c8ecff;--site-text:#f5faff;--site-muted:#c4d4e5;
+}
+html[data-theme="glass"] body{
+ background:radial-gradient(ellipse at 12% 8%,#5b8ec455,transparent 38%),
+ radial-gradient(ellipse at 88% 18%,#a5d8ff33,transparent 34%),
+ linear-gradient(145deg,#0c1424,#1a2940 55%,#111b2e)!important;
+ color:#f5faff!important;
+}
+html[data-theme="glass"] header,
+html[data-theme="glass"] .theme-panel,
+html[data-theme="glass"] .theme-dialog,
+html[data-theme="glass"] .card,
+html[data-theme="glass"] .anime-card,
+html[data-theme="glass"] form,
+html[data-theme="glass"] .profile-card,
+html[data-theme="glass"] .stat,
+html[data-theme="glass"] .palette-choice,
+html[data-theme="glass"] .custom-colors label,
+html[data-theme="glass"] .motion-toggle{
+ background:linear-gradient(135deg,rgba(255,255,255,.19),rgba(196,225,255,.055))!important;
+ border:1px solid rgba(226,243,255,.28)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 12px 36px rgba(0,0,0,.18),0 1px 8px rgba(178,222,255,.08)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(165%);
+ backdrop-filter:blur(22px) saturate(165%);
+ color:#f5faff!important;
+}
+html[data-theme="glass"] .theme-preview{
+ background:linear-gradient(120deg,rgba(255,255,255,.26),rgba(133,190,245,.12),rgba(255,255,255,.2))!important;
+ border:1px solid rgba(255,255,255,.38);
+ box-shadow:inset 0 1px 0 #ffffff66,0 12px 30px #0003;
+ -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+}
+html[data-theme="glass"] input,
+html[data-theme="glass"] select{
+ background:rgba(10,22,40,.38)!important;border-color:rgba(226,243,255,.3)!important;color:#fff!important;
+}
+html[data-theme="glass"] button:not(.theme-close),
+html[data-theme="glass"] .link-button{
+ border:1px solid rgba(235,247,255,.32)!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(153,203,255,.1))!important;
+ color:#fff!important;box-shadow:inset 0 1px 0 #ffffff55,0 6px 18px #0002;
+ -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+}
+html[data-theme="glass"] .theme-close{background:rgba(255,255,255,.16);color:#fff}
+html[data-theme="glass"] p,html[data-theme="glass"] small,html[data-theme="glass"] .theme-hint{color:#c4d4e5}
+html[data-theme="glass"] .palette-choice.selected{outline:2px solid #d8f2ff;outline-offset:2px}
+@media(prefers-reduced-transparency:reduce){
+ html[data-theme="glass"] header,html[data-theme="glass"] .theme-panel,html[data-theme="glass"] .card,
+ html[data-theme="glass"] .anime-card,html[data-theme="glass"] form{background:#26364d!important}
+}
+</style>
+
 </head>
 
 <body>
@@ -286,6 +342,7 @@ html[data-theme] a.logo,html:not([data-theme]) a.logo{
    <button type="button" class="palette-choice" data-theme-choice="sunset"><i class="swatch" style="--swatch:linear-gradient(120deg,#32142c,#ff9a62)"></i>Закат</button>
    <button type="button" class="palette-choice" data-theme-choice="neon"><i class="swatch" style="--swatch:linear-gradient(120deg,#10102b,#4fffe1)"></i>Неон</button>
    <button type="button" class="palette-choice" data-theme-choice="lavender"><i class="swatch" style="--swatch:linear-gradient(120deg,#211735,#d6a6ff)"></i>Лаванда</button>
+   <button type="button" class="palette-choice" data-theme-choice="glass"><i class="swatch" style="--swatch:linear-gradient(120deg,#1b2944aa,#b9e8ffcc),radial-gradient(circle at 20% 20%,#fff,#8ab8e8)"></i>Liquid Glass</button>
   </div>
   <div class="custom-colors"><label>Цвет фона <input type="color" id="customBg" value="#171321"></label><label>Цвет акцента <input type="color" id="customAccent" value="#bd72ff"></label></div>
   <label class="motion-toggle"><input type="checkbox" id="animatedTheme" checked><span><b>Переливающиеся цвета</b><small>Плавная анимация градиента</small></span></label>
@@ -464,7 +521,7 @@ async function removeFavorite(button){
 <script>
 (function(){
  const key='animora_site_theme',customKey='animora_custom_theme',root=document.documentElement;
- const allowed=['default','ocean','forest','rose','light','sunset','neon','lavender','custom'];
+ const allowed=['default','ocean','forest','rose','light','sunset','neon','lavender','glass','custom'];
  function applyTheme(theme){
   const value=allowed.includes(theme)?theme:'default';
   if(value==='default')root.removeAttribute('data-theme');else root.setAttribute('data-theme',value);

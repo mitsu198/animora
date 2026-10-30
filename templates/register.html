@@ -16,6 +16,22 @@ button{width:100%;padding:15px;margin-top:20px;border:0;border-radius:10px;backg
 button:hover{background:#bd79ff}
 a{color:#c58aff;text-decoration:none}
 .message{color:#ff9d9d;text-align:center;margin-top:12px}
+</style><style>
+:root{--site-bg:#0c0b13;--site-panel:#171321;--site-panel-2:#100d17;--site-border:#49305f;--site-accent:#bd72ff;--site-text:#fff;--site-muted:#aaa}
+html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef}
+html[data-theme="forest"]{--site-bg:#0b1510;--site-panel:#14251b;--site-panel-2:#0e1c14;--site-border:#315b40;--site-accent:#78d69a}
+html[data-theme="rose"]{--site-bg:#1b0d16;--site-panel:#2a1422;--site-panel-2:#1d1019;--site-border:#63334f;--site-accent:#ff8fbd}
+html[data-theme="light"]{--site-bg:#eeeaf4;--site-panel:#fff;--site-panel-2:#f5f1fa;--site-border:#d8cce5;--site-accent:#8138c7;--site-text:#241b2c;--site-muted:#716779}
+html[data-theme] body{background:var(--site-bg)!important;color:var(--site-text)}
+html[data-theme] header,html[data-theme] .card,html[data-theme] .watch,html[data-theme] .anime-card,html[data-theme] .empty{background:var(--site-panel)!important;border-color:var(--site-border)!important;color:var(--site-text)}
+html[data-theme] .stat,html[data-theme] input,html[data-theme] select,html[data-theme] .service-card,html[data-theme] .episode-item{background:var(--site-panel-2)!important;border-color:var(--site-border)!important;color:var(--site-text)}
+html[data-theme] .logo,html[data-theme] h1,html[data-theme] .favorites-section h2,html[data-theme] .form-title{color:var(--site-accent)!important}
+html[data-theme] p,html[data-theme] .email,html[data-theme] .stat span,html[data-theme] .sub,html[data-theme] .genre{color:var(--site-muted)}
+html[data-theme] .profile-tag{background:var(--site-panel-2);border-color:var(--site-border);color:var(--site-accent)}
+html[data-theme="light"] .hero{background:linear-gradient(110deg,#ded0ed,#cbb3e3);color:#241b2c}
+html[data-theme="light"] .hero p,html[data-theme="light"] nav a,html[data-theme="light"] header a{color:#493a55}
+html[data-theme="light"] .anime-info p{color:#716779}
+html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 </style>
 </head>
 <body>
@@ -39,5 +55,30 @@ a{color:#c58aff;text-decoration:none}
 <p>Уже есть аккаунт? <a href="/login">Войти</a></p>
 <p><a href="/">← Вернуться в каталог</a></p>
 </div>
+<script>
+(function(){
+ const key='animora_site_theme';
+ const allowed=['default','ocean','forest','rose','light'];
+ function applyTheme(theme){
+  const value=allowed.includes(theme)?theme:'default';
+  if(value==='default')document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',value);
+  try{localStorage.setItem(key,value)}catch(e){}
+  document.querySelectorAll('[data-theme-choice]').forEach(button=>{
+   const active=button.dataset.themeChoice===value;
+   button.classList.toggle('selected',active);
+   button.setAttribute('aria-pressed',active?'true':'false');
+  });
+ }
+ let saved='default';
+ try{saved=localStorage.getItem(key)||'default'}catch(e){}
+ applyTheme(saved);
+ document.addEventListener('click',event=>{
+  const button=event.target.closest('[data-theme-choice]');
+  if(button)applyTheme(button.dataset.themeChoice);
+ });
+ window.animoraApplyTheme=applyTheme;
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Таблица лидеров — ANIMORA</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#08090d;color:#f7f6fa;font-family:Arial,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 6%;background:#101018;border-bottom:1px solid #30283b}
+.logo{font-size:27px;font-weight:900;letter-spacing:3px;background:linear-gradient(100deg,#b56cff,#55c9ff,#67e8a5,#ff8bc5);background-size:300% 100%;background-clip:text;color:transparent;text-decoration:none}
+header a:last-child{color:#d7c8e5;text-decoration:none}main{max-width:900px;margin:55px auto;padding:0 20px}
+.eyebrow{color:#c58cff;font-size:11px;letter-spacing:3px;font-weight:bold}h1{font-size:clamp(30px,5vw,48px);margin:12px 0}.intro{color:#aaa;line-height:1.6;margin-bottom:28px}
+.panel{background:#14151d;border:1px solid #302832;border-radius:16px;overflow:hidden;box-shadow:0 20px 55px #0006}
+table{width:100%;border-collapse:collapse}th,td{padding:17px 20px;text-align:left;border-bottom:1px solid #ffffff0d}th{font-size:11px;letter-spacing:1px;color:#9c91a8;text-transform:uppercase}td{font-size:14px}.rank{width:70px;color:#c58cff;font-weight:900}.time{text-align:right;font-weight:800;color:#e5caff}.empty{text-align:center;padding:38px;color:#aaa}
+#refresh{margin:18px 0 0;padding:11px 16px;border:1px solid #76509a;border-radius:9px;background:#21182d;color:#eee;cursor:pointer}
+.note{margin-top:18px;color:#82798c;font-size:12px;line-height:1.6}
+@media(max-width:550px){th,td{padding:14px 10px}.rank{width:45px}main{margin:35px auto}}
+</style></head><body>
+<header><a class="logo" href="/">ANIMORA</a><a href="/">← На главную</a></header>
+<main><span class="eyebrow">ANIMORA COMMUNITY</span><h1>🏆 Таблица лидеров</h1><p class="intro">Самые активные зрители ANIMORA — рейтинг по реальному времени воспроизведения видео на сайте.</p>
+<div class="panel"><table><thead><tr><th>Место</th><th>Пользователь</th><th style="text-align:right">Время просмотра</th></tr></thead><tbody id="leaderRows"><tr><td colspan="3" class="empty">Загружаем рейтинг…</td></tr></tbody></table></div>
+<button id="refresh" type="button">↻ Обновить рейтинг</button><p class="note">Учитывается только фактическое воспроизведение видео в плеере ANIMORA. Время во внешних сервисах и во встроенных iframe не засчитывается.</p></main>
+<script>
+const rows=document.getElementById('leaderRows');
+function formatTime(value){const n=Math.max(0,Number(value)||0),h=Math.floor(n/3600),m=Math.floor(n%3600/60);return h?h+' ч '+m+' мин':m+' мин';}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function loadBoard(){rows.innerHTML='<tr><td colspan="3" class="empty">Загружаем рейтинг…</td></tr>';try{const response=await fetch('/leaderboard/data',{cache:'no-store'});const data=await response.json();if(!response.ok||!data.success)throw new Error(data.message||'Ошибка');if(!data.entries.length){rows.innerHTML='<tr><td colspan="3" class="empty">Пока нет данных. Смотри аниме в плеере ANIMORA — и появись в рейтинге первым!</td></tr>';return;}rows.innerHTML=data.entries.map((entry,index)=>'<tr><td class="rank">'+(index===0?'🥇':index===1?'🥈':index===2?'🥉':'#'+(index+1))+'</td><td>'+escapeHtml(entry.display_name||'Зритель')+'</td><td class="time">'+formatTime(entry.seconds)+'</td></tr>').join('');}catch(error){rows.innerHTML='<tr><td colspan="3" class="empty">Не удалось загрузить рейтинг. Возможно, база ещё не настроена.</td></tr>';}}
+document.getElementById('refresh').addEventListener('click',loadBoard);loadBoard();
+</script></body></html>

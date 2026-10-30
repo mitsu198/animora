@@ -166,6 +166,26 @@ html[data-theme="light"] .hero p,html[data-theme="light"] nav a,html[data-theme=
 html[data-theme="light"] .anime-info p{color:#716779}
 html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 </style>
+<style id="animora-animated-logo">
+.logo{
+  display:inline-block;
+  color:transparent!important;
+  background:linear-gradient(100deg,#b56cff 0%,#55c9ff 24%,#67e8a5 48%,#ff8bc5 72%,#b56cff 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:animoraLogoFlow 5s ease-in-out infinite;
+  text-shadow:none!important;
+}
+@keyframes animoraLogoFlow{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+@media(prefers-reduced-motion:reduce){
+  .logo{animation:none;background-position:50% 50%}
+}
+</style>
 </head>
 
 <body>

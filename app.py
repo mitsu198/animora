@@ -13,6 +13,21 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
+# Роль назначается только аккаунту с этим подтверждённым email.
+ADMIN_EMAIL = "vla2612dik03bir@gmail.com"
+
+
+def is_admin_user():
+    return (
+        bool(session.get("user_id"))
+        and (session.get("user_email") or "").strip().lower() == ADMIN_EMAIL
+    )
+
+
+@app.context_processor
+def inject_user_role():
+    return {"is_admin": is_admin_user()}
+
 
 def get_supabase():
     url = os.environ.get("SUPABASE_URL")
@@ -50,7 +65,7 @@ def get_favorites():
 
 @app.route("/")
 def index():
-    return render_template("index.html", avatar_url=session.get("avatar_url"), logged_in="user_id" in session)
+    return render_template("index.html", avatar_url=session.get("avatar_url"), logged_in="user_id" in session, is_admin=is_admin_user())
 
 
 @app.route("/favorites/list")
@@ -252,7 +267,8 @@ def profile():
         email=session.get("user_email"),
         avatar_url=session.get("avatar_url"),
         display_name=session.get("display_name", "Пользователь"),
-        favorites=favorites
+        favorites=favorites,
+        is_admin=is_admin_user()
     )
 
 

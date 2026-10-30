@@ -117,18 +117,7 @@ if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;
   type: "embed" — официальный URL встраивания, который разрешает владелец видео.
   Для каждой серии можно добавить несколько озвучек.
 */
-const episodeCatalog = [
-  {
-    name: "Тестовая серия — Namakura Gatana (1917)",
-    sources: [
-      {
-        voice: "Оригинальная дорожка",
-        type: "file",
-        url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kouichi_Jun%27ichi_-_Namakura_Gatana_(1917)_-_4-minute_restored_version.webm"
-      }
-    ]
-  }
-];
+const episodeCatalog = [];
 const episodeSelect=document.getElementById('episodeSelect');
 const voiceSelect=document.getElementById('voice');
 const episodeList=document.getElementById('episodeList');

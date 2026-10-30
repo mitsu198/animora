@@ -3,59 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c0b13">
 <title>Аниме — ANIMORA</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#0c0b13;color:white;font-family:Arial,sans-serif}
-header{padding:22px 6%;background:#15121f}
-.logo{color:#bd72ff;font-size:27px;font-weight:bold}
-main{padding:45px 7%}
-.anime-info{display:flex;gap:35px;align-items:flex-start;flex-wrap:wrap}
-.poster{width:240px;height:340px;object-fit:cover;border-radius:15px;background:#24113c}
-.details{max-width:600px}
-h1{color:#c58aff}
-.info{color:#bbb;line-height:1.8}
-button{margin-top:20px;padding:14px 28px;border:0;border-radius:10px;background:#9b4dff;color:white;font-size:16px;cursor:pointer}
-a{color:#bd72ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0c0b13;color:#fff;font-family:Arial,sans-serif}
+header{padding:20px 6%;background:#15121f;border-bottom:1px solid #30263c;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.logo{color:#bd72ff;font-size:27px;font-weight:bold;letter-spacing:2px}nav{display:flex;gap:20px;flex-wrap:wrap}
+nav a,.back{color:#ddd;text-decoration:none}nav a:hover,.back:hover{color:#bd72ff}
+main{max-width:1200px;margin:auto;padding:34px 6% 70px}.back{display:inline-block;margin-bottom:25px}
+.hero{display:grid;grid-template-columns:270px 1fr;gap:35px;padding:28px;border:1px solid #382747;border-radius:22px;background:linear-gradient(120deg,#21132f,#171321 65%);overflow:hidden}
+.poster-wrap{height:390px;border-radius:15px;overflow:hidden;background:linear-gradient(145deg,#28153d,#5b2677);box-shadow:0 15px 40px #0008}
+.poster-wrap img{width:100%;height:100%;object-fit:cover;display:block}.poster-fallback{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-size:22px;font-weight:bold}
+.info{align-self:center}.eyebrow{color:#c58aff;text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:bold}
+h1{font-size:clamp(30px,5vw,48px);margin:12px 0}.genre{color:#c9b8d8;line-height:1.7}
+.description{color:#bdb5c7;line-height:1.8;max-width:680px;margin:22px 0}
+.primary{border:0;border-radius:12px;padding:15px 30px;background:linear-gradient(100deg,#8e35e8,#bd72ff);color:white;font-weight:bold;font-size:16px;cursor:pointer;box-shadow:0 8px 25px #963fff40}
+.primary:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.watch{margin-top:28px;padding:28px;border:1px solid #382747;border-radius:20px;background:#15121f}
+.watch h2{margin:0 0 8px;font-size:25px}.sub{color:#a99db5;margin:0 0 24px;line-height:1.6}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.control label{display:block;margin-bottom:9px;color:#d9c9e8;font-weight:bold}
+select{width:100%;padding:14px;border:1px solid #49305f;border-radius:11px;background:#0e0c15;color:white;font-size:15px;outline:none}
+select:focus{border-color:#bd72ff}.watch-action{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:22px}
+.status{color:#a99db5;font-size:13px;line-height:1.6}.player-message{display:none;margin-top:22px;padding:18px;border:1px solid #5a3b70;border-radius:12px;background:#21152d;color:#dfc9f4;line-height:1.7}
+.player-message.show{display:block}
+@media(max-width:700px){header{padding:18px 5%}.hero{grid-template-columns:1fr;padding:18px}.poster-wrap{height:360px;max-width:260px;width:100%;margin:auto}.info{text-align:center}.controls{grid-template-columns:1fr}main{padding:25px 5%}.watch{padding:20px}}
 </style>
 </head>
 <body>
-<header><div class="logo">ANIMORA</div></header>
-
+<header><div class="logo">ANIMORA</div><nav><a href="/">Главная</a><a href="/#catalog">Каталог</a><a href="/profile">👤 Профиль</a></nav></header>
 <main>
-<div class="anime-info">
-<img class="poster" id="poster" src="" alt="Постер аниме">
-<div class="details">
-<h1 id="title">Название аниме</h1>
-<div class="info">
-<p id="genre">Жанр: приключения</p>
-<p>Год: 2023</p>
-<p>Статус: доступно для просмотра</p>
+<a class="back" href="/">← Назад в каталог</a>
+<section class="hero">
+<div class="poster-wrap" id="posterWrap"><div class="poster-fallback" id="posterFallback">ANIMORA</div></div>
+<div class="info"><div class="eyebrow">ANIMORA • Страница аниме</div><h1 id="title">Название аниме</h1><div class="genre" id="genre"></div>
+<p class="description">Выбери удобную озвучку и плеер в блоке просмотра. Здесь будет доступна информация о тайтле.</p>
+<button class="primary" onclick="document.getElementById('watch').scrollIntoView({behavior:'smooth'})">▶ Смотреть</button></div>
+</section>
+<section class="watch" id="watch"><h2>Настроить просмотр</h2><p class="sub">Выбери озвучку и плеер, который тебе удобнее.</p>
+<div class="controls">
+<div class="control"><label for="voice">Озвучка</label><select id="voice"><option value="Не выбрана">Выбрать озвучку</option><option>AniLibria</option><option>AnimeVost</option><option>Субтитры</option><option>Оригинальная дорожка</option></select></div>
+<div class="control"><label for="player">Плеер</label><select id="player"><option value="Не выбран">Выбрать плеер</option><option>Плеер 1</option><option>Плеер 2</option><option>Плеер 3</option></select></div>
 </div>
-<p id="description">Описание скоро появится.</p>
-<button onclick="alert('Плеер Kodik подключим после получения доступа!')">Смотреть</button>
-</div>
-</div>
-<p><a href="/">← Вернуться в каталог</a></p>
-</main>
-
+<div class="watch-action"><button class="primary" id="startWatch">▶ Начать просмотр</button><span class="status">Настройки можно будет поменять в любой момент.</span></div>
+<div class="player-message" id="playerMessage" role="status">Интерфейс выбора готов. Чтобы видео действительно запускалось, нужно подключить легальный источник серий и его варианты озвучки. Сейчас ни один видеопоток ещё не подключён.</div>
+</section></main>
 <script>
-const params = new URLSearchParams(window.location.search);
-
-document.getElementById("title").textContent =
-    params.get("title") || "Название аниме";
-
-document.getElementById("poster").src =
-    params.get("poster") || "";
-
-document.getElementById("genre").textContent =
-    "Жанр: " + (params.get("genre") || "Приключения");
-
-document.getElementById("description").textContent =
-    params.get("description") || "Описание скоро появится.";
-
-document.title = (params.get("title") || "Аниме") + " — ANIMORA";
+const params=new URLSearchParams(window.location.search),title=params.get('title')||'Аниме',poster=params.get('poster')||'';
+document.getElementById('title').textContent=title;
+document.getElementById('genre').textContent='Жанры: '+(params.get('genre')||'Аниме');
+document.title=title+' — ANIMORA';
+if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;img.onerror=()=>{img.remove();document.getElementById('posterFallback').style.display='flex'};document.getElementById('posterFallback').style.display='none';document.getElementById('posterWrap').appendChild(img);}
+document.getElementById('startWatch').addEventListener('click',()=>{
+const voice=document.getElementById('voice').value,player=document.getElementById('player').value,message=document.getElementById('playerMessage');
+message.textContent=voice==='Не выбрана'||player==='Не выбран'?'Сначала выбери озвучку и плеер. После подключения видеосервиса здесь запустится выбранная серия.':'Выбрано: '+voice+' · '+player+'. Интерфейс готов, но источник видео пока не подключён — поэтому воспроизведение ещё недоступно.';
+message.classList.add('show');message.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
 </script>
-</body>
-</html>
-```
+</body></html>

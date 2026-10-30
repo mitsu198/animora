@@ -19,17 +19,13 @@ header{
     padding:22px 7%;
     background:#171321;
     border-bottom:1px solid #342440;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
-.logo{
-    color:#c58aff;
-    font-size:29px;
-    font-weight:bold;
-}
-main{
-    max-width:750px;
-    margin:45px auto;
-    padding:20px;
-}
+.logo{color:#c58aff;font-size:29px;font-weight:bold}
+header a{color:white;text-decoration:none}
+main{max-width:1000px;margin:35px auto;padding:20px}
 .card{
     background:#171321;
     border:1px solid #49305f;
@@ -39,73 +35,92 @@ main{
     box-shadow:0 15px 50px #0006;
 }
 .avatar{
-    width:130px;
-    height:130px;
-    border-radius:50%;
-    object-fit:cover;
-    background:linear-gradient(135deg,#a34dff,#5420a0);
-    border:3px solid #bd72ff;
-    display:block;
-    margin:0 auto 20px;
+    width:130px;height:130px;border-radius:50%;
+    object-fit:cover;background:linear-gradient(135deg,#a34dff,#5420a0);
+    border:3px solid #bd72ff;display:block;margin:0 auto 20px;
 }
 h1{color:#c58aff}
-.email{
-    color:#aaa;
-    overflow-wrap:anywhere;
-}
-form{
-    max-width:370px;
-    margin:25px auto;
-}
+.email{color:#aaa;overflow-wrap:anywhere}
+form{max-width:370px;margin:25px auto}
 input[type=text],input[type=file]{
-    width:100%;
-    padding:13px;
-    background:#0e0c15;
-    border:1px solid #49305f;
-    border-radius:10px;
-    color:white;
-    margin-bottom:12px;
+    width:100%;padding:13px;background:#0e0c15;
+    border:1px solid #49305f;border-radius:10px;
+    color:white;margin-bottom:12px;
 }
-button,a{
-    display:inline-block;
-    padding:13px 22px;
-    border:0;
-    border-radius:10px;
-    text-decoration:none;
-    background:#963fff;
-    color:white;
-    cursor:pointer;
-    font-size:15px;
+button,.link-button{
+    display:inline-block;padding:13px 22px;border:0;
+    border-radius:10px;text-decoration:none;
+    background:#963fff;color:white;cursor:pointer;font-size:15px;
 }
-button{
-    width:100%;
-}
-button:hover,a:hover{background:#b66cff}
+form button{width:100%}
+button:hover,.link-button:hover{background:#b66cff}
 .buttons{
-    display:flex;
-    gap:12px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top:28px;
+    display:flex;gap:12px;justify-content:center;
+    flex-wrap:wrap;margin-top:28px;
 }
 .secondary{background:#30223d}
-.message{
-    color:#d6a6ff;
-    margin:12px 0;
+.message{color:#d6a6ff;margin:12px 0}
+.form-title{color:#c58aff;margin-bottom:12px}
+
+/* Избранное */
+.favorites-section{margin-top:35px}
+.favorites-section h2{
+    color:#c58aff;font-size:27px;margin-bottom:20px
 }
-.form-title{
-    color:#c58aff;
-    margin-bottom:12px;
+.favorites-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+    gap:18px;
+}
+.anime-card{
+    position:relative;
+    overflow:hidden;
+    background:#171321;
+    border:1px solid #49305f;
+    border-radius:14px;
+    transition:.2s;
+}
+.anime-card:hover{transform:translateY(-5px);border-color:#bd72ff}
+.anime-card img{
+    width:100%;height:220px;object-fit:cover;display:block;
+}
+.anime-info{padding:12px}
+.anime-info h3{font-size:16px;margin:0 0 8px}
+.anime-info p{font-size:13px;color:#aaa;margin:0}
+.remove-btn{
+    width:100%;margin-top:12px;
+    background:#442039;color:#ff8bb0;
+    padding:9px;font-size:13px;
+}
+.remove-btn:hover{background:#702744}
+.empty{
+    padding:35px;text-align:center;
+    background:#171321;border:1px dashed #49305f;
+    border-radius:15px;color:#aaa;
+}
+#notice{
+    position:fixed;bottom:25px;left:50%;
+    transform:translateX(-50%);
+    background:#24113c;border:1px solid #bd72ff;
+    border-radius:10px;padding:13px 20px;
+    display:none;z-index:10;
+}
+@media(max-width:600px){
+    .card{padding:22px}
+    header{padding:18px 5%}
 }
 </style>
 </head>
 
 <body>
+
 <header>
     <div class="logo">ANIMORA</div>
+    <a href="/">← Каталог</a>
 </header>
 
 <main>
+
 <div class="card">
 
     {% if avatar_url %}
@@ -127,36 +142,141 @@ button:hover,a:hover{background:#b66cff}
     <form method="POST">
         <input type="hidden" name="action" value="update_name">
         <h3 class="form-title">Изменить имя пользователя</h3>
-        <input
-            type="text"
-            name="display_name"
+        <input type="text" name="display_name"
             placeholder="Новое имя"
             value="{{ display_name }}"
-            minlength="2"
-            maxlength="24"
-            required
-        >
+            minlength="2" maxlength="24" required>
         <button type="submit">Сохранить имя</button>
     </form>
 
     <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="upload_avatar">
         <h3 class="form-title">Изменить аватар</h3>
-        <input
-            type="file"
-            name="avatar"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            required
-        >
+        <input type="file" name="avatar"
+            accept="image/png,image/jpeg,image/webp,image/gif" required>
         <button type="submit">Загрузить аватар</button>
     </form>
 
     <div class="buttons">
-        <a href="/">Открыть каталог</a>
-        <a href="/logout" class="secondary">Выйти</a>
+        <a href="/" class="link-button">Открыть каталог</a>
+        <a href="/logout" class="link-button secondary">Выйти</a>
     </div>
 
 </div>
+
+<section class="favorites-section">
+    <h2>❤️ Моё избранное</h2>
+
+    {% if favorites %}
+    <div class="favorites-grid" id="favoritesGrid">
+
+        {% for anime in favorites %}
+        <div class="anime-card" data-anime-id="{{ anime.anime_id }}">
+
+            {% if anime.poster %}
+                <img src="{{ anime.poster }}" alt="{{ anime.title }}"
+                     onerror="this.style.display='none'">
+            {% else %}
+                <div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:50px">🎬</div>
+            {% endif %}
+
+            <div class="anime-info">
+                <h3>{{ anime.title }}</h3>
+                <p>{{ anime.genre or 'Аниме' }}</p>
+
+                <button class="remove-btn"
+                    onclick="removeFavorite(this)"
+                    data-id="{{ anime.anime_id }}"
+                    data-title="{{ anime.title }}"
+                    data-poster="{{ anime.poster or '' }}"
+                    data-genre="{{ anime.genre or '' }}">
+                    ♥ Убрать из избранного
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="empty" id="emptyFavorites">
+        <div style="font-size:45px">💜</div>
+        <h3>Пока здесь пусто</h3>
+        <p>Добавляй любимые аниме в избранное из каталога!</p>
+        <a href="/" class="link-button">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</section>
+
 </main>
+
+<div id="notice"></div>
+
+<script>
+function showNotice(message){
+    const notice=document.getElementById('notice');
+    notice.textContent=message;
+    notice.style.display='block';
+
+    clearTimeout(window.noticeTimer);
+    window.noticeTimer=setTimeout(()=>{
+        notice.style.display='none';
+    },2500);
+}
+
+async function removeFavorite(button){
+    if(button.disabled)return;
+
+    button.disabled=true;
+
+    try{
+        const response=await fetch('/favorites/toggle',{
+            method:'POST',
+            credentials:'same-origin',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                anime_id:button.dataset.id,
+                title:button.dataset.title,
+                poster:button.dataset.poster,
+                genre:button.dataset.genre
+            })
+        });
+
+        const result=await response.json();
+
+        if(!response.ok || !result.success){
+            showNotice(result.message || 'Не удалось удалить аниме');
+            button.disabled=false;
+            return;
+        }
+
+        const animeCard=button.closest('.anime-card');
+        animeCard.remove();
+
+        const grid=document.getElementById('favoritesGrid');
+
+        if(grid && grid.children.length===0){
+            grid.remove();
+
+            const section=document.querySelector('.favorites-section');
+            section.insertAdjacentHTML('beforeend',`
+                <div class="empty">
+                    <div style="font-size:45px">💜</div>
+                    <h3>Пока здесь пусто</h3>
+                    <p>Добавляй любимые аниме в избранное из каталога!</p>
+                    <a href="/" class="link-button">Перейти в каталог</a>
+                </div>
+            `);
+        }
+
+        showNotice('Аниме удалено из избранного ❤️');
+
+    }catch(error){
+        console.error(error);
+        showNotice('Ошибка соединения. Попробуй ещё раз.');
+        button.disabled=false;
+    }
+}
+</script>
+
 </body>
 </html>

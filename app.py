@@ -50,7 +50,7 @@ def get_favorites():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", avatar_url=session.get("avatar_url"), logged_in="user_id" in session)
 
 
 @app.route("/favorites/list")

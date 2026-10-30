@@ -68,6 +68,66 @@ def index():
     return render_template("index.html", avatar_url=session.get("avatar_url"), logged_in="user_id" in session, is_admin=is_admin_user())
 
 
+@app.route("/leaderboard")
+def leaderboard():
+    return render_template("leaderboard.html", logged_in="user_id" in session,
+                           avatar_url=session.get("avatar_url"),
+                           is_admin=is_admin_user())
+
+
+@app.route("/leaderboard/data")
+def leaderboard_data():
+    try:
+        base_url = os.environ["SUPABASE_URL"].rstrip("/")
+        response = requests.get(
+            f"{base_url}/rest/v1/watch_time",
+            headers={"apikey": os.environ["SUPABASE_KEY"]},
+            params={
+                "select": "display_name,seconds",
+                "order": "seconds.desc",
+                "limit": "100"
+            },
+            timeout=20
+        )
+        response.raise_for_status()
+        return jsonify({"success": True, "entries": response.json()})
+    except Exception:
+        app.logger.exception("LEADERBOARD LOAD ERROR")
+        return jsonify({"success": False, "message": "Таблица лидеров пока недоступна."}), 503
+
+
+@app.route("/watch-time/increment", methods=["POST"])
+def increment_watch_time():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({"success": False, "message": "Войди, чтобы учитывать время просмотра."}), 401
+
+    data = request.get_json(silent=True) or {}
+    try:
+        seconds = int(data.get("seconds", 0))
+    except (TypeError, ValueError):
+        seconds = 0
+    seconds = max(0, min(seconds, 30))
+    if seconds < 1:
+        return jsonify({"success": False, "message": "Некорректное время."}), 400
+
+    try:
+        base_url = os.environ["SUPABASE_URL"].rstrip("/")
+        response = requests.post(
+            f"{base_url}/rest/v1/rpc/increment_watch_time",
+            headers=supabase_headers(),
+            json={
+                "p_seconds": seconds,
+                "p_display_name": session.get("display_name") or session.get("user_email", "Пользователь").split("@")[0]
+            },
+            timeout=20
+        )
+        response.raise_for_status()
+        return jsonify({"success": True})
+    except Exception:
+        app.logger.exception("WATCH TIME UPDATE ERROR")
+        return jsonify({"success": False, "message": "Не удалось сохранить время просмотра."}), 503
+
+
 @app.route("/favorites/list")
 def favorites_list():
     if "user_id" not in session or "access_token" not in session:

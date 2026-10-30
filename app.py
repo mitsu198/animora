@@ -128,7 +128,7 @@ def profile():
                 api_key = os.environ["SUPABASE_KEY"]
                 token = session["access_token"]
 
-                response = requests.patch(
+                response = requests.put(
                     f"{base_url}/auth/v1/user",
                     headers={
                         "apikey": api_key,

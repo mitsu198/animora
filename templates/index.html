@@ -19,11 +19,25 @@ nav a:hover{color:#bd72ff}
 main{padding:35px 6%}
 .search{width:100%;padding:15px;margin:15px 0 30px;border:1px solid #393044;border-radius:10px;background:#191622;color:white;font-size:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px}
-.card{display:block;background:#191622;border:1px solid #30263c;border-radius:13px;overflow:hidden;transition:.2s;text-decoration:none;color:white;cursor:pointer}
+.card{position:relative;background:#191622;border:1px solid #30263c;border-radius:13px;overflow:hidden;transition:.2s}
 .card:hover{transform:translateY(-5px);border-color:#bd72ff}
+.card-link{display:block;text-decoration:none;color:white}
 .card img{width:100%;height:245px;object-fit:cover;display:block;background:#292033}
 .card h3{margin:13px 12px 6px;font-size:17px}
 .card p{margin:0 12px 15px;color:#aaa;font-size:13px}
+.favorite-btn{
+  position:absolute;top:10px;right:10px;width:42px;height:42px;
+  border:1px solid #ffffff40;border-radius:50%;background:#171321dd;
+  color:white;font-size:23px;cursor:pointer;z-index:2;
+  transition:.2s
+}
+.favorite-btn:hover{transform:scale(1.12);background:#39204f}
+.favorite-btn.active{color:#ff4d83}
+#notice{
+  position:fixed;bottom:25px;left:50%;transform:translateX(-50%);
+  background:#24113c;border:1px solid #bd72ff;border-radius:10px;
+  padding:13px 20px;display:none;z-index:10
+}
 .section-title{font-size:25px;margin-bottom:10px}
 footer{text-align:center;padding:30px;color:#777}
 @media(max-width:600px){
@@ -56,50 +70,82 @@ footer{text-align:center;padding:30px;color:#777}
 
   <div class="grid">
 
-    <a class="card" data-name="клинок рассекающий демонов"
-    href="/anime?title=Клинок%20рассекающий%20демонов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1286%2F99889.jpg">
-      <img src="https://cdn.myanimelist.net/images/anime/1286/99889.jpg" alt="Клинок рассекающий демонов">
-      <h3>Клинок рассекающий демонов</h3>
-      <p>Экшен · Фэнтези</p>
-    </a>
+    <div class="card" data-name="клинок рассекающий демонов">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="demon-slayer" data-title="Клинок рассекающий демонов"
+        data-poster="https://cdn.myanimelist.net/images/anime/1286/99889.jpg"
+        data-genre="Экшен · Фэнтези">♡</button>
+      <a class="card-link" href="/anime?title=Клинок%20рассекающий%20демонов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1286%2F99889.jpg">
+        <img src="https://cdn.myanimelist.net/images/anime/1286/99889.jpg" alt="Клинок рассекающий демонов">
+        <h3>Клинок рассекающий демонов</h3>
+        <p>Экшен · Фэнтези</p>
+      </a>
+    </div>
 
-    <a class="card" data-name="наруто"
-    href="/anime?title=Наруто&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F17405.jpg">
-      <img src="https://cdn.myanimelist.net/images/anime/13/17405.jpg" alt="Наруто">
-      <h3>Наруто</h3>
-      <p>Приключения · Экшен</p>
-    </a>
+    <div class="card" data-name="наруто">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="naruto" data-title="Наруто"
+        data-poster="https://cdn.myanimelist.net/images/anime/13/17405.jpg"
+        data-genre="Приключения · Экшен">♡</button>
+      <a class="card-link" href="/anime?title=Наруто&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F17405.jpg">
+        <img src="https://cdn.myanimelist.net/images/anime/13/17405.jpg" alt="Наруто">
+        <h3>Наруто</h3>
+        <p>Приключения · Экшен</p>
+      </a>
+    </div>
 
-    <a class="card" data-name="ван пис"
-    href="/anime?title=Ван-Пис&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F6%2F73245.jpg">
-      <img src="https://cdn.myanimelist.net/images/anime/6/73245.jpg" alt="Ван-Пис">
-      <h3>Ван-Пис</h3>
-      <p>Приключения · Фэнтези</p>
-    </a>
+    <div class="card" data-name="ван пис">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="one-piece" data-title="Ван-Пис"
+        data-poster="https://cdn.myanimelist.net/images/anime/6/73245.jpg"
+        data-genre="Приключения · Фэнтези">♡</button>
+      <a class="card-link" href="/anime?title=Ван-Пис&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F6%2F73245.jpg">
+        <img src="https://cdn.myanimelist.net/images/anime/6/73245.jpg" alt="Ван-Пис">
+        <h3>Ван-Пис</h3>
+        <p>Приключения · Фэнтези</p>
+      </a>
+    </div>
 
-    <a class="card" data-name="атака титанов"
-    href="/anime?title=Атака%20титанов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F10%2F47347.jpg">
-      <img src="https://cdn.myanimelist.net/images/anime/10/47347.jpg" alt="Атака титанов">
-      <h3>Атака титанов</h3>
-      <p>Экшен · Драма</p>
-    </a>
+    <div class="card" data-name="атака титанов">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="attack-on-titan" data-title="Атака титанов"
+        data-poster="https://cdn.myanimelist.net/images/anime/10/47347.jpg"
+        data-genre="Экшен · Драма">♡</button>
+      <a class="card-link" href="/anime?title=Атака%20титанов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F10%2F47347.jpg">
+        <img src="https://cdn.myanimelist.net/images/anime/10/47347.jpg" alt="Атака титанов">
+        <h3>Атака титанов</h3>
+        <p>Экшен · Драма</p>
+      </a>
+    </div>
 
-    <a class="card" data-name="магическая битва"
-    href="/anime?title=Магическая%20битва&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1171%2F109222.jpg">
-      <img src="https://cdn.myanimelist.net/images/anime/1171/109222.jpg" alt="Магическая битва">
-      <h3>Магическая битва</h3>
-      <p>Экшен · Сверхъестественное</p>
-    </a>
+    <div class="card" data-name="магическая битва">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="jujutsu-kaisen" data-title="Магическая битва"
+        data-poster="https://cdn.myanimelist.net/images/anime/1171/109222.jpg"
+        data-genre="Экшен · Сверхъестественное">♡</button>
+      <a class="card-link" href="/anime?title=Магическая%20битва&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1171%2F109222.jpg">
+        <img src="https://cdn.myanimelist.net/images/anime/1171/109222.jpg" alt="Магическая битва">
+        <h3>Магическая битва</h3>
+        <p>Экшен · Сверхъестественное</p>
+      </a>
+    </div>
 
-    <a class="card" data-name="покемон"
-    href="/anime?title=Покемон&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F73834.jpg">
-      <img src="https://cdn.myanimelist.net/images/anime/13/73834.jpg" alt="Покемон">
-      <h3>Покемон</h3>
-      <p>Приключения · Фэнтези</p>
-    </a>
+    <div class="card" data-name="покемон">
+      <button class="favorite-btn" onclick="toggleFavorite(event,this)"
+        data-id="pokemon" data-title="Покемон"
+        data-poster="https://cdn.myanimelist.net/images/anime/13/73834.jpg"
+        data-genre="Приключения · Фэнтези">♡</button>
+      <a class="card-link" href="/anime?title=Покемон&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F73834.jpg">
+        <img src="https://cdn.myanimelist.net/images/anime/13/73834.jpg" alt="Покемон">
+        <h3>Покемон</h3>
+        <p>Приключения · Фэнтези</p>
+      </a>
+    </div>
 
   </div>
 </main>
+
+<div id="notice"></div>
 
 <footer>© 2026 ANIMORA — мир аниме</footer>
 
@@ -109,6 +155,52 @@ function filterAnime(){
   document.querySelectorAll('.card').forEach(card=>{
     card.style.display=card.dataset.name.includes(query)?'block':'none';
   });
+}
+
+function showNotice(message){
+  const notice=document.getElementById('notice');
+  notice.textContent=message;
+  notice.style.display='block';
+  clearTimeout(window.noticeTimer);
+  window.noticeTimer=setTimeout(()=>notice.style.display='none',2500);
+}
+
+async function toggleFavorite(event,button){
+  event.preventDefault();
+  event.stopPropagation();
+
+  if(button.disabled) return;
+  button.disabled=true;
+
+  const wasActive=button.classList.contains('active');
+
+  try{
+    const response=await fetch('/favorites/toggle',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        anime_id:button.dataset.id,
+        title:button.dataset.title,
+        poster:button.dataset.poster,
+        genre:button.dataset.genre
+      })
+    });
+
+    const result=await response.json();
+
+    if(!response.ok || !result.success){
+      showNotice(result.error || 'Не удалось изменить избранное');
+      return;
+    }
+
+    button.classList.toggle('active',result.favorited);
+    button.textContent=result.favorited?'♥':'♡';
+    showNotice(result.favorited?'Добавлено в избранное ❤️':'Удалено из избранного');
+  }catch(error){
+    showNotice('Ошибка соединения. Попробуй ещё раз.');
+  }finally{
+    button.disabled=false;
+  }
 }
 </script>
 

@@ -70,30 +70,8 @@ def index():
 
 @app.route("/leaderboard")
 def leaderboard():
-    return render_template("leaderboard.html", logged_in="user_id" in session,
-                           avatar_url=session.get("avatar_url"),
-                           is_admin=is_admin_user())
-
-
-@app.route("/leaderboard/data")
-def leaderboard_data():
-    try:
-        base_url = os.environ["SUPABASE_URL"].rstrip("/")
-        response = requests.get(
-            f"{base_url}/rest/v1/watch_time",
-            headers={"apikey": os.environ["SUPABASE_KEY"]},
-            params={
-                "select": "display_name,seconds",
-                "order": "seconds.desc",
-                "limit": "100"
-            },
-            timeout=20
-        )
-        response.raise_for_status()
-        return jsonify({"success": True, "entries": response.json()})
-    except Exception:
-        app.logger.exception("LEADERBOARD LOAD ERROR")
-        return jsonify({"success": False, "message": "Таблица лидеров пока недоступна."}), 503
+    # Таблица лидеров временно скрыта до подключения полноценного учёта просмотра.
+    return redirect(url_for("index"))
 
 
 @app.route("/watch-time/increment", methods=["POST"])

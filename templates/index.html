@@ -204,5 +204,83 @@ async function toggleFavorite(event,button){
 }
 </script>
 
+function filterAnime(){
+  const query=document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.card').forEach(card=>{
+    card.style.display=card.dataset.name.includes(query)?'block':'none';
+  });
+}
+
+function showNotice(message){
+  const notice=document.getElementById('notice');
+  notice.textContent=message;
+  notice.style.display='block';
+  clearTimeout(window.noticeTimer);
+  window.noticeTimer=setTimeout(()=>notice.style.display='none',2500);
+}
+
+// Загружаем избранное при открытии каталога
+async function loadFavorites(){
+  try{
+    const response=await fetch('/favorites/list');
+
+    if(!response.ok) return;
+
+    const result=await response.json();
+
+    if(!result.success) return;
+
+    document.querySelectorAll('.favorite-btn').forEach(button=>{
+      const isFavorite=result.anime_ids.includes(button.dataset.id);
+
+      button.classList.toggle('active',isFavorite);
+      button.textContent=isFavorite?'♥':'♡';
+    });
+  }catch(error){
+    console.error('Ошибка загрузки избранного:',error);
+  }
+}
+
+async function toggleFavorite(event,button){
+  event.preventDefault();
+  event.stopPropagation();
+
+  if(button.disabled) return;
+  button.disabled=true;
+
+  try{
+    const response=await fetch('/favorites/toggle',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        anime_id:button.dataset.id,
+        title:button.dataset.title,
+        poster:button.dataset.poster,
+        genre:button.dataset.genre
+      })
+    });
+
+    const result=await response.json();
+
+    if(!response.ok || !result.success){
+      showNotice(result.message || 'Не удалось изменить избранное');
+      return;
+    }
+
+    button.classList.toggle('active',result.favorited);
+    button.textContent=result.favorited?'♥':'♡';
+
+    showNotice(result.favorited
+      ?'Добавлено в избранное ❤️'
+      :'Удалено из избранного');
+  }catch(error){
+    showNotice('Ошибка соединения. Попробуй ещё раз.');
+  }finally{
+    button.disabled=false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded',loadFavorites);
+
 </body>
 </html>

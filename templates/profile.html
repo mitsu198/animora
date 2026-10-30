@@ -186,6 +186,22 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
   .logo{animation:none;background-position:50% 50%}
 }
 </style>
+<style id="animora-profile-logo-fix">
+html[data-theme] a.logo,html:not([data-theme]) a.logo{
+  color:transparent!important;
+  background-image:linear-gradient(100deg,#b56cff 0%,#55c9ff 24%,#67e8a5 48%,#ff8bc5 72%,#b56cff 100%)!important;
+  background-size:300% 100%!important;
+  background-position:0% 50%;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  animation:animoraLogoFlow 5s ease-in-out infinite!important;
+}
+@keyframes animoraLogoFlow{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+</style>
 </head>
 
 <body>

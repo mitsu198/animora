@@ -61,7 +61,8 @@ def register():
             return redirect(url_for("login"))
 
         except Exception:
-            flash("Не удалось зарегистрироваться. Проверь почту и попробуй снова.")
+    app.logger.exception("SUPABASE REGISTRATION ERROR")
+    flash("Не удалось зарегистрироваться. Проверь почту и попробуй снова.")
 
     return render_template("register.html")
 

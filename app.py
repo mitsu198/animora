@@ -3,8 +3,8 @@ import uuid
 import requests
 
 from flask import (
-    Flask, render_template, request,
-    redirect, url_for, session, flash
+    Flask, render_template, request, redirect,
+    url_for, session, flash, jsonify
 )
 from supabase import create_client
 
@@ -21,6 +21,30 @@ def get_supabase():
         raise RuntimeError("Настройки Supabase не найдены")
 
     return create_client(url, key)
+
+
+def supabase_headers():
+    return {
+        "apikey": os.environ["SUPABASE_KEY"],
+        "Authorization": f"Bearer {session['access_token']}",
+        "Content-Type": "application/json"
+    }
+
+
+def get_favorites():
+    base_url = os.environ["SUPABASE_URL"].rstrip("/")
+    response = requests.get(
+        f"{base_url}/rest/v1/favorites",
+        headers=supabase_headers(),
+        params={
+            "select": "anime_id,title,poster,genre,created_at",
+            "user_id": f"eq.{session['user_id']}",
+            "order": "created_at.desc"
+        },
+        timeout=30
+    )
+    response.raise_for_status()
+    return response.json()
 
 
 @app.route("/")
@@ -115,7 +139,6 @@ def profile():
     if request.method == "POST":
         action = request.form.get("action")
 
-        # Изменение имени пользователя
         if action == "update_name":
             display_name = request.form.get("display_name", "").strip()
 
@@ -125,29 +148,13 @@ def profile():
 
             try:
                 base_url = os.environ["SUPABASE_URL"].rstrip("/")
-                api_key = os.environ["SUPABASE_KEY"]
-                token = session["access_token"]
-
                 response = requests.put(
                     f"{base_url}/auth/v1/user",
-                    headers={
-                        "apikey": api_key,
-                        "Authorization": f"Bearer {token}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "data": {
-                            "display_name": display_name
-                        }
-                    },
+                    headers=supabase_headers(),
+                    json={"data": {"display_name": display_name}},
                     timeout=30
                 )
-
-                if not response.ok:
-                    raise RuntimeError(
-                        f"Supabase: {response.status_code} {response.text}"
-                    )
-
+                response.raise_for_status()
                 session["display_name"] = display_name
                 flash("Имя пользователя успешно изменено!")
 
@@ -157,7 +164,6 @@ def profile():
 
             return redirect(url_for("profile"))
 
-        # Загрузка аватара
         if action == "upload_avatar":
             image = request.files.get("avatar")
 
@@ -166,10 +172,8 @@ def profile():
                 return redirect(url_for("profile"))
 
             allowed_types = {
-                "image/jpeg": "jpg",
-                "image/png": "png",
-                "image/webp": "webp",
-                "image/gif": "gif"
+                "image/jpeg", "image/png",
+                "image/webp", "image/gif"
             }
 
             if image.mimetype not in allowed_types:
@@ -184,37 +188,24 @@ def profile():
 
             try:
                 base_url = os.environ["SUPABASE_URL"].rstrip("/")
-                api_key = os.environ["SUPABASE_KEY"]
                 user_id = session["user_id"]
-                token = session["access_token"]
-
-                file_url = (
-                    f"{base_url}/storage/v1/object/avatars/"
-                    f"{user_id}/avatar"
-                )
 
                 response = requests.post(
-                    file_url,
+                    f"{base_url}/storage/v1/object/avatars/{user_id}/avatar",
                     headers={
-                        "apikey": api_key,
-                        "Authorization": f"Bearer {token}",
+                        **supabase_headers(),
                         "Content-Type": image.mimetype,
                         "x-upsert": "true"
                     },
                     data=image_data,
                     timeout=30
                 )
-
-                if not response.ok:
-                    raise RuntimeError(
-                        f"Supabase: {response.status_code} {response.text}"
-                    )
+                response.raise_for_status()
 
                 session["avatar_url"] = (
                     f"{base_url}/storage/v1/object/public/avatars/"
                     f"{user_id}/avatar?v={uuid.uuid4().hex}"
                 )
-
                 flash("Аватар успешно обновлён!")
 
             except Exception:
@@ -223,12 +214,104 @@ def profile():
 
             return redirect(url_for("profile"))
 
+    try:
+        favorites = get_favorites()
+    except Exception:
+        app.logger.exception("FAVORITES LOAD ERROR")
+        favorites = []
+        flash("Не удалось загрузить избранное.")
+
     return render_template(
         "profile.html",
         email=session.get("user_email"),
         avatar_url=session.get("avatar_url"),
-        display_name=session.get("display_name", "Пользователь")
+        display_name=session.get("display_name", "Пользователь"),
+        favorites=favorites
     )
+
+
+@app.route("/favorites/toggle", methods=["POST"])
+def toggle_favorite():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Сначала войди в аккаунт."
+        }), 401
+
+    data = request.get_json(silent=True) or {}
+    anime_id = str(data.get("anime_id", "")).strip()
+    title = str(data.get("title", "")).strip()
+    poster = str(data.get("poster", "")).strip()
+    genre = str(data.get("genre", "")).strip()
+
+    if not anime_id or not title:
+        return jsonify({
+            "success": False,
+            "message": "Не хватает данных об аниме."
+        }), 400
+
+    base_url = os.environ["SUPABASE_URL"].rstrip("/")
+    url = f"{base_url}/rest/v1/favorites"
+    headers = supabase_headers()
+
+    try:
+        check = requests.get(
+            url,
+            headers=headers,
+            params={
+                "select": "id",
+                "user_id": f"eq.{session['user_id']}",
+                "anime_id": f"eq.{anime_id}"
+            },
+            timeout=30
+        )
+        check.raise_for_status()
+        existing = check.json()
+
+        if existing:
+            response = requests.delete(
+                url,
+                headers=headers,
+                params={
+                    "user_id": f"eq.{session['user_id']}",
+                    "anime_id": f"eq.{anime_id}"
+                },
+                timeout=30
+            )
+            response.raise_for_status()
+
+            return jsonify({
+                "success": True,
+                "favorited": False,
+                "message": "Удалено из избранного."
+            })
+
+        response = requests.post(
+            url,
+            headers={**headers, "Prefer": "return=minimal"},
+            json={
+                "user_id": session["user_id"],
+                "anime_id": anime_id,
+                "title": title,
+                "poster": poster,
+                "genre": genre
+            },
+            timeout=30
+        )
+        response.raise_for_status()
+
+        return jsonify({
+            "success": True,
+            "favorited": True,
+            "message": "Добавлено в избранное!"
+        })
+
+    except Exception:
+        app.logger.exception("FAVORITE TOGGLE ERROR")
+        return jsonify({
+            "success": False,
+            "message": "Не удалось обновить избранное."
+        }), 500
 
 
 @app.route("/logout")

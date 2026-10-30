@@ -149,7 +149,7 @@ form input{margin-bottom:12px}
 .theme-rose{background:linear-gradient(135deg,#1b0d16 50%,#ff8fbd 50%)}
 .theme-light{background:linear-gradient(135deg,#eeeaf4 50%,#8138c7 50%)}
 @media(max-width:650px){.card{padding:22px}.theme-panel{padding:18px}.theme-options{grid-template-columns:repeat(3,minmax(0,1fr))}.theme-heading{align-items:flex-start;flex-direction:column}.theme-hint{display:none}}
-</style><style>
+.theme-panel{position:relative;overflow:hidden}.theme-panel:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#bd72ff,#55c7ef,#78d69a,#ff8fbd,#bd72ff);background-size:250% 100%;animation:animoraHue 8s linear infinite}.theme-preview{height:112px;margin:18px 0;border-radius:15px;background:linear-gradient(120deg,#20132f,#6636a0,#193c52,#20132f);background-size:250% 250%;animation:animoraGradient 9s ease infinite;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:inset 0 0 35px #0005}.theme-preview span{font-size:25px;font-weight:900;letter-spacing:4px}.theme-preview small{font-size:9px;letter-spacing:2px;opacity:.8}.open-theme-modal{width:100%;background:linear-gradient(100deg,#803bd0,#bd72ff,#4b9fcb);background-size:200% 100%;animation:animoraHue 7s linear infinite;font-weight:bold}.theme-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px}.theme-modal.open{display:flex}.theme-backdrop{position:absolute;inset:0;background:#05030be0;backdrop-filter:blur(9px)}.theme-dialog{position:relative;width:min(620px,100%);max-height:90vh;overflow:auto;padding:28px;background:#171321;border:1px solid #63417e;border-radius:22px;box-shadow:0 25px 90px #000a;color:white;animation:modalIn .22s ease-out}.theme-close{position:absolute;right:16px;top:12px;width:38px;height:38px;padding:0;border-radius:50%;background:#30223d;font-size:26px}.theme-kicker{font-size:10px;letter-spacing:2px;color:#bd72ff;font-weight:bold}.theme-dialog h2{margin:10px 0 6px;color:#fff}.theme-dialog-copy{color:#b8a9c6;margin:0 0 20px;font-size:13px}.palette-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.palette-choice{display:flex;align-items:center;gap:8px;flex-direction:column;padding:12px 6px;background:#100d17;border:1px solid #49305f;border-radius:12px;color:white;font-size:12px}.palette-choice.selected,.palette-choice:hover{border-color:#bd72ff;box-shadow:0 0 0 2px #bd72ff25}.swatch{width:100%;height:37px;border-radius:8px;background:var(--swatch);border:1px solid #ffffff33}.custom-colors{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}.custom-colors label{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;background:#100d17;border:1px solid #49305f;border-radius:12px;font-size:13px}.custom-colors input{width:42px;height:34px;padding:2px;border:0;background:transparent;cursor:pointer}.motion-toggle{display:flex;align-items:center;gap:12px;padding:13px;background:#100d17;border:1px solid #49305f;border-radius:12px;cursor:pointer}.motion-toggle input{width:18px;height:18px;accent-color:#bd72ff}.motion-toggle span{display:flex;flex-direction:column;gap:3px}.motion-toggle small{color:#a99db5;font-size:11px}.theme-actions{display:flex;gap:10px;margin-top:17px}.theme-actions button{flex:1}.theme-actions .reset-theme{background:#30223d}@keyframes animoraGradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}@keyframes animoraHue{to{background-position:200% 50%}}@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}html[data-theme="custom"] body{background:linear-gradient(125deg,var(--custom-bg),var(--custom-panel),var(--custom-accent),var(--custom-bg))!important;background-size:300% 300%!important;color:#fff!important}html[data-theme="custom"] body[data-animated="true"]{animation:animoraGradient 18s ease infinite}html[data-theme="custom"] header,html[data-theme="custom"] .card,html[data-theme="custom"] .theme-panel,html[data-theme="custom"] .anime-card,html[data-theme="custom"] .empty,html[data-theme="custom"] form{background:var(--custom-panel)!important;border-color:var(--custom-accent)!important;color:#fff!important}html[data-theme="custom"] h1,html[data-theme="custom"] h2,html[data-theme="custom"] .logo,html[data-theme="custom"] .form-title{color:var(--custom-accent)!important}html[data-theme="custom"] button:not(.theme-close){border-color:var(--custom-accent)}@media(max-width:600px){.palette-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-dialog{padding:22px 17px}.custom-colors{grid-template-columns:1fr}.theme-actions{flex-direction:column}}@media(prefers-reduced-motion:reduce){.theme-preview,.theme-panel:before,.open-theme-modal{animation:none!important}}</style><style>
 :root{--site-bg:#0c0b13;--site-panel:#171321;--site-panel-2:#100d17;--site-border:#49305f;--site-accent:#bd72ff;--site-text:#fff;--site-muted:#aaa}
 html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef}
 html[data-theme="forest"]{--site-bg:#0b1510;--site-panel:#14251b;--site-panel-2:#0e1c14;--site-border:#315b40;--site-accent:#78d69a}
@@ -230,15 +230,31 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
 </div>
 
 <section class="theme-panel">
- <div class="theme-heading"><div><h2>🎨 Оформление сайта</h2><p>Выбери цвет фона ANIMORA. Настройка сохранится для следующих посещений.</p></div><span class="theme-hint">Только для тебя</span></div>
- <div class="theme-options" role="group" aria-label="Цветовая тема">
-  <button type="button" class="theme-choice" data-theme-choice="default"><span class="theme-dot theme-default"></span><span>Ночная</span></button>
-  <button type="button" class="theme-choice" data-theme-choice="ocean"><span class="theme-dot theme-ocean"></span><span>Океан</span></button>
-  <button type="button" class="theme-choice" data-theme-choice="forest"><span class="theme-dot theme-forest"></span><span>Лес</span></button>
-  <button type="button" class="theme-choice" data-theme-choice="rose"><span class="theme-dot theme-rose"></span><span>Розовая</span></button>
-  <button type="button" class="theme-choice" data-theme-choice="light"><span class="theme-dot theme-light"></span><span>Светлая</span></button>
- </div>
+ <div class="theme-heading"><div><h2>🎨 Твоя персональная ANIMORA</h2><p>Настрой фон и акцентные цвета. Можно включить плавное переливание.</p></div><span class="theme-hint">Сохраняется автоматически</span></div>
+ <div class="theme-preview" id="themePreview"><span>ANIMORA</span><small>ТВОЙ СТИЛЬ · ТВОИ ЦВЕТА</small></div>
+ <button type="button" class="open-theme-modal" id="openThemeModal">🎨 Открыть палитру цветов</button>
 </section>
+<div class="theme-modal" id="themeModal" aria-hidden="true">
+ <div class="theme-backdrop" data-close-theme></div>
+ <section class="theme-dialog" role="dialog" aria-modal="true" aria-labelledby="themeDialogTitle">
+  <button class="theme-close" type="button" data-close-theme aria-label="Закрыть">×</button>
+  <span class="theme-kicker">ANIMORA COLOR STUDIO</span><h2 id="themeDialogTitle">Создай свою тему</h2>
+  <p class="theme-dialog-copy">Выбери готовую палитру или собери собственную.</p>
+  <div class="palette-grid" role="group" aria-label="Готовые палитры">
+   <button type="button" class="palette-choice" data-theme-choice="default"><i class="swatch" style="--swatch:linear-gradient(120deg,#0c0b13,#bd72ff)"></i>Ночная</button>
+   <button type="button" class="palette-choice" data-theme-choice="ocean"><i class="swatch" style="--swatch:linear-gradient(120deg,#08131e,#55c7ef)"></i>Океан</button>
+   <button type="button" class="palette-choice" data-theme-choice="forest"><i class="swatch" style="--swatch:linear-gradient(120deg,#0b1510,#78d69a)"></i>Лес</button>
+   <button type="button" class="palette-choice" data-theme-choice="rose"><i class="swatch" style="--swatch:linear-gradient(120deg,#1b0d16,#ff8fbd)"></i>Розовая</button>
+   <button type="button" class="palette-choice" data-theme-choice="light"><i class="swatch" style="--swatch:linear-gradient(120deg,#eeeaf4,#8138c7)"></i>Светлая</button>
+   <button type="button" class="palette-choice" data-theme-choice="sunset"><i class="swatch" style="--swatch:linear-gradient(120deg,#32142c,#ff9a62)"></i>Закат</button>
+   <button type="button" class="palette-choice" data-theme-choice="neon"><i class="swatch" style="--swatch:linear-gradient(120deg,#10102b,#4fffe1)"></i>Неон</button>
+   <button type="button" class="palette-choice" data-theme-choice="lavender"><i class="swatch" style="--swatch:linear-gradient(120deg,#211735,#d6a6ff)"></i>Лаванда</button>
+  </div>
+  <div class="custom-colors"><label>Цвет фона <input type="color" id="customBg" value="#171321"></label><label>Цвет акцента <input type="color" id="customAccent" value="#bd72ff"></label></div>
+  <label class="motion-toggle"><input type="checkbox" id="animatedTheme" checked><span><b>Переливающиеся цвета</b><small>Плавная анимация градиента</small></span></label>
+  <div class="theme-actions"><button type="button" id="applyCustomTheme">Применить мои цвета</button><button type="button" class="reset-theme" data-theme-choice="default">Сбросить</button></div>
+ </section>
+</div>
 
 <section class="favorites-section">
     <h2>❤️ Моё избранное</h2>
@@ -410,27 +426,45 @@ async function removeFavorite(button){
 
 <script>
 (function(){
- const key='animora_site_theme';
- const allowed=['default','ocean','forest','rose','light'];
+ const key='animora_site_theme',customKey='animora_custom_theme',root=document.documentElement;
+ const allowed=['default','ocean','forest','rose','light','sunset','neon','lavender','custom'];
  function applyTheme(theme){
   const value=allowed.includes(theme)?theme:'default';
-  if(value==='default')document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme',value);
+  if(value==='default')root.removeAttribute('data-theme');else root.setAttribute('data-theme',value);
   try{localStorage.setItem(key,value)}catch(e){}
-  document.querySelectorAll('[data-theme-choice]').forEach(button=>{
-   const active=button.dataset.themeChoice===value;
-   button.classList.toggle('selected',active);
-   button.setAttribute('aria-pressed',active?'true':'false');
-  });
+  document.querySelectorAll('[data-theme-choice]').forEach(button=>{const active=button.dataset.themeChoice===value;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',active?'true':'false')});
+  updatePreview();
  }
- let saved='default';
- try{saved=localStorage.getItem(key)||'default'}catch(e){}
- applyTheme(saved);
+ function applyCustom(data){
+  const bg=data.bg||'#171321',accent=data.accent||'#bd72ff',panel=data.panel||bg;
+  root.style.setProperty('--custom-bg',bg);root.style.setProperty('--custom-accent',accent);root.style.setProperty('--custom-panel',panel);
+  document.body.dataset.animated=data.animated===false?'false':'true';
+  try{localStorage.setItem(customKey,JSON.stringify({bg,accent,panel,animated:data.animated!==false}))}catch(e){}
+  applyTheme('custom');
+ }
+ function updatePreview(){
+  const p=document.getElementById('themePreview');if(!p)return;
+  let d={};try{d=JSON.parse(localStorage.getItem(customKey)||'{}')||{}}catch(e){}
+  if(root.dataset.theme==='custom'){p.style.background='linear-gradient(120deg,'+(d.bg||'#171321')+','+(d.accent||'#bd72ff')+','+(d.panel||d.bg||'#171321')+')';p.style.backgroundSize='250% 250%';p.style.animation=d.animated===false?'none':'animoraGradient 9s ease infinite'}
+ }
+ let saved='default',custom={};try{saved=localStorage.getItem(key)||'default';custom=JSON.parse(localStorage.getItem(customKey)||'{}')||{}}catch(e){}
+ if(saved==='custom')applyCustom(custom);else applyTheme(saved);
+ const modal=document.getElementById('themeModal'),open=document.getElementById('openThemeModal');
+ const close=()=>{modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true')};
+ open?.addEventListener('click',()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.getElementById('customBg').value=custom.bg||'#171321';document.getElementById('customAccent').value=custom.accent||'#bd72ff';document.getElementById('animatedTheme').checked=custom.animated!==false});
+ modal?.addEventListener('click',event=>{if(event.target.closest('[data-close-theme]'))close()});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')close()});
+ document.getElementById('applyCustomTheme')?.addEventListener('click',()=>{custom={bg:document.getElementById('customBg').value,accent:document.getElementById('customAccent').value,animated:document.getElementById('animatedTheme').checked};applyCustom(custom);close()});
  document.addEventListener('click',event=>{
-  const button=event.target.closest('[data-theme-choice]');
-  if(button)applyTheme(button.dataset.themeChoice);
+  const b=event.target.closest('[data-theme-choice]');if(!b)return;
+  const v=b.dataset.themeChoice;
+  if(v==='sunset')applyCustom({bg:'#32142c',accent:'#ff9a62',panel:'#49203b',animated:true});
+  else if(v==='neon')applyCustom({bg:'#10102b',accent:'#4fffe1',panel:'#1a2040',animated:true});
+  else if(v==='lavender')applyCustom({bg:'#211735',accent:'#d6a6ff',panel:'#30234a',animated:true});
+  else applyTheme(v);
+  try{custom=JSON.parse(localStorage.getItem(customKey)||'{}')||{}}catch(e){}
  });
- window.animoraApplyTheme=applyTheme;
+ window.animoraApplyTheme=applyTheme;window.animoraApplyCustomTheme=applyCustom;
 })();
 </script>
 </body>

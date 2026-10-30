@@ -1,100 +1,176 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIMORA — мир аниме</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANIMORA — мир аниме</title>
 
-        body {
-            margin: 0;
-            background: #0c0b13;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
+<style>
+* { box-sizing: border-box; }
 
-        header {
-            padding: 24px 7%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #13111d;
-        }
+body {
+    margin: 0;
+    background: #0c0b13;
+    color: white;
+    font-family: Arial, sans-serif;
+}
 
-        .logo {
-            color: #b76cff;
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
+header {
+    padding: 22px 6%;
+    background: #15121f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        nav a {
-            color: #ddd;
-            text-decoration: none;
-            margin-left: 24px;
-        }
+.logo {
+    color: #bd72ff;
+    font-size: 27px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
 
-        .hero {
-            padding: 100px 7%;
-            background: linear-gradient(90deg, #171025, #24113b);
-        }
+nav a {
+    color: #ddd;
+    text-decoration: none;
+    margin-left: 20px;
+}
 
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
+.hero {
+    padding: 75px 7%;
+    background: linear-gradient(110deg, #24113c, #531c70);
+}
 
-        .hero p {
-            color: #c7bdd5;
-            font-size: 18px;
-        }
+.hero h1 { font-size: 46px; margin: 0 0 15px; }
+.hero p { color: #e1d3ee; font-size: 18px; }
 
-        .button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 13px 24px;
-            border-radius: 10px;
-            background: #9b4dff;
-            color: white;
-            text-decoration: none;
-        }
+main { padding: 35px 6%; }
 
-        main {
-            padding: 35px 7%;
-        }
+.search {
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0 30px;
+    border: 1px solid #393044;
+    border-radius: 10px;
+    background: #191622;
+    color: white;
+    font-size: 16px;
+}
 
-        .empty {
-            color: #aaa;
-            background: #171521;
-            padding: 30px;
-            border-radius: 12px;
-        }
-    </style>
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 22px;
+}
+
+.card {
+    background: #191622;
+    border-radius: 13px;
+    overflow: hidden;
+    transition: .2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px #a34cff33;
+}
+
+.poster {
+    height: 230px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+    background: linear-gradient(145deg, #4d2478, #bd4c91);
+}
+
+.card h3 { margin: 13px; font-size: 16px; }
+.card p { margin: 0 13px 15px; color: #aaa; font-size: 13px; }
+
+footer {
+    padding: 30px;
+    text-align: center;
+    color: #777;
+}
+</style>
 </head>
+
 <body>
-    <header>
-        <div class="logo">ANIMORA</div>
-        <nav>
-            <a href="/">Главная</a>
-            <a href="#">Каталог</a>
-            <a href="#">Избранное</a>
-        </nav>
-    </header>
 
-    <section class="hero">
-        <h1>Твой мир аниме</h1>
-        <p>Открывай новые истории и находи любимые тайтлы.</p>
-        <a class="button" href="#catalog">Смотреть аниме</a>
-    </section>
+<header>
+    <div class="logo">ANIMORA</div>
+    <nav>
+        <a href="/">Главная</a>
+        <a href="#catalog">Каталог</a>
+        <a href="#favorites">Избранное</a>
+    </nav>
+</header>
 
-    <main id="catalog">
-        <h2>Популярное аниме</h2>
-        <div class="empty">
-            Каталог скоро появится здесь.
+<section class="hero">
+    <h1>Твой мир аниме</h1>
+    <p>Находи любимые истории и открывай новые миры.</p>
+</section>
+
+<main id="catalog">
+    <h2>Каталог аниме</h2>
+
+    <input class="search" id="search"
+           placeholder="Найти аниме..."
+           oninput="filterAnime()">
+
+    <div class="grid" id="animeList">
+
+        <div class="card">
+            <div class="poster">⚡</div>
+            <h3>Демон-убийца</h3>
+            <p>Приключения · Фэнтези</p>
         </div>
-    </main>
+
+        <div class="card">
+            <div class="poster">🍥</div>
+            <h3>Наруто</h3>
+            <p>Приключения · Экшен</p>
+        </div>
+
+        <div class="card">
+            <div class="poster">🌊</div>
+            <h3>Ван-Пис</h3>
+            <p>Приключения · Фэнтези</p>
+        </div>
+
+        <div class="card">
+            <div class="poster">⚔️</div>
+            <h3>Атака титанов</h3>
+            <p>Экшен · Драма</p>
+        </div>
+
+        <div class="card">
+            <div class="poster">🔥</div>
+            <h3>Магическая битва</h3>
+            <p>Экшен · Фэнтези</p>
+        </div>
+
+        <div class="card">
+            <div class="poster">🏴‍☠️</div>
+            <h3>Покемон</h3>
+            <p>Приключения · Фэнтези</p>
+        </div>
+
+    </div>
+</main>
+
+<footer>ANIMORA © 2026</footer>
+
+<script>
+function filterAnime() {
+    const query = document.getElementById("search").value.toLowerCase();
+
+    document.querySelectorAll(".card").forEach(card => {
+        card.style.display =
+            card.innerText.toLowerCase().includes(query) ? "" : "none";
+    });
+}
+</script>
+
 </body>
 </html>

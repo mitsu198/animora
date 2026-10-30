@@ -63,7 +63,7 @@ html[data-theme] .discover-head p,html[data-theme] .shelf-title span{color:var(-
 #counter{color:#aaa;margin:15px 0}
 footer{text-align:center;padding:30px;color:#777}
 @media(max-width:600px){.hero h1{font-size:34px}nav a{margin-left:10px}}
-</style><style>
+.profile-avatar-link{width:44px;height:44px;margin-left:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid var(--site-accent,#bd72ff);background:#241432;color:white;text-decoration:none;vertical-align:middle;box-shadow:0 0 0 3px #bd72ff22;transition:.2s}.profile-avatar-link:hover{transform:scale(1.07);box-shadow:0 0 18px #bd72ff66}.profile-avatar-link img{width:100%;height:100%;object-fit:cover}.profile-avatar-link span{font-size:23px}@media(max-width:600px){.profile-avatar-link{width:38px;height:38px;margin-left:8px}}@keyframes animoraGlobalFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}html[data-theme="sunset"]{--site-bg:#32142c;--site-panel:#49203b;--site-panel-2:#2a1728;--site-border:#a34b65;--site-accent:#ff9a62}html[data-theme="neon"]{--site-bg:#10102b;--site-panel:#1a2040;--site-panel-2:#14172f;--site-border:#386b83;--site-accent:#4fffe1}html[data-theme="lavender"]{--site-bg:#211735;--site-panel:#30234a;--site-panel-2:#251c39;--site-border:#5b4479;--site-accent:#d6a6ff}html[data-theme="custom"] body{background:linear-gradient(125deg,var(--custom-bg,#171321),var(--custom-panel,#241432),var(--custom-accent,#bd72ff),var(--custom-bg,#171321))!important;background-size:300% 300%!important;color:#fff!important}html[data-theme="custom"] body[data-animated="true"]{animation:animoraGlobalFlow 18s ease infinite}html[data-theme="custom"] header,html[data-theme="custom"] .card,html[data-theme="custom"] .anime-card,html[data-theme="custom"] .shelf-card,html[data-theme="custom"] .service-card,html[data-theme="custom"] .empty{background:var(--custom-panel,#241432)!important;border-color:var(--custom-accent,#bd72ff)!important;color:#fff!important}html[data-theme="custom"] h1,html[data-theme="custom"] h2,html[data-theme="custom"] .logo{color:var(--custom-accent,#bd72ff)!important}</style><style>
 :root{--site-bg:#0c0b13;--site-panel:#171321;--site-panel-2:#100d17;--site-border:#49305f;--site-accent:#bd72ff;--site-text:#fff;--site-muted:#aaa}
 html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef}
 html[data-theme="forest"]{--site-bg:#0b1510;--site-panel:#14251b;--site-panel-2:#0e1c14;--site-border:#315b40;--site-accent:#78d69a}
@@ -88,7 +88,9 @@ html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
   <nav>
     <a href="/">Главная</a>
     <a href="#catalog">Каталог</a>
-    <a href="/profile">👤 Профиль</a>
+    <a class="profile-avatar-link" href="{{ '/profile' if logged_in else '/login' }}" aria-label="{{ 'Открыть профиль' if logged_in else 'Войти' }}" title="{{ 'Мой профиль' if logged_in else 'Войти' }}">
+      {% if avatar_url %}<img src="{{ avatar_url }}" alt="Аватар пользователя">{% else %}<span>👤</span>{% endif %}
+    </a>
   </nav>
 </header>
 
@@ -613,27 +615,13 @@ loadAnimePosters();
 
 <script>
 (function(){
- const key='animora_site_theme';
- const allowed=['default','ocean','forest','rose','light'];
- function applyTheme(theme){
-  const value=allowed.includes(theme)?theme:'default';
-  if(value==='default')document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme',value);
-  try{localStorage.setItem(key,value)}catch(e){}
-  document.querySelectorAll('[data-theme-choice]').forEach(button=>{
-   const active=button.dataset.themeChoice===value;
-   button.classList.toggle('selected',active);
-   button.setAttribute('aria-pressed',active?'true':'false');
-  });
- }
- let saved='default';
- try{saved=localStorage.getItem(key)||'default'}catch(e){}
- applyTheme(saved);
- document.addEventListener('click',event=>{
-  const button=event.target.closest('[data-theme-choice]');
-  if(button)applyTheme(button.dataset.themeChoice);
- });
- window.animoraApplyTheme=applyTheme;
+ const key='animora_site_theme',customKey='animora_custom_theme',root=document.documentElement;
+ const allowed=['default','ocean','forest','rose','light','sunset','neon','lavender','custom'];
+ function applyTheme(theme){const value=allowed.includes(theme)?theme:'default';if(value==='default')root.removeAttribute('data-theme');else root.setAttribute('data-theme',value);try{localStorage.setItem(key,value)}catch(e){}}
+ function applyCustom(data){root.style.setProperty('--custom-bg',data.bg||'#171321');root.style.setProperty('--custom-accent',data.accent||'#bd72ff');root.style.setProperty('--custom-panel',data.panel||data.bg||'#171321');document.body.dataset.animated=data.animated===false?'false':'true';try{localStorage.setItem(customKey,JSON.stringify(data))}catch(e){}applyTheme('custom')}
+ let saved='default',custom={};try{saved=localStorage.getItem(key)||'default';custom=JSON.parse(localStorage.getItem(customKey)||'{}')||{}}catch(e){}
+ if(saved==='custom')applyCustom(custom);else applyTheme(saved);
+ window.animoraApplyTheme=applyTheme;window.animoraApplyCustomTheme=applyCustom;
 })();
 </script>
 </body>

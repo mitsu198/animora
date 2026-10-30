@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ANIMORA — мир аниме</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0c0b13;color:white;font-family:Arial,sans-serif}
@@ -27,10 +28,14 @@ footer{text-align:center;padding:30px;color:#777}
 @media(max-width:600px){.hero h1{font-size:34px}nav a{margin-left:10px}}
 </style>
 </head>
+
 <body>
 <header>
   <div class="logo">ANIMORA</div>
-  <nav><a href="/">Главная</a><a href="#catalog">Каталог</a></nav>
+  <nav>
+    <a href="/">Главная</a>
+    <a href="#catalog">Каталог</a>
+  </nav>
 </header>
 
 <section class="hero">
@@ -40,33 +45,54 @@ footer{text-align:center;padding:30px;color:#777}
 
 <main id="catalog">
   <h2 class="section-title">Популярное аниме</h2>
-  <input class="search" id="search" type="text" placeholder="🔍 Найти аниме..." oninput="filterAnime()">
 
-  <div class="grid" id="animeGrid">
-    <a class="card" data-name="клинок рассекающий демонов" href="/anime?title=Клинок%20рассекающий%20демонов">
+  <input class="search" id="search" type="text"
+  placeholder="🔍 Найти аниме..." oninput="filterAnime()">
+
+  <div class="grid">
+
+    <a class="card" data-name="клинок рассекающий демонов"
+    href="/anime?title=Клинок%20рассекающий%20демонов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1286%2F99889.jpg">
       <img src="https://cdn.myanimelist.net/images/anime/1286/99889.jpg" alt="Клинок рассекающий демонов">
-      <h3>Клинок рассекающий демонов</h3><p>Экшен · Фэнтези</p>
+      <h3>Клинок рассекающий демонов</h3>
+      <p>Экшен · Фэнтези</p>
     </a>
-    <a class="card" data-name="наруто" href="/anime?title=Наруто">
+
+    <a class="card" data-name="наруто"
+    href="/anime?title=Наруто&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F17405.jpg">
       <img src="https://cdn.myanimelist.net/images/anime/13/17405.jpg" alt="Наруто">
-      <h3>Наруто</h3><p>Приключения · Экшен</p>
+      <h3>Наруто</h3>
+      <p>Приключения · Экшен</p>
     </a>
-    <a class="card" data-name="ван пис" href="/anime?title=Ван-Пис">
+
+    <a class="card" data-name="ван пис"
+    href="/anime?title=Ван-Пис&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F6%2F73245.jpg">
       <img src="https://cdn.myanimelist.net/images/anime/6/73245.jpg" alt="Ван-Пис">
-      <h3>Ван-Пис</h3><p>Приключения · Фэнтези</p>
+      <h3>Ван-Пис</h3>
+      <p>Приключения · Фэнтези</p>
     </a>
-    <a class="card" data-name="атака титанов" href="/anime?title=Атака%20титанов">
+
+    <a class="card" data-name="атака титанов"
+    href="/anime?title=Атака%20титанов&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F10%2F47347.jpg">
       <img src="https://cdn.myanimelist.net/images/anime/10/47347.jpg" alt="Атака титанов">
-      <h3>Атака титанов</h3><p>Экшен · Драма</p>
+      <h3>Атака титанов</h3>
+      <p>Экшен · Драма</p>
     </a>
-    <a class="card" data-name="магическая битва" href="/anime?title=Магическая%20битва">
+
+    <a class="card" data-name="магическая битва"
+    href="/anime?title=Магическая%20битва&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F1171%2F109222.jpg">
       <img src="https://cdn.myanimelist.net/images/anime/1171/109222.jpg" alt="Магическая битва">
-      <h3>Магическая битва</h3><p>Экшен · Сверхъестественное</p>
+      <h3>Магическая битва</h3>
+      <p>Экшен · Сверхъестественное</p>
     </a>
-    <a class="card" data-name="покемон" href="/anime?title=Покемон">
+
+    <a class="card" data-name="покемон"
+    href="/anime?title=Покемон&poster=https%3A%2F%2Fcdn.myanimelist.net%2Fimages%2Fanime%2F13%2F73834.jpg">
       <img src="https://cdn.myanimelist.net/images/anime/13/73834.jpg" alt="Покемон">
-      <h3>Покемон</h3><p>Приключения · Фэнтези</p>
+      <h3>Покемон</h3>
+      <p>Приключения · Фэнтези</p>
     </a>
+
   </div>
 </main>
 
@@ -80,6 +106,7 @@ function filterAnime(){
   });
 }
 </script>
+
 </body>
 </html>
 ```

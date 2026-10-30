@@ -1,69 +1,88 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ANIMORA — мир аниме</title>
-
 <style>
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
+body{margin:0;background:#0c0b13;color:white;font-family:Arial,sans-serif}
+header{padding:22px 6%;background:#15121f;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+.logo{color:#bd72ff;font-size:27px;font-weight:bold;letter-spacing:2px}
+nav a{color:#ddd;text-decoration:none;margin-left:20px}
+.hero{padding:75px 7%;background:linear-gradient(110deg,#24113c,#531c70)}
+.hero h1{font-size:46px;margin:0 0 15px}
+.hero p{color:#e1d3ee;font-size:18px}
+main{padding:35px 6%}
+.search{width:100%;padding:15px;margin:15px 0 30px;border:1px solid #393044;border-radius:10px;background:#191622;color:white;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px}
+.card{background:#191622;border:1px solid #30263c;border-radius:13px;overflow:hidden;transition:.2s}
+.card:hover{transform:translateY(-5px);border-color:#bd72ff}
+.card img{width:100%;height:245px;object-fit:cover;display:block;background:#292033}
+.card h3{margin:13px 12px 6px;font-size:17px}
+.card p{margin:0 12px 15px;color:#aaa;font-size:13px}
+.section-title{font-size:25px;margin-bottom:10px}
+footer{text-align:center;padding:30px;color:#777}
+@media(max-width:600px){.hero h1{font-size:34px}nav a{margin-left:10px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">ANIMORA</div>
+  <nav>
+    <a href="/">Главная</a>
+    <a href="#catalog">Каталог</a>
+  </nav>
+</header>
 
-body {
-    margin: 0;
-    background: #0c0b13;
-    color: white;
-    font-family: Arial, sans-serif;
+<section class="hero">
+  <h1>Твой мир аниме</h1>
+  <p>Открывай новые истории, находи любимые тайтлы и погружайся в мир аниме.</p>
+</section>
+
+<main id="catalog">
+  <h2 class="section-title">Популярное аниме</h2>
+  <input class="search" id="search" type="text" placeholder="🔍 Найти аниме..." oninput="filterAnime()">
+
+  <div class="grid" id="animeGrid">
+    <article class="card" data-name="Клинок рассекающий демонов">
+      <img src="https://cdn.myanimelist.net/images/anime/1286/99889.jpg" alt="Клинок рассекающий демонов">
+      <h3>Клинок рассекающий демонов</h3><p>Экшен · Фэнтези</p>
+    </article>
+    <article class="card" data-name="Наруто">
+      <img src="https://cdn.myanimelist.net/images/anime/13/17405.jpg" alt="Наруто">
+      <h3>Наруто</h3><p>Приключения · Экшен</p>
+    </article>
+    <article class="card" data-name="Ван пис">
+      <img src="https://cdn.myanimelist.net/images/anime/6/73245.jpg" alt="Ван-Пис">
+      <h3>Ван-Пис</h3><p>Приключения · Фэнтези</p>
+    </article>
+    <article class="card" data-name="атака титанов">
+      <img src="https://cdn.myanimelist.net/images/anime/10/47347.jpg" alt="Атака титанов">
+      <h3>Атака титанов</h3><p>Экшен · Драма</p>
+    </article>
+    <article class="card" data-name="магическая битва">
+      <img src="https://cdn.myanimelist.net/images/anime/1171/109222.jpg" alt="Магическая битва">
+      <h3>Магическая битва</h3><p>Экшен · Сверхъестественное</p>
+    </article>
+    <article class="card" data-name="покемон">
+      <img src="https://cdn.myanimelist.net/images/anime/13/73834.jpg" alt="Покемон">
+      <h3>Покемон</h3><p>Приключения · Фэнтези</p>
+    </article>
+  </div>
+</main>
+
+<footer>© 2026 ANIMORA — мир аниме</footer>
+
+<script>
+function filterAnime(){
+  const query=document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.card').forEach(card=>{
+    card.style.display=card.dataset.name.includes(query)?'block':'none';
+  });
 }
-
-header {
-    padding: 22px 6%;
-    background: #15121f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    color: #bd72ff;
-    font-size: 27px;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-nav a {
-    color: #ddd;
-    text-decoration: none;
-    margin-left: 20px;
-}
-
-.hero {
-    padding: 75px 7%;
-    background: linear-gradient(110deg, #24113c, #531c70);
-}
-
-.hero h1 {
-    font-size: 46px;
-    margin: 0 0 15px;
-}
-
-.hero p {
-    color: #e1d3ee;
-    font-size: 18px;
-}
-
-main { padding: 35px 6%; }
-
-.search {
-    width: 100%;
-    padding: 15px;
-    margin: 15px 0 30px;
-    border: 1px solid #393044;
-    border-radius: 10px;
-    background: #191622;
-    color: white;
-    font-size: 16px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr
+</script>
+</body>
+</html>
+```

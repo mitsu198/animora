@@ -134,63 +134,66 @@ class AniVibeCatalogParser(__import__("html.parser", fromlist=["HTMLParser"]).HT
         super().__init__()
         self.items = []
         self.current = None
+        self.item_depth = 0
         self.capture = None
-        self.capture_depth = 0
+        self.capture_tag = None
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         classes = attrs.get("class", "").split()
 
-        if tag == "div" and "anime-item" in classes:
+        if self.current is None and tag == "div" and "anime-item" in classes:
             self.current = {"href": "", "poster": "", "title": "", "genres": "", "score": None, "year": None}
+            self.item_depth = 1
+            return
         if self.current is None:
             return
 
+        self.item_depth += 1
         if tag == "a" and attrs.get("href", "").startswith("/anime/"):
             self.current["href"] = attrs["href"]
         elif tag == "img" and attrs.get("src"):
             self.current["poster"] = attrs["src"]
         elif tag == "div" and "title" in classes:
-            self.capture, self.capture_depth = "title", 1
+            self.capture, self.capture_tag = "title", "div"
         elif tag == "div" and "genres" in classes:
-            self.capture, self.capture_depth = "genres", 1
+            self.capture, self.capture_tag = "genres", "div"
         elif tag == "span" and "rating" in classes:
-            self.capture, self.capture_depth = "score", 1
+            self.capture, self.capture_tag = "score", "span"
         elif tag == "span" and "year" in classes:
-            self.capture, self.capture_depth = "year", 1
-        elif self.capture:
-            self.capture_depth += 1
+            self.capture, self.capture_tag = "year", "span"
 
     def handle_data(self, data):
-        if self.current is not None and self.capture:
-            value = data.strip()
-            if value:
-                key = self.capture
-                if key in ("title", "genres"):
-                    self.current[key] = (self.current[key] + " " + value).strip()
-                elif key == "score":
-                    try:
-                        self.current[key] = float(value.replace(",", "."))
-                    except ValueError:
-                        pass
-                elif key == "year":
-                    try:
-                        self.current[key] = int(value)
-                    except ValueError:
-                        pass
+        if self.current is None or not self.capture:
+            return
+        value = data.strip()
+        if not value:
+            return
+        if self.capture in ("title", "genres"):
+            self.current[self.capture] = (self.current[self.capture] + " " + value).strip()
+        elif self.capture == "score":
+            try:
+                self.current["score"] = float(value.replace(",", "."))
+            except ValueError:
+                pass
+        elif self.capture == "year":
+            try:
+                self.current["year"] = int(value)
+            except ValueError:
+                pass
 
     def handle_endtag(self, tag):
         if self.current is None:
             return
-        if self.capture:
-            if (tag == "div" and self.capture in ("title", "genres")) or (tag == "span" and self.capture in ("score", "year")):
-                self.capture = None
-                self.capture_depth = 0
-        if tag == "div" and not self.capture and self.current.get("href") and self.current.get("title"):
-            # Закрывающий div карточки — сохраняем только валидные карточки.
-            if not self.items or self.items[-1] is not self.current:
+        if self.capture and tag == self.capture_tag:
+            self.capture = None
+            self.capture_tag = None
+        self.item_depth -= 1
+        if self.item_depth <= 0:
+            if self.current.get("href") and self.current.get("title"):
                 self.items.append(self.current)
-                self.current = None
+            self.current = None
+            self.item_depth = 0
 
 
 @app.route("/api/anime/ongoing")

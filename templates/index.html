@@ -580,6 +580,67 @@ footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px s
 .shelf-title h2{letter-spacing:-.35px}
 @media(max-width:700px){.shelf-card:hover,.card:hover{transform:none}}
 </style>
+<style id="animora-mobile-ux">
+/* Animora mobile usability pass */
+@media(max-width:700px){
+  html,body{width:100%;overflow-x:hidden}
+  .site-header{position:sticky;top:0;padding:10px 12px!important}
+  .header-topline{grid-template-columns:auto minmax(0,1fr) auto;gap:8px}
+  .site-header .logo{font-size:19px;letter-spacing:1.5px}
+  .header-search-wrap{min-width:0;height:42px;border-radius:11px}
+  .header-search{font-size:14px}
+  .main-nav{gap:18px;margin-top:10px;padding:10px 2px 3px;overflow-x:auto;scrollbar-width:none}
+  .main-nav::-webkit-scrollbar{display:none}
+  .main-nav a{font-size:13px;flex:0 0 auto}
+  .main-nav .profile-avatar-link{width:36px;height:36px}
+  .category-strip{display:block;padding:9px 12px}
+  .category-strip-label{display:block;margin-bottom:8px}
+  .category-strip .filters{margin:0;gap:7px}
+  .category-strip .filters button{padding:9px 13px;min-height:38px;font-size:12px}
+  .hero-cinema{min-height:470px;padding:48px 18px 70px}
+  .hero-content{width:100%}
+  .hero-kicker{margin-bottom:18px}
+  .hero-cinema h1{font-size:clamp(32px,9vw,42px);line-height:1.08;letter-spacing:-1px}
+  .hero-cinema p{font-size:14px;line-height:1.55}
+  .hero-meta{gap:8px 12px;margin:16px 0 20px}
+  .hero-actions{gap:9px}
+  .hero-watch,.hero-more{min-height:46px;padding:13px 16px}
+  .hero-bottom{left:18px;right:18px;bottom:15px;letter-spacing:1px}
+  .discover{padding:25px 12px 4px}
+  .discover-head{gap:12px}
+  .discover-head h2{font-size:23px}
+  .discover-head p{font-size:13px}
+  .random-btn{width:100%;min-height:44px}
+  .shelf{margin:24px 0 30px}
+  .shelf-title h2{font-size:18px}
+  .shelf-grid{gap:11px;padding-bottom:12px}
+  .shelf-card{flex-basis: min(42vw,160px)}
+  .shelf-poster{height:auto;aspect-ratio:2/3}
+  .shelf-card h3{font-size:12px;line-height:1.35}
+  main{padding:25px 12px}
+  #catalog h2{font-size:23px}
+  .search{min-height:48px;padding:13px 14px;font-size:16px;margin:10px 0}
+  .filters{gap:7px;margin:12px 0 20px}
+  .filters button{min-height:40px;padding:9px 12px;font-size:12px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .card{min-width:0}
+  .poster{height:auto;aspect-ratio:2/3;font-size:16px}
+  .poster span{padding:10px;font-size:14px}
+  .card h3{font-size:13px;line-height:1.35;margin:10px 9px 5px}
+  .card p{font-size:11px;margin:0 9px 11px}
+  .favorite-btn{width:38px;height:38px;top:7px;right:7px;font-size:21px}
+  .catalog-more-btn{width:100%;min-height:48px;padding:13px 15px}
+  footer{padding:24px 14px;font-size:12px}
+}
+@media(max-width:380px){
+  .site-header .logo{font-size:17px}
+  .header-topline{gap:6px}
+  .shelf-card{flex-basis:138px}
+  .hero-cinema{min-height:440px}
+}
+@media(hover:none){.card:hover,.shelf-card:hover,.hero-watch:hover{transform:none;box-shadow:none}}
+
+</style>
 </head>
 <body>
 

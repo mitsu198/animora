@@ -130,49 +130,64 @@ ONGOING_CACHE_TTL = 15 * 60
 
 @app.route("/api/anime/ongoing")
 def anime_ongoing_api():
-    """Текущие онгоинги с серверным кэшем и резервом при сбоях Jikan."""
+    """Онгоинги из AniVibe; ответ приводится к формату карточек Jikan."""
     now = time.time()
     cached = ONGOING_CACHE.get("payload")
     age = now - ONGOING_CACHE.get("updated_at", 0)
 
-    # Пока кэш свежий, вообще не обращаемся к внешнему API.
     if cached and age < ONGOING_CACHE_TTL:
         response = jsonify(cached)
         response.headers["X-Animora-Cache"] = "HIT"
         return response
 
     try:
-        upstream = requests.get(
-            "https://api.jikan.moe/v4/seasons/now",
-            params={"limit": 25},
-            headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
-            timeout=12
-        )
-        if upstream.status_code == 429:
+        recent, error = anivibe_request("GET", "/api/v1/recent")
+        if error:
             if cached:
                 response = jsonify(cached)
                 response.headers["X-Animora-Cache"] = "STALE"
                 return response
-            return jsonify({"error": "Источник временно ограничил запросы. Попробуй чуть позже."}), 429
+            return error
 
-        upstream.raise_for_status()
-        payload = upstream.json()
-        if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
-            raise ValueError("Unexpected Jikan ongoing response")
+        entries = recent.get("data", []) if isinstance(recent, dict) else []
+        if not isinstance(entries, list):
+            raise ValueError("Unexpected AniVibe recent response")
 
+        ongoing = []
+        for item in entries:
+            if not isinstance(item, dict) or str(item.get("status", "")).strip().casefold() != "онгоинг":
+                continue
+            anime_id = item.get("id") or item.get("shikimori_id")
+            title = (item.get("title_ru") or item.get("title_en") or "").strip()
+            if not anime_id or not title:
+                continue
+            poster = item.get("poster") or ""
+            ongoing.append({
+                "mal_id": anime_id,
+                "title": title,
+                "title_english": item.get("title_en"),
+                "images": {"jpg": {"image_url": poster, "large_image_url": poster}},
+                "genres": [],
+                "themes": [],
+                "episodes": item.get("episodes"),
+                "status": "Currently Airing",
+                "score": item.get("score"),
+                "year": item.get("year"),
+            })
+
+        payload = {"data": ongoing}
         ONGOING_CACHE["payload"] = payload
         ONGOING_CACHE["updated_at"] = time.time()
         response = jsonify(payload)
         response.headers["X-Animora-Cache"] = "MISS"
         return response
     except (requests.RequestException, ValueError):
-        app.logger.exception("JIKAN ONGOING API ERROR")
+        app.logger.exception("ANIVIBE ONGOING API ERROR")
         if cached:
             response = jsonify(cached)
             response.headers["X-Animora-Cache"] = "STALE"
             return response
-        return jsonify({"error": "Не удалось загрузить онгоинги."}), 502
-
+        return jsonify({"error": "Не удалось загрузить онгоинги из AniVibe."}), 502
 
 @app.route("/api/diagnostics/network")
 def network_diagnostics():

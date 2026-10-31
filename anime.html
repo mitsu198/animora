@@ -269,10 +269,25 @@ playButton.addEventListener('click',async()=>{
   playButton.disabled=true;setStatus('Получаю временную ссылку на плеер…');clearMessage();
   try{
     const data=await api('/api/anivibe/embed-token',{method:'POST',body:JSON.stringify({anime_id:id,episode,translation})});
-    const embedUrl=valueOf(data,['embed_url','iframe_url','url','embed','player_url']);
-    if(!embedUrl||typeof embedUrl!=='string')throw new Error('AniVibe не вернул iframe URL. Проверь формат ответа API или настройки партнёра.');
+    function findEmbedUrl(value,depth=0){
+      if(depth>5||value==null)return '';
+      if(typeof value==='string'){
+        const text=value.trim();
+        if(/^https:\/\//i.test(text))return text;
+        return '';
+      }
+      if(Array.isArray(value)){for(const item of value){const found=findEmbedUrl(item,depth+1);if(found)return found;}return '';}
+      if(typeof value==='object'){
+        const preferred=['embed_url','iframe_url','player_url','url','embed','iframe','player','src','link'];
+        for(const key of preferred){if(value[key]!==undefined){const found=findEmbedUrl(value[key],depth+1);if(found)return found;}}
+        for(const [key,item] of Object.entries(value)){if(!preferred.includes(key)){const found=findEmbedUrl(item,depth+1);if(found)return found;}}
+      }
+      return '';
+    }
+    const embedUrl=findEmbedUrl(data);
+    if(!embedUrl)throw new Error('AniVibe ответил без ссылки на плеер. Возможно, партнёрский домен не подтверждён или API вернул другой формат ответа.');
     const parsed=new URL(embedUrl);
-    if(parsed.protocol!=='https:'||parsed.hostname!=='anivibe.pro')throw new Error('Получен неожиданный адрес плеера. Встраивание остановлено для безопасности.');
+    if(parsed.protocol!=='https:'||!(parsed.hostname==='anivibe.pro'||parsed.hostname.endsWith('.anivibe.pro')))throw new Error('AniVibe вернул адрес вне своего домена. Встраивание остановлено для безопасности.');
     stage.innerHTML='';const frame=document.createElement('iframe');frame.src=parsed.href;frame.title='AniVibe player';frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';stage.appendChild(frame);
     $('nowPlaying').textContent=animeLabel(selectedAnime)+' — серия '+episode+(translation?' · '+translation:'');
     setStatus('Плеер загружен. Если видео не запускается, проверь домен в кабинете AniVibe.');

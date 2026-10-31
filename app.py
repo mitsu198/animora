@@ -255,6 +255,17 @@ def anivibe_request(method, path, *, params=None, payload=None, authenticated=Fa
         return None, (jsonify({"error": "AniVibe вернул некорректный ответ."}), 502)
 
 
+@app.route("/api/anivibe/recent")
+def anivibe_recent():
+    """Прокси для проверки недавно добавленных тайтлов AniVibe."""
+    try:
+        data, error = anivibe_request("GET", "/api/v1/recent")
+        return error if error else jsonify(data)
+    except requests.RequestException:
+        app.logger.exception("ANIVIBE RECENT CONNECTION ERROR")
+        return jsonify({"error": "Не удалось получить последние тайтлы AniVibe."}), 502
+
+
 @app.route("/api/anivibe/search")
 def anivibe_search():
     query = request.args.get("q", "").strip()

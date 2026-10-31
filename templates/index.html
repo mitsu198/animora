@@ -832,11 +832,21 @@ async function loadMoreAnime(){
       Array.isArray(payload?.results)?payload.results:
       Array.isArray(payload?.items)?payload.items:
       Array.isArray(payload)?payload:[];
+    const nextCursor=extractAniVibeCursor(payload);
     if(!entries.length){
-      anivibeCatalogFinished=true;
-      if(button)button.hidden=true;
-      saveExpandedCatalog();
-      updateCatalogLoadStatus("Новых тайтлов больше нет. В каталоге "+animeList.length+" аниме.");
+      const cursorAdvanced=nextCursor!==null&&nextCursor!==undefined&&String(nextCursor)!==""&&String(nextCursor)!==String(anivibeCursor||"");
+      if(cursorAdvanced){
+        anivibeCursor=String(nextCursor);
+        anivibeCatalogFinished=false;
+        saveExpandedCatalog();
+        updateCatalogLoadStatus("В этой подборке нет новых тайтлов. Курсор обновлён — нажми кнопку, чтобы продолжить.");
+        if(button)button.textContent="＋ Продолжить загрузку";
+      }else{
+        anivibeCatalogFinished=true;
+        if(button)button.hidden=true;
+        saveExpandedCatalog();
+        updateCatalogLoadStatus("Новых тайтлов больше нет. В каталоге "+animeList.length+" аниме.");
+      }
       return;
     }
     const knownIds=new Set(animeList.map(item=>item[0]));
@@ -865,8 +875,7 @@ async function loadMoreAnime(){
       if(poster)posterCache[id]=poster;
       added++;
     }
-    const nextCursor=extractAniVibeCursor(payload);
-    anivibeCatalogFinished=nextCursor===null||nextCursor===undefined||nextCursor==="";
+    anivibeCatalogFinished=nextCursor===null||nextCursor===undefined||nextCursor===""||String(nextCursor)===String(anivibeCursor||"");
     anivibeCursor=anivibeCatalogFinished?"":String(nextCursor);
     saveExpandedCatalog();
     renderAnime();

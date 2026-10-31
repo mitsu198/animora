@@ -336,7 +336,24 @@ playButton.addEventListener('click',async()=>{
   try{
     if(selectedPlayer!=='aniweeb')throw new Error('Выбранный плеер пока недоступен.');
     const track=/dub|дуб|русск/i.test(translation)?'dub':'sub';
-    const embedUrl='https://api.aniweeb.net/embed/mal/'+encodeURIComponent(id)+'/'+encodeURIComponent(episode)+'?track='+track;
+    // Catalog IDs from AniVibe are not MAL/AniList IDs. Resolve the title through Jikan first.
+    let malId=Number(selectedAnime?.mal_id||selectedAnime?.malId||0);
+    if(!malId){
+      const searchUrl='https://api.jikan.moe/v4/anime?q='+encodeURIComponent(animeLabel(selectedAnime))+'&limit=10&sfw=true';
+      const searchResponse=await fetch(searchUrl,{headers:{'Accept':'application/json'}});
+      if(!searchResponse.ok)throw new Error('Не удалось определить ID аниме для Aniweeb. Попробуй ещё раз.');
+      const searchData=await searchResponse.json();
+      const candidates=Array.isArray(searchData?.data)?searchData.data:[];
+      const normalize=value=>String(value||'').toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu,' ').trim();
+      const wanted=normalize(animeLabel(selectedAnime));
+      const match=candidates.find(item=>{
+        const titles=[item.title,item.title_english,item.title_japanese,...(item.titles||[]).map(x=>x.title)].filter(Boolean).map(normalize);
+        return titles.includes(wanted);
+      })||candidates[0];
+      malId=Number(match?.mal_id||0);
+    }
+    if(!malId)throw new Error('Не удалось найти соответствие аниме в MyAnimeList. Для этого тайтла пока нет плеера.');
+    const embedUrl='https://api.aniweeb.net/embed/mal/'+encodeURIComponent(malId)+'/'+encodeURIComponent(episode)+'?track='+track;
     stopWatchHeartbeat();stage.innerHTML='';
     const frame=document.createElement('iframe');frame.src=embedUrl;frame.title='Aniweeb player';
     frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;

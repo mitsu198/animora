@@ -450,13 +450,13 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-ser
  box-shadow:12px 0 40px #0002!important;backdrop-filter:none!important;z-index:100!important
 }
 .header-topline{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important;width:100%}
-.brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}\n.site-header .logo{font-size:27px!important;letter-spacing:3px!important;line-height:1.2!important}\n.site-header .admin-header-tag{display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #74549a;border-radius:8px;background:#291d3b;color:#e1c7ff;font-size:10px;font-weight:800;letter-spacing:1px;white-space:nowrap}
+.brand-row{display:flex;align-items:center;justify-content:flex-start;gap:8px;width:100%}
+.site-header .logo{font-size:27px!important;letter-spacing:3px!important;line-height:1.2!important}
 .site-header .logo:after{content:"ТВОЙ МИР АНИМЕ";display:block;margin-top:7px;font-size:9px;letter-spacing:2px;color:#73798d;-webkit-text-fill-color:#73798d}
 .header-search-wrap{width:100%!important;height:44px!important;margin-top:12px!important;border-radius:11px!important;background:#090b12!important;border:1px solid #292d3d!important}
 .header-search-wrap>span{font-size:22px!important}
 .header-search-wrap kbd{display:none!important}
 .header-profile{position:absolute!important;right:19px!important;top:27px!important;width:34px!important;height:34px!important;margin:0!important}
-.site-header .admin-header-tag{align-self:flex-start;margin:0!important}
 .main-nav{width:100%!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;margin:0!important;padding:22px 0 0!important;border-top:1px solid #292d3d!important;overflow:visible!important}
 .main-nav a{display:flex!important;align-items:center!important;min-height:43px!important;padding:0 13px!important;border-radius:10px!important;color:#aeb3c3!important;font-size:14px!important;font-weight:600!important}
 .main-nav a:before{content:"";width:6px;height:6px;margin-right:12px;border-radius:50%;background:#555b70;transition:.2s}
@@ -512,7 +512,8 @@ footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px s
 @media(max-width:850px){
  .site-header{position:relative!important;inset:auto!important;width:auto!important;height:auto!important;padding:14px 4%!important;display:block!important;border-right:0!important;border-bottom:1px solid #292d3d!important}
  .header-topline{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important}
- .brand-row{grid-column:1;grid-row:1;justify-content:flex-start;gap:10px}\n .site-header .logo{font-size:22px!important}
+ .brand-row{grid-column:1;grid-row:1;justify-content:flex-start;gap:10px}
+ .site-header .logo{font-size:22px!important}
  .site-header .logo:after{display:none!important}
  .header-search-wrap{margin:0!important;height:40px!important}
  .header-profile{position:static!important;justify-self:end!important;width:36px!important;height:36px!important}
@@ -551,7 +552,7 @@ footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px s
 
 <header class="site-header">
   <div class="header-topline">
-    <div class="brand-row"><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a>{% if is_admin %}<span class="admin-header-tag">👑 ADMIN</span>{% endif %}</div>
+    <div class="brand-row"><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a></div>
     <div class="header-search-wrap">
       <span aria-hidden="true">⌕</span>
       <input class="search header-search" id="search" placeholder="Найти аниме..." oninput="handleCatalogSearch()" aria-label="Поиск аниме">

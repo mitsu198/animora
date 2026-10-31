@@ -386,7 +386,8 @@ playButton.addEventListener('click',async()=>{
 document.querySelectorAll('.player-tab').forEach(tab=>tab.addEventListener('click',()=>{
   document.querySelectorAll('.player-tab').forEach(item=>{item.classList.remove('active');item.setAttribute('aria-selected','false');});
   tab.classList.add('active');tab.setAttribute('aria-selected','true');selectedPlayer=tab.dataset.player;
-  $('playerName').textContent='Плеер '+(selectedPlayer==='aniweeb'?'Aniweeb':'AniVibe');\n  setStatus('Выбран плеер '+(selectedPlayer==='aniweeb'?'Aniweeb':'AniVibe')+'.');
+  $('playerName').textContent='Плеер '+(selectedPlayer==='aniweeb'?'Aniweeb':'AniVibe');
+  setStatus('Выбран плеер '+(selectedPlayer==='aniweeb'?'Aniweeb':'AniVibe')+'.');
 }));
 const directAniVibeId=Number(params.get('anivibe_id')||0);
 if(directAniVibeId>0){selectedAnime={id:directAniVibeId,title_ru:title};loadAnimeDetails(directAniVibeId);loadEpisodes(directAniVibeId);}

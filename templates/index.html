@@ -622,10 +622,22 @@ async function loadOngoingAnime(){
   const target=document.getElementById("ongoingGrid");
   if(!target)return;
   try{
-    const response=await fetch("https://api.jikan.moe/v4/seasons/now?limit=12",{headers:{"Accept":"application/json"}});
-    if(!response.ok)throw new Error("JIKAN_"+response.status);
-    const payload=await response.json();
-    const items=(payload.data||[]).filter(item=>item.mal_id&&item.title).slice(0,12);
+    let payload=null;
+    // Jikan ограничивает частоту запросов; повторяем запрос при 429 и временных сетевых сбоях.
+    for(let attempt=0;attempt<5;attempt++){
+      try{
+        const response=await fetch("https://api.jikan.moe/v4/seasons/now?limit=25",{headers:{"Accept":"application/json"},cache:"no-store"});
+        if(response.status===429)throw new Error("RATE_LIMIT");
+        if(!response.ok)throw new Error("JIKAN_"+response.status);
+        payload=await response.json();
+        break;
+      }catch(error){
+        const retryable=error.message==="RATE_LIMIT"||error.message==="Failed to fetch"||error.name==="TypeError";
+        if(!retryable||attempt===4)throw error;
+        await new Promise(resolve=>setTimeout(resolve,2500*Math.pow(1.8,attempt)));
+      }
+    }
+    const items=(payload?.data||[]).filter(item=>item.mal_id&&item.title).slice(0,25);
     if(!items.length)throw new Error("EMPTY");
     const cards=items.map(item=>{
       const id="mal-"+item.mal_id;
@@ -641,8 +653,12 @@ async function loadOngoingAnime(){
       <div class="shelf-poster">${item.poster?'<img src="'+item.poster+'" alt="'+item.title+'" loading="lazy" onerror="this.remove()">':''}<span>${item.title}</span><b class="ongoing-badge">ОНГОИНГ</b></div>
       <h3>${item.title}</h3><p>${item.genreText.replaceAll(", "," · ")}</p>
     </article>`).join("");
+    // Раньше онгоинги добавлялись в массив, но основной каталог после этого не перерисовывался.
+    renderAnime();
+    renderFeatured();
     savePosterCache();
     saveExpandedCatalog();
+    updateCatalogLoadStatus("Актуальные онгоинги обновлены. В каталоге "+animeList.length+" аниме.");
   }catch(error){
     console.warn("Не удалось загрузить онгоинги:",error);
     target.innerHTML='<p class="ongoing-loading">Не удалось загрузить онгоинги. Попробуй обновить страницу позже.</p>';

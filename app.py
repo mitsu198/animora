@@ -199,6 +199,8 @@ def anime_ongoing_api():
                 or (recent.get("pagination") or {}).get("next_cursor")
                 or (recent.get("meta") or {}).get("next_cursor")
                 or (recent.get("next") or {}).get("cursor")
+                or ((recent.get("data") or {}).get("next_cursor") if isinstance(recent.get("data"), dict) else "")
+                or ((recent.get("data") or {}).get("nextCursor") if isinstance(recent.get("data"), dict) else "")
                 or ""
             )
             next_cursor = str(next_cursor).strip()

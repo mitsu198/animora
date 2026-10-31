@@ -122,22 +122,55 @@ def anime_catalog_api():
         return jsonify({"error": "Некорректный номер страницы."}), 400
 
 
+# Кэш онгоингов снижает нагрузку на Jikan и позволяет показать последние
+# данные, даже если внешний API временно недоступен.
+ONGOING_CACHE = {"payload": None, "updated_at": 0}
+ONGOING_CACHE_TTL = 15 * 60
+
+
 @app.route("/api/anime/ongoing")
 def anime_ongoing_api():
-    """Текущие онгоинги через серверный запрос к Jikan."""
+    """Текущие онгоинги с серверным кэшем и резервом при сбоях Jikan."""
+    now = time.time()
+    cached = ONGOING_CACHE.get("payload")
+    age = now - ONGOING_CACHE.get("updated_at", 0)
+
+    # Пока кэш свежий, вообще не обращаемся к внешнему API.
+    if cached and age < ONGOING_CACHE_TTL:
+        response = jsonify(cached)
+        response.headers["X-Animora-Cache"] = "HIT"
+        return response
+
     try:
-        response = requests.get(
+        upstream = requests.get(
             "https://api.jikan.moe/v4/seasons/now",
             params={"limit": 25},
             headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
-            timeout=20
+            timeout=12
         )
-        if response.status_code == 429:
+        if upstream.status_code == 429:
+            if cached:
+                response = jsonify(cached)
+                response.headers["X-Animora-Cache"] = "STALE"
+                return response
             return jsonify({"error": "Источник временно ограничил запросы. Попробуй чуть позже."}), 429
-        response.raise_for_status()
-        return jsonify(response.json())
-    except requests.RequestException:
+
+        upstream.raise_for_status()
+        payload = upstream.json()
+        if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
+            raise ValueError("Unexpected Jikan ongoing response")
+
+        ONGOING_CACHE["payload"] = payload
+        ONGOING_CACHE["updated_at"] = time.time()
+        response = jsonify(payload)
+        response.headers["X-Animora-Cache"] = "MISS"
+        return response
+    except (requests.RequestException, ValueError):
         app.logger.exception("JIKAN ONGOING API ERROR")
+        if cached:
+            response = jsonify(cached)
+            response.headers["X-Animora-Cache"] = "STALE"
+            return response
         return jsonify({"error": "Не удалось загрузить онгоинги."}), 502
 
 

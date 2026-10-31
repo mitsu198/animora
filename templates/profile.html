@@ -405,6 +405,85 @@ main{max-width:1180px!important}
 button,.save-button{border-radius:11px!important}
 @media(max-width:700px){.profile-identity{padding:18px!important}.profile-stats{grid-template-columns:1fr!important}}
 </style>
+
+<style id="animora-profile-rework">
+/* Profile refresh: compact dashboard, clear hierarchy and responsive cards */
+body{background:#080b13!important;background-image:radial-gradient(ellipse at 50% 0%,#29204755,transparent 42%)!important;color:#f4f5fb}
+header{height:76px;position:sticky;top:0;z-index:30;padding:0 max(22px,calc((100% - 1180px)/2))!important;background:#0b0e18ed!important;border:0!important;border-bottom:1px solid #252b3d!important;backdrop-filter:blur(18px)}
+header .logo{font-size:25px!important;letter-spacing:2px}
+header>a:last-child{padding:10px 15px;border:1px solid #30384d;border-radius:10px;background:#141a29;color:#d7dced!important;font-size:13px}
+main{max-width:1180px!important;margin:34px auto 80px!important;padding:0 24px!important}
+.profile-hero{display:grid;grid-template-columns:1fr;overflow:hidden;border:1px solid #293149!important;border-radius:24px!important;background:#101522!important;box-shadow:0 24px 70px #0005!important}
+.profile-cover{height:220px!important;border:0!important;border-radius:0!important;background:radial-gradient(ellipse at 78% 30%,#9b6cff88,transparent 26%),radial-gradient(ellipse at 18% 100%,#e35bba55,transparent 36%),linear-gradient(115deg,#171c32,#292044 55%,#101522)!important}
+.profile-cover:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#080b1388,transparent 70%),repeating-linear-gradient(125deg,transparent 0 55px,#ffffff08 56px 57px);z-index:0}
+.cover-orbit{border-color:#ffffff18!important}
+.cover-label{right:30px!important;bottom:25px!important;color:#e5d9ff!important;font-size:10px!important;letter-spacing:3px!important}
+.profile-identity{display:grid!important;grid-template-columns:112px minmax(0,1fr) auto!important;align-items:center!important;gap:22px!important;margin:-56px 26px 0!important;padding:0 20px 24px!important;background:transparent!important;border:0!important;border-radius:0!important;position:relative!important}
+.profile-avatar-wrap{grid-column:1;grid-row:1}
+.profile-avatar{width:112px!important;height:112px!important;border:5px solid #101522!important;box-shadow:0 0 0 1px #6f5aa2,0 12px 28px #0008!important}
+.online-dot{border-color:#101522!important}
+.profile-name-block{grid-column:2;grid-row:1;padding:52px 0 0!important;min-width:0}
+.profile-name-block h1{font-size:clamp(25px,3vw,34px)!important;letter-spacing:-1px;color:#fff!important}
+.profile-name-block .email{font-size:13px;color:#929db3!important}
+.profile-eyebrow,.section-kicker,.level-kicker{color:#b99aff!important;letter-spacing:2.2px}
+.profile-badges{gap:8px}
+.profile-edit-link{grid-column:3;grid-row:1;align-self:end;margin:0 0 5px!important;white-space:nowrap;background:#211a35!important;border:1px solid #5b4783!important;color:#e8dcff!important}
+.profile-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:0 28px 24px!important;gap:12px!important}
+.profile-stat{grid-template-columns:38px 1fr!important;padding:17px 18px!important;background:#0b101c!important;border:1px solid #283149!important;border-radius:15px!important;box-shadow:none!important}
+.profile-stat-icon{width:36px;height:36px;border-radius:11px;background:#9b6cff20;color:#c6aaff}
+.profile-stat strong{font-size:23px!important;color:#fff!important}
+.profile-stat small{color:#98a2b7!important}
+.level-panel{margin:0 28px 28px!important;padding:18px 20px!important;background:linear-gradient(110deg,#1c1a31,#121827)!important;border:1px solid #393452!important;border-radius:15px!important}
+.level-track{background:#080b13!important}.level-track span{background:linear-gradient(90deg,#8c67ed,#d46bd0)!important}
+.profile-tabs{position:sticky;top:88px!important;z-index:20;display:flex;gap:6px;margin:24px 0 18px!important;padding:7px!important;background:#101522ed!important;border:1px solid #283149!important;border-radius:14px!important;backdrop-filter:blur(16px)}
+.profile-tabs a{flex:0 0 auto;padding:11px 17px!important;border-radius:9px!important;color:#aab4c8!important}
+.profile-tabs a.active,.profile-tabs a:hover{background:#29213f!important;color:#eee5ff!important}
+.profile-settings-card{padding:26px!important;background:#101522!important;border:1px solid #293149!important;border-radius:20px!important;box-shadow:0 18px 45px #0003!important}
+.section-heading h2{font-size:22px!important;color:#f5f6fb!important}
+.section-heading p{color:#96a0b5!important}
+.section-icon{background:#9b6cff20!important;color:#c8b1ff!important}
+.profile-form{background:#0b101c!important;border:1px solid #293149!important;border-radius:15px!important;padding:20px!important}
+.profile-form .form-title{color:#e8e1f5!important}
+.profile-form input{background:#111a2a!important;border:1px solid #303b54!important;border-radius:10px!important;color:#fff!important}
+.profile-form button,.profile-actions .link-button{background:linear-gradient(110deg,#7655c8,#9c6be5)!important;border-radius:10px!important;color:#fff!important}
+.profile-actions .secondary{background:#20283a!important}
+.favorites-section{margin-top:30px!important;padding:25px!important;background:#101522;border:1px solid #293149;border-radius:20px;scroll-margin-top:105px}
+.favorites-section h2{font-size:24px!important;color:#f4f5fb!important}
+.favorites-tools input{background:#0b101c!important;border:1px solid #303b54!important;border-radius:11px!important;color:#fff!important}
+.favorites-count{color:#a4aec1!important}
+.favorites-grid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr))!important;gap:16px!important}
+.anime-card{background:#0b101c!important;border:1px solid #293149!important;border-radius:14px!important;overflow:hidden}
+.anime-card img{height:235px!important}
+.anime-card:hover{border-color:#9271d5!important;transform:translateY(-3px)}
+.anime-info h3{color:#f0f2fa!important}.anime-info p{color:#97a2b8!important}
+.remove-btn{background:#321c32!important;color:#ff9ac4!important;border-radius:9px!important}
+.empty{background:#0b101c!important;border:1px dashed #3a4560!important;border-radius:15px!important}
+#notice{background:#171d2d!important;border:1px solid #9271d5!important;border-radius:12px!important}
+@media(max-width:720px){
+ main{padding:0 14px!important;margin:18px auto 50px!important}
+ header{height:66px;padding:0 15px!important}
+ .profile-cover{height:165px!important}
+ .profile-identity{grid-template-columns:78px minmax(0,1fr)!important;gap:12px!important;margin:-40px 12px 0!important;padding:0 8px 20px!important}
+ .profile-avatar{width:78px!important;height:78px!important}
+ .profile-name-block{padding-top:39px!important}
+ .profile-name-block h1{font-size:22px!important}
+ .profile-name-block .email{font-size:11px;overflow-wrap:anywhere}
+ .profile-edit-link{grid-column:1/-1;grid-row:2;justify-self:start;margin:0!important}
+ .profile-stats{padding:0 14px 17px!important;gap:7px!important}
+ .profile-stat{grid-template-columns:1fr!important;text-align:center;padding:12px 6px!important;gap:5px}
+ .profile-stat-icon{grid-row:auto;margin:auto}
+ .profile-stat strong{font-size:19px!important}
+ .profile-stat small{font-size:10px}
+ .level-panel{margin:0 14px 17px!important}
+ .profile-tabs{top:74px!important;overflow-x:auto}
+ .profile-tabs a{padding:10px 12px!important}
+ .profile-settings-card,.favorites-section{padding:17px!important}
+ .favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+ .anime-card img{height:195px!important}
+}
+@media(prefers-reduced-motion:reduce){.anime-card,.profile-tabs a{transition:none!important}}
+</style>
+
 </head>
 
 <body>

@@ -968,7 +968,6 @@ function renderAnime(){
   document.getElementById('counter').textContent=
     `Найдено аниме: ${filtered.length} из ${animeList.length}`;
 
-  loadFavorites();
 }
 
 
@@ -1272,7 +1271,14 @@ async function fetchAnimePoster(anime){
   const normalize=value=>(value||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
   for(const query of [...new Set(queries)]){
     const url='https://api.tenrai.org/v1/anime?q='+encodeURIComponent(query)+'&limit=10&sfw=true';
-    const response=await fetch(url,{headers:{'Accept':'application/json'}});
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),5000);
+    let response;
+    try {
+      response=await fetch(url,{headers:{'Accept':'application/json'},signal:controller.signal});
+    } finally {
+      clearTimeout(timeout);
+    }
     if(!response.ok)throw new Error('Tenrai HTTP '+response.status);
     const result=await response.json();
     const entries=Array.isArray(result.data)?result.data:[];
@@ -1295,7 +1301,7 @@ async function fetchAnimePoster(anime){
 
 async function loadAnimePosters(){
   // Не блокируем старт страницы массовым поиском обложек: подгружаем только первые карточки.
-  const missing=animeList.filter(anime=>!posterCache[anime[0]]).slice(0,12);
+  const missing=animeList.filter(anime=>!posterCache[anime[0]]).slice(0,6);
   let index=0;
   async function worker(){
     while(index<missing.length){
@@ -1313,9 +1319,8 @@ async function loadAnimePosters(){
       }catch(error){console.warn('Не удалось загрузить обложку '+anime[1]+':',error);}
     }
   }
-  await Promise.all([worker(),worker()]);
+  await Promise.all([worker(),worker(),worker()]);
   renderFeatured();
-  renderCinemaHero();
 }
 function showNotice(message){
   const notice=document.getElementById('notice');
@@ -1424,6 +1429,7 @@ function openAnimeCard(id){
 renderAnime();
 renderFeatured();
 renderCinemaHero();
+loadFavorites();
 loadOngoingAnime();
 updateCatalogLoadStatus("В каталоге "+animeList.length+" аниме. Новые карточки загружаются порциями из AniVibe.");
 if(anivibeCatalogFinished){

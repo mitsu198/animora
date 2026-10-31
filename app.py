@@ -129,71 +129,63 @@ ONGOING_CACHE_TTL = 30 * 60
 
 
 class AniVibeCatalogParser(__import__("html.parser", fromlist=["HTMLParser"]).HTMLParser):
-    """Извлекает карточки anime-item из HTML публичного каталога AniVibe."""
+    """Извлекает ссылки на аниме из каталога, не завися от CSS-классов сайта."""
     def __init__(self):
         super().__init__()
         self.items = []
         self.current = None
-        self.item_depth = 0
-        self.capture = None
-        self.capture_tag = None
+        self.depth = 0
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
-        classes = attrs.get("class", "").split()
-
-        if self.current is None and tag == "div" and "anime-item" in classes:
-            self.current = {"href": "", "poster": "", "title": "", "genres": "", "score": None, "year": None}
-            self.item_depth = 1
+        href = attrs.get("href", "")
+        if tag == "a" and __import__("re").search(r"/anime/\d+", href):
+            if self.current:
+                self._finish()
+            self.current = {"href": href, "poster": "", "title": "", "genres": "", "score": None, "year": None, "_text": []}
+            self.depth = 1
             return
         if self.current is None:
             return
-
-        self.item_depth += 1
-        if tag == "a" and attrs.get("href", "").startswith("/anime/"):
-            self.current["href"] = attrs["href"]
-        elif tag == "img" and attrs.get("src"):
-            self.current["poster"] = attrs["src"]
-        elif tag == "div" and "title" in classes:
-            self.capture, self.capture_tag = "title", "div"
-        elif tag == "div" and "genres" in classes:
-            self.capture, self.capture_tag = "genres", "div"
-        elif tag == "span" and "rating" in classes:
-            self.capture, self.capture_tag = "score", "span"
-        elif tag == "span" and "year" in classes:
-            self.capture, self.capture_tag = "year", "span"
+        if tag == "a":
+            self.depth += 1
+        elif tag == "img":
+            src = attrs.get("data-src") or attrs.get("data-original") or attrs.get("src") or ""
+            if src and not src.startswith("data:") and not self.current["poster"]:
+                self.current["poster"] = src
+            alt = attrs.get("alt", "").strip()
+            if alt and not self.current["title"]:
+                self.current["title"] = alt
 
     def handle_data(self, data):
-        if self.current is None or not self.capture:
-            return
-        value = data.strip()
-        if not value:
-            return
-        if self.capture in ("title", "genres"):
-            self.current[self.capture] = (self.current[self.capture] + " " + value).strip()
-        elif self.capture == "score":
-            try:
-                self.current["score"] = float(value.replace(",", "."))
-            except ValueError:
-                pass
-        elif self.capture == "year":
-            try:
-                self.current["year"] = int(value)
-            except ValueError:
-                pass
+        if self.current is not None:
+            value = " ".join(data.split())
+            if value:
+                self.current["_text"].append(value)
 
     def handle_endtag(self, tag):
-        if self.current is None:
+        if self.current is not None and tag == "a":
+            self.depth -= 1
+            if self.depth <= 0:
+                self._finish()
+
+    def _finish(self):
+        item = self.current
+        if not item:
             return
-        if self.capture and tag == self.capture_tag:
-            self.capture = None
-            self.capture_tag = None
-        self.item_depth -= 1
-        if self.item_depth <= 0:
-            if self.current.get("href") and self.current.get("title"):
-                self.items.append(self.current)
-            self.current = None
-            self.item_depth = 0
+        text = " ".join(item.pop("_text", []))
+        if not item["title"]:
+            item["title"] = text
+        item["title"] = " ".join(item["title"].split())
+        if item["href"] and item["title"]:
+            self.items.append(item)
+        self.current = None
+        self.depth = 0
+
+    def close(self):
+        super().close()
+        if self.current is not None:
+            self._finish()
 
 
 @app.route("/api/anime/ongoing")

@@ -100,6 +100,47 @@ def get_favorites():
     return response.json()
 
 
+@app.route("/api/anime/catalog")
+def anime_catalog_api():
+    """Прокси к Jikan: запросы выполняются сервером, а не браузером посетителя."""
+    try:
+        page = max(1, min(int(request.args.get("page", 1)), 100))
+        response = requests.get(
+            "https://api.jikan.moe/v4/anime",
+            params={"page": page, "limit": 25, "order_by": "start_date", "sort": "desc"},
+            headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
+            timeout=20
+        )
+        if response.status_code == 429:
+            return jsonify({"error": "Источник временно ограничил запросы. Попробуй чуть позже."}), 429
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException:
+        app.logger.exception("JIKAN CATALOG API ERROR")
+        return jsonify({"error": "Не удалось связаться с каталогом аниме."}), 502
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный номер страницы."}), 400
+
+
+@app.route("/api/anime/ongoing")
+def anime_ongoing_api():
+    """Текущие онгоинги через серверный запрос к Jikan."""
+    try:
+        response = requests.get(
+            "https://api.jikan.moe/v4/seasons/now",
+            params={"limit": 25},
+            headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
+            timeout=20
+        )
+        if response.status_code == 429:
+            return jsonify({"error": "Источник временно ограничил запросы. Попробуй чуть позже."}), 429
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException:
+        app.logger.exception("JIKAN ONGOING API ERROR")
+        return jsonify({"error": "Не удалось загрузить онгоинги."}), 502
+
+
 @app.route("/")
 def index():
     return render_template("index.html", avatar_url=session.get("avatar_url"), logged_in="user_id" in session, is_admin=is_admin_user())

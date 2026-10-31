@@ -188,7 +188,7 @@ main{max-width:1240px!important}
   <div class="control"><label for="anivibeEpisodes">Серия</label><select id="anivibeEpisodes" disabled><option value="">Выбери сезон</option></select></div>
   <div class="control"><label for="anivibeTranslations">Озвучка</label><select id="anivibeTranslations" disabled><option value="">Сначала выбери серию</option></select></div>
 </div>
-<div class="player-choices" role="tablist" aria-label="Выбор плеера"><span class="player-choice-label">Плеер</span><button type="button" class="player-tab active" role="tab" aria-selected="true" data-player="anivibe">AniVibe</button></div>
+<div class="player-choices" role="tablist" aria-label="Выбор плеера"><span class="player-choice-label">Плеер</span><button type="button" class="player-tab active" role="tab" aria-selected="true" data-player="aniweeb">Aniweeb</button></div>
 <div class="watch-action"><button class="primary" id="anivibePlay" disabled>▶ Смотреть серию</button><span class="status" id="anivibeStatus" role="status">Поиск доступен через подключённый AniVibe API.</span></div>
 <div class="player-shell"><div class="video-stage" id="videoStage"><div class="video-empty" id="videoEmpty"><div class="play-mark">▶</div><strong>Плеер ANIMORA</strong>Выбери аниме, серию и озвучку, затем нажми «Смотреть серию».</div></div><div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Плеер AniVibe</span></div></div>
 <div class="player-message" id="anivibeMessage" hidden></div>
@@ -203,7 +203,7 @@ if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;
 
 const $=id=>document.getElementById(id);
 const seasonsSelect=$('anivibeSeasons'),episodesSelect=$('anivibeEpisodes'),translationsSelect=$('anivibeTranslations'),playButton=$('anivibePlay'),status=$('anivibeStatus'),message=$('anivibeMessage'),stage=$('videoStage');
-let episodeItems=[],visibleEpisodes=[],selectedAnime=null,selectedEpisode=null,selectedPlayer='anivibe';
+let episodeItems=[],visibleEpisodes=[],selectedAnime=null,selectedEpisode=null,selectedPlayer='aniweeb';
 function listFrom(data,keys){
   if(Array.isArray(data))return data;
   for(const key of keys){if(Array.isArray(data?.[key]))return data[key];}
@@ -334,37 +334,22 @@ playButton.addEventListener('click',async()=>{
   const translation=chosen?translationLabel(chosen):'';
   playButton.disabled=true;setStatus('Получаю временную ссылку на плеер…');clearMessage();
   try{
-    if(selectedPlayer!=='anivibe')throw new Error('Выбранный плеер пока недоступен.');
-    const data=await api('/api/anivibe/embed-token',{method:'POST',body:JSON.stringify({anime_id:id,episode,translation})});
-    function findEmbedUrl(value,depth=0){
-      if(depth>5||value==null)return '';
-      if(typeof value==='string'){
-        const text=value.trim();
-        if(/^https:\/\//i.test(text))return text;
-        return '';
-      }
-      if(Array.isArray(value)){for(const item of value){const found=findEmbedUrl(item,depth+1);if(found)return found;}return '';}
-      if(typeof value==='object'){
-        const preferred=['embed_url','iframe_url','player_url','url','embed','iframe','player','src','link'];
-        for(const key of preferred){if(value[key]!==undefined){const found=findEmbedUrl(value[key],depth+1);if(found)return found;}}
-        for(const [key,item] of Object.entries(value)){if(!preferred.includes(key)){const found=findEmbedUrl(item,depth+1);if(found)return found;}}
-      }
-      return '';
-    }
-    const embedUrl=findEmbedUrl(data);
-    if(!embedUrl)throw new Error('AniVibe ответил без ссылки на плеер. Возможно, партнёрский домен не подтверждён или API вернул другой формат ответа.');
-    const parsed=new URL(embedUrl);
-    if(parsed.protocol!=='https:'||!(parsed.hostname==='anivibe.pro'||parsed.hostname.endsWith('.anivibe.pro')))throw new Error('AniVibe вернул адрес вне своего домена. Встраивание остановлено для безопасности.');
-    stopWatchHeartbeat();stage.innerHTML='';const frame=document.createElement('iframe');frame.src=parsed.href;frame.title='AniVibe player';frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';stage.appendChild(frame);startWatchHeartbeat();
+    if(selectedPlayer!=='aniweeb')throw new Error('Выбранный плеер пока недоступен.');
+    const track=/dub|дуб|русск/i.test(translation)?'dub':'sub';
+    const embedUrl='https://api.aniweeb.net/embed/mal/'+encodeURIComponent(id)+'/'+encodeURIComponent(episode)+'?track='+track;
+    stopWatchHeartbeat();stage.innerHTML='';
+    const frame=document.createElement('iframe');frame.src=embedUrl;frame.title='Aniweeb player';
+    frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;
+    frame.referrerPolicy='strict-origin-when-cross-origin';stage.appendChild(frame);startWatchHeartbeat();
     $('nowPlaying').textContent=animeLabel(selectedAnime)+' — серия '+episode+(translation?' · '+translation:'');
-    setStatus('Плеер загружен. Если видео не запускается, проверь домен в кабинете AniVibe.');
+    setStatus('Плеер Aniweeb загружен. Если серия недоступна, попробуй переключить озвучку.');
   }catch(e){setStatus(e.message);showMessage(e.message);}
   finally{playButton.disabled=false;}
 });
 document.querySelectorAll('.player-tab').forEach(tab=>tab.addEventListener('click',()=>{
   document.querySelectorAll('.player-tab').forEach(item=>{item.classList.remove('active');item.setAttribute('aria-selected','false');});
   tab.classList.add('active');tab.setAttribute('aria-selected','true');selectedPlayer=tab.dataset.player;
-  setStatus('Выбран плеер AniVibe.');
+  setStatus('Выбран плеер Aniweeb.');
 }));
 const directAniVibeId=Number(params.get('anivibe_id')||0);
 if(directAniVibeId>0){selectedAnime={id:directAniVibeId,title_ru:title};loadAnimeDetails(directAniVibeId);loadEpisodes(directAniVibeId);}

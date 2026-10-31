@@ -141,6 +141,120 @@ def anime_ongoing_api():
         return jsonify({"error": "Не удалось загрузить онгоинги."}), 502
 
 
+# AniVibe Partner API: ключ хранится только в переменных окружения Render.
+ANIVIBE_BASE_URL = "https://anivibe.pro"
+ANIMORA_PUBLIC_ORIGIN = "https://animora-f6xm.onrender.com"
+
+
+def anivibe_request(method, path, *, params=None, payload=None, authenticated=False):
+    headers = {"Accept": "application/json"}
+    if authenticated:
+        api_key = os.environ.get("ANIVIBE_API_KEY", "").strip()
+        if not api_key:
+            raise RuntimeError("AniVibe API-ключ не настроен в Render.")
+        headers["X-Api-Key"] = api_key
+    response = requests.request(
+        method,
+        f"{ANIVIBE_BASE_URL}{path}",
+        params=params,
+        json=payload,
+        headers=headers,
+        timeout=20
+    )
+    if response.status_code == 429:
+        return None, (jsonify({"error": "AniVibe временно ограничил число запросов. Попробуй позже."}), 429)
+    if response.status_code == 404:
+        return None, (jsonify({"error": "Аниме или серия не найдены в AniVibe."}), 404)
+    if response.status_code in (401, 403):
+        app.logger.warning("ANIVIBE AUTH/ORIGIN REJECTED: %s", response.status_code)
+        return None, (jsonify({"error": "AniVibe не подтвердил ключ или домен ANIMORA. Проверь настройки партнёра."}), 502)
+    if response.status_code >= 400:
+        app.logger.warning("ANIVIBE API ERROR: %s", response.status_code)
+        return None, (jsonify({"error": "AniVibe не смог обработать запрос."}), 502)
+    try:
+        return response.json(), None
+    except ValueError:
+        app.logger.warning("ANIVIBE RETURNED INVALID JSON")
+        return None, (jsonify({"error": "AniVibe вернул некорректный ответ."}), 502)
+
+
+@app.route("/api/anivibe/search")
+def anivibe_search():
+    query = request.args.get("q", "").strip()
+    if len(query) < 2 or len(query) > 120:
+        return jsonify({"error": "Введи название минимум из двух символов."}), 400
+    try:
+        limit = max(1, min(int(request.args.get("limit", 10)), 20))
+        data, error = anivibe_request("GET", "/api/v1/search", params={"q": query, "limit": limit})
+        return error if error else jsonify(data)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный лимит поиска."}), 400
+    except requests.RequestException:
+        app.logger.exception("ANIVIBE SEARCH CONNECTION ERROR")
+        return jsonify({"error": "Не удалось связаться с AniVibe."}), 502
+
+
+@app.route("/api/anivibe/anime/<int:anime_id>")
+def anivibe_anime_details(anime_id):
+    if anime_id < 1:
+        return jsonify({"error": "Некорректный ID аниме."}), 400
+    try:
+        data, error = anivibe_request("GET", f"/api/v1/anime/{anime_id}")
+        return error if error else jsonify(data)
+    except requests.RequestException:
+        app.logger.exception("ANIVIBE DETAILS CONNECTION ERROR")
+        return jsonify({"error": "Не удалось загрузить информацию об аниме."}), 502
+
+
+@app.route("/api/anivibe/anime/<int:anime_id>/episodes")
+def anivibe_episodes(anime_id):
+    if anime_id < 1:
+        return jsonify({"error": "Некорректный ID аниме."}), 400
+    try:
+        start = max(1, min(int(request.args.get("from", 1)), 10000))
+        limit = max(1, min(int(request.args.get("limit", 50)), 100))
+        data, error = anivibe_request(
+            "GET", f"/api/v1/anime/{anime_id}/episodes",
+            params={"from": start, "limit": limit}
+        )
+        return error if error else jsonify(data)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный диапазон серий."}), 400
+    except requests.RequestException:
+        app.logger.exception("ANIVIBE EPISODES CONNECTION ERROR")
+        return jsonify({"error": "Не удалось загрузить серии."}), 502
+
+
+@app.route("/api/anivibe/embed-token", methods=["POST"])
+def anivibe_embed_token():
+    data = request.get_json(silent=True) or {}
+    try:
+        anime_id = int(data.get("anime_id", 0))
+        episode = int(data.get("episode", 0))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный номер аниме или серии."}), 400
+    if anime_id < 1 or episode < 1:
+        return jsonify({"error": "Выбери аниме и серию."}), 400
+
+    payload = {"anime_id": anime_id, "episode": episode, "origin": ANIMORA_PUBLIC_ORIGIN}
+    translation = str(data.get("translation", "")).strip()
+    if translation:
+        if len(translation) > 120:
+            return jsonify({"error": "Некорректное название озвучки."}), 400
+        payload["translation"] = translation
+
+    try:
+        result, error = anivibe_request(
+            "POST", "/api/v1/embed-token", payload=payload, authenticated=True
+        )
+        return error if error else jsonify(result), (502 if error else 200)
+    except RuntimeError as error:
+        return jsonify({"error": str(error)}), 503
+    except requests.RequestException:
+        app.logger.exception("ANIVIBE EMBED TOKEN CONNECTION ERROR")
+        return jsonify({"error": "Не удалось получить ссылку на плеер."}), 502
+
+
 @app.route("/")
 def index():
     return render_template("index.html", avatar_url=session.get("avatar_url"), logged_in="user_id" in session, is_admin=is_admin_user())

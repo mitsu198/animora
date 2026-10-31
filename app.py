@@ -2,6 +2,9 @@
 import os
 import uuid
 import requests
+import base64
+import json
+import time
 
 from flask import (
     Flask, render_template, request, redirect,
@@ -39,7 +42,41 @@ def get_supabase():
     return create_client(url, key)
 
 
+def refresh_auth_session():
+    """Обновляет Supabase access token перед истечением срока действия."""
+    refresh_token = session.get("refresh_token")
+    access_token = session.get("access_token")
+    if not refresh_token or not access_token:
+        return
+
+    try:
+        payload = access_token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        expires_at = int(json.loads(base64.urlsafe_b64decode(payload)).get("exp", 0))
+    except Exception:
+        expires_at = 0
+
+    if expires_at > int(time.time()) + 90:
+        return
+
+    response = requests.post(
+        f"{os.environ['SUPABASE_URL'].rstrip('/')}/auth/v1/token",
+        params={"grant_type": "refresh_token"},
+        headers={"apikey": os.environ["SUPABASE_KEY"], "Content-Type": "application/json"},
+        json={"refresh_token": refresh_token},
+        timeout=20
+    )
+    if response.status_code >= 400:
+        app.logger.warning("SUPABASE SESSION REFRESH FAILED: %s %s", response.status_code, response.text[:500])
+        session.clear()
+        raise RuntimeError("Срок входа истёк. Войди в аккаунт заново.")
+    tokens = response.json()
+    session["access_token"] = tokens["access_token"]
+    session["refresh_token"] = tokens.get("refresh_token", refresh_token)
+
+
 def supabase_headers():
+    refresh_auth_session()
     return {
         "apikey": os.environ["SUPABASE_KEY"],
         "Authorization": f"Bearer {session['access_token']}",
@@ -161,6 +198,7 @@ def register():
                 session["user_email"] = result.user.email
                 session["user_id"] = result.user.id
                 session["access_token"] = result.session.access_token
+                session["refresh_token"] = result.session.refresh_token
 
                 metadata = result.user.user_metadata or {}
                 session["display_name"] = metadata.get(
@@ -194,6 +232,7 @@ def login():
             session["user_email"] = result.user.email
             session["user_id"] = result.user.id
             session["access_token"] = result.session.access_token
+            session["refresh_token"] = result.session.refresh_token
 
             metadata = result.user.user_metadata or {}
             session["display_name"] = metadata.get(
@@ -386,11 +425,19 @@ def toggle_favorite():
             "message": "Добавлено в избранное!"
         })
 
+    except requests.HTTPError as error:
+        upstream = error.response
+        app.logger.error("FAVORITE TOGGLE SUPABASE ERROR: %s %s", upstream.status_code, upstream.text[:1000])
+        if upstream.status_code == 401:
+            return jsonify({"success": False, "message": "Срок входа истёк. Выйди из аккаунта и войди снова."}), 401
+        return jsonify({"success": False, "message": "Supabase отклонил изменение избранного. Проверь настройки таблицы favorites и RLS."}), 502
+    except RuntimeError as error:
+        return jsonify({"success": False, "message": str(error)}), 401
     except Exception:
         app.logger.exception("FAVORITE TOGGLE ERROR")
         return jsonify({
             "success": False,
-            "message": "Не удалось обновить избранное."
+            "message": "Внутренняя ошибка при обновлении избранного. Подробности записаны в лог."
         }), 500
 
 

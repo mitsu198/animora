@@ -314,7 +314,7 @@ def network_diagnostics():
 
 # AniVibe Partner API: ключ хранится только в переменных окружения Render.
 ANIVIBE_BASE_URL = "https://anivibe.pro"
-ANIMORA_PUBLIC_ORIGIN = "https://animora-f6xm.onrender.com"
+ANIMORA_PUBLIC_ORIGIN = "https://animora.dpdns.org"
 
 
 def anivibe_request(method, path, *, params=None, payload=None, authenticated=False):

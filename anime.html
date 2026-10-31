@@ -29,6 +29,14 @@ select:focus{border-color:#bd72ff}
 .player-shell{margin:22px 0 24px;border:1px solid #49305f;border-radius:16px;overflow:hidden;background:#050408}
 .video-stage{position:relative;aspect-ratio:16/9;min-height:220px;background:#050408;display:flex;align-items:center;justify-content:center}
 .video-stage video,.video-stage iframe{width:100%;height:100%;position:absolute;inset:0;border:0;object-fit:contain;background:#050408}
+.video-loading{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;background:rgba(5,4,8,.88);color:#eee;pointer-events:none}
+.video-loading[hidden]{display:none}
+.video-loading-spinner{width:42px;height:42px;border:4px solid #ffffff30;border-top-color:#bd72ff;border-radius:50%;animation:videoSpin .8s linear infinite}
+.video-loading-title{font-weight:700;font-size:16px}
+.video-loading-time{font-size:13px;color:#c7b8d7}
+.video-loading-retry{pointer-events:auto;border:0;border-radius:9px;padding:10px 16px;background:#8e35e8;color:#fff;font-weight:700;cursor:pointer}
+@keyframes videoSpin{to{transform:rotate(360deg)}}
+
 .video-empty{max-width:520px;padding:28px;text-align:center;color:#b8a9c8;line-height:1.7}
 .video-empty .play-mark{width:62px;height:62px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:#8e35e8;color:white;font-size:25px}
 .video-empty strong{display:block;color:#fff;font-size:18px;margin-bottom:8px}
@@ -385,6 +393,49 @@ play.addEventListener('click', async () => {
     frame.src = parsed.href; frame.title = 'AniVibe player';
     frame.allow = 'autoplay; fullscreen; picture-in-picture'; frame.allowFullscreen = true;
     frame.referrerPolicy = 'strict-origin-when-cross-origin'; stage.appendChild(frame);
+
+    const loading = document.createElement('div');
+    loading.className = 'video-loading';
+    loading.innerHTML = '<div class="video-loading-spinner" aria-hidden="true"></div><div class="video-loading-title">Загружаем видео…</div><div class="video-loading-time">Прошло 0 сек.</div><button class="video-loading-retry" type="button" hidden>Перезагрузить видео</button>';
+    stage.appendChild(loading);
+    const loadingTitle = loading.querySelector('.video-loading-title');
+    const loadingTime = loading.querySelector('.video-loading-time');
+    const retryButton = loading.querySelector('.video-loading-retry');
+    let elapsed = 0;
+    let loadingTimer = null;
+    const stopLoadingTimer = () => {
+      if (loadingTimer) clearInterval(loadingTimer);
+      loadingTimer = null;
+    };
+    const startLoadingTimer = () => {
+      stopLoadingTimer();
+      elapsed = 0;
+      loading.hidden = false;
+      retryButton.hidden = true;
+      loadingTitle.textContent = 'Загружаем видео…';
+      loadingTime.textContent = 'Прошло 0 сек.';
+      loadingTimer = setInterval(() => {
+        elapsed += 1;
+        loadingTime.textContent = 'Прошло ' + elapsed + ' сек.';
+        if (elapsed >= 15) loadingTitle.textContent = 'Видео загружается дольше обычного…';
+        if (elapsed >= 35) {
+          loadingTitle.textContent = 'Видео всё ещё не появилось';
+          retryButton.hidden = false;
+        }
+      }, 1000);
+    };
+    retryButton.addEventListener('click', () => {
+      try {
+        const currentUrl = new URL(frame.src);
+        currentUrl.searchParams.set('_animora_retry', String(Date.now()));
+        frame.src = currentUrl.href;
+        startLoadingTimer();
+      } catch (_) {}
+    });
+    frame.addEventListener('load', () => {
+      loadingTitle.textContent = 'Плеер открыт, ожидаем видеопоток…';
+    });
+    startLoadingTimer();
     startHeartbeat();
     $('nowPlaying').textContent = $('title').textContent + ' — серия ' + episode + (voice ? ' · ' + voice : '');
     $('playerName').textContent = 'Плеер AniVibe';

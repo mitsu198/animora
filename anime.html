@@ -338,10 +338,23 @@ playButton.addEventListener('click',async()=>{
     let embedUrl='',playerTitle='';
     if(selectedPlayer==='anivibe'){
       const token=await api('/api/anivibe/embed-token',{method:'POST',body:JSON.stringify({anime_id:id,episode,translation})});
-      embedUrl=String(token.embed_url||token.url||token.embed||'');
+      function findEmbedUrl(value,depth=0){
+        if(depth>5||value==null)return '';
+        if(typeof value==='string')return /^https:\/\//i.test(value.trim())?value.trim():'';
+        if(Array.isArray(value)){for(const item of value){const found=findEmbedUrl(item,depth+1);if(found)return found;}return '';}
+        if(typeof value==='object'){
+          const preferred=['embed_url','iframe_url','player_url','url','embed','iframe','player','src','link'];
+          for(const key of preferred){if(value[key]!==undefined){const found=findEmbedUrl(value[key],depth+1);if(found)return found;}}
+          for(const [key,item] of Object.entries(value)){if(!preferred.includes(key)){const found=findEmbedUrl(item,depth+1);if(found)return found;}}
+        }
+        return '';
+      }
+      embedUrl=findEmbedUrl(token);
+      if(!embedUrl)throw new Error('AniVibe ответил без ссылки на плеер.');
       let parsed;
       try{parsed=new URL(embedUrl);}catch(_){throw new Error('AniVibe не вернул корректную ссылку на плеер.');}
-      if(parsed.protocol!=='https:'||parsed.hostname!=='anivibe.pro')throw new Error('AniVibe вернул небезопасную ссылку на плеер.');
+      if(parsed.protocol!=='https:'||!(parsed.hostname==='anivibe.pro'||parsed.hostname.endsWith('.anivibe.pro')))throw new Error('AniVibe вернул небезопасную ссылку на плеер.');
+      embedUrl=parsed.href;
       playerTitle='AniVibe';
     }else if(selectedPlayer==='aniweeb'){
       // Aniweeb officially supports MAL IDs; require an exact title match to avoid loading another anime.

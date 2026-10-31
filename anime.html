@@ -276,10 +276,16 @@ async function loadAnimeDetails(id){
     $('animeDescription').textContent='Описание пока недоступно. Можно выбрать серию и озвучку ниже.';
   }
 }
+function isRussianTranslation(item){
+  const label=translationLabel(item).toLocaleLowerCase();
+  return /русск|russian|\bru\b|рус\. язык|рус озвуч/i.test(label);
+}
 function renderTranslations(items){
   translationsSelect.innerHTML='';
   const unique=items.length?items:['По умолчанию'];
   unique.forEach((item,index)=>{const opt=document.createElement('option');opt.value=String(index);opt.textContent=translationLabel(item);translationsSelect.appendChild(opt);});
+  const russianIndex=unique.findIndex(isRussianTranslation);
+  if(russianIndex>=0)translationsSelect.value=String(russianIndex);
   translationsSelect.disabled=false;playButton.disabled=!selectedEpisode;
 }
 async function loadEpisodes(id){

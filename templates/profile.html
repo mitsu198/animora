@@ -484,6 +484,31 @@ main{max-width:1180px!important;margin:34px auto 80px!important;padding:0 24px!i
 @media(prefers-reduced-motion:reduce){.anime-card,.profile-tabs a{transition:none!important}}
 </style>
 
+
+<style id="animora-profile-settings-modal">
+.profile-settings-modal{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
+.profile-settings-modal.open{display:flex}
+.profile-settings-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;background:rgba(3,4,12,.82);backdrop-filter:blur(12px)}
+.profile-settings-dialog{position:relative;z-index:1;width:min(760px,100%);max-height:88vh;overflow:auto;background:#111522;border:1px solid #51416d;border-radius:22px;padding:26px;box-shadow:0 28px 100px #000b;animation:profileSettingsIn .2s ease-out}
+.profile-settings-dialog .profile-settings-card{display:block!important;margin:0;padding:0;border:0;box-shadow:none;background:transparent;overflow:visible}
+.profile-settings-dialog .section-heading{padding-right:42px}
+.profile-settings-close{position:absolute;z-index:2;right:16px;top:14px;width:38px;height:38px;padding:0;border-radius:50%;background:#282238;color:#fff;font-size:27px}
+.profile-edit-link{font-family:inherit;cursor:pointer}
+@keyframes profileSettingsIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:600px){.profile-settings-modal{padding:10px}.profile-settings-dialog{padding:20px 15px;max-height:92vh}.profile-settings-dialog .settings-grid{grid-template-columns:1fr}}
+</style>
+<script id="animora-profile-settings-controls">
+function openProfileSettings(){
+ const modal=document.getElementById('profileSettingsModal');if(!modal)return;
+ modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+}
+function closeProfileSettings(){
+ const modal=document.getElementById('profileSettingsModal');if(!modal)return;
+ modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileSettings();});
+</script>
+
 </head>
 
 <body>
@@ -511,7 +536,7 @@ main{max-width:1180px!important;margin:34px auto 80px!important;padding:0 24px!i
         <span class="profile-tag">✦ Участник ANIMORA</span>
       </div>
     </div>
-    <a class="profile-edit-link" href="#profileSettings">⚙ Настроить профиль</a>
+    <button class="profile-edit-link" type="button" onclick="openProfileSettings()">⚙ Настройки</button>
   </div>
   <div class="profile-stats">
     <div class="profile-stat"><span class="profile-stat-icon">♥</span><strong>{{ favorites|length }}</strong><small>В избранном</small></div>
@@ -528,11 +553,15 @@ main{max-width:1180px!important;margin:34px auto 80px!important;padding:0 24px!i
 <nav class="profile-tabs" aria-label="Разделы профиля">
   <a class="active" href="#profileOverview">Обзор</a>
   <a href="#favoritesSection">Избранное <span>{{ favorites|length }}</span></a>
-  <a href="#profileSettings">Настройки</a>
+  <a href="#profileSettings" onclick="openProfileSettings();return false;">Настройки</a>
 </nav>
 
+<div class="profile-settings-modal" id="profileSettingsModal" aria-hidden="true">
+  <button class="profile-settings-backdrop" type="button" aria-label="Закрыть настройки" onclick="closeProfileSettings()"></button>
+  <div class="profile-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="profileSettingsTitle">
+    <button class="profile-settings-close" type="button" aria-label="Закрыть" onclick="closeProfileSettings()">×</button>
 <section class="profile-settings-card" id="profileSettings">
-  <div class="section-heading"><div><span class="section-kicker">АККАУНТ</span><h2>Настройки профиля</h2><p>Обнови имя или загрузи новый аватар.</p></div><span class="section-icon">⚙</span></div>
+  <div class="section-heading"><div><span class="section-kicker">АККАУНТ</span><h2 id="profileSettingsTitle">Настройки профиля</h2><p>Обнови имя или загрузи новый аватар.</p></div><span class="section-icon">⚙</span></div>
   {% with messages = get_flashed_messages() %}
     {% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}
   {% endwith %}
@@ -555,6 +584,8 @@ main{max-width:1180px!important;margin:34px auto 80px!important;padding:0 24px!i
   </div>
   <div class="profile-actions"><a href="/" class="link-button">Открыть каталог</a><a href="/logout" class="link-button secondary">Выйти из аккаунта</a></div>
 </section>
+  </div>
+</div>
 
 <section class="favorites-section" id="favoritesSection">
     <h2>❤️ Моё избранное</h2>

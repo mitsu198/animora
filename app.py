@@ -272,7 +272,9 @@ def anime_ongoing_api():
             result = jsonify(cached)
             result.headers["X-Animora-Cache"] = "STALE"
             return result
-        return jsonify({"error": "Не удалось загрузить список онгоингов."}), 502
+        # Внешние каталоги могут быть временно недоступны из Render.
+        # Не превращаем их сбой в ошибку всей главной страницы.
+        return jsonify({"data": [], "source": "temporarily-unavailable", "message": "Внешний источник онгоингов временно недоступен."}), 200
 
 @app.route("/api/diagnostics/network")
 def network_diagnostics():

@@ -357,25 +357,8 @@ playButton.addEventListener('click',async()=>{
       embedUrl=parsed.href;
       playerTitle='AniVibe';
     }else if(selectedPlayer==='aniweeb'){
-      // Aniweeb requires an AniList ID, not the AniVibe catalog ID or a MAL ID.
-      const normalize=value=>String(value||'').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
-      const wanted=normalize(animeLabel(selectedAnime));
-      const searchResponse=await fetch('https://graphql.anilist.co',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify({
-          query:'query ($search: String) { Page(perPage: 10) { media(search: $search, type: ANIME) { id title { romaji english native } synonyms } } }',
-          variables:{search:animeLabel(selectedAnime)}
-        })
-      });
-      if(!searchResponse.ok)throw new Error('Не удалось найти AniList ID для Aniweeb. Попробуй ещё раз.');
-      const searchData=await searchResponse.json();
-      const candidates=searchData?.data?.Page?.media||[];
-      const match=candidates.find(item=>[
-        item.title?.romaji,item.title?.english,item.title?.native,...(item.synonyms||[])
-      ].filter(Boolean).some(value=>normalize(value)===wanted));
-      const aniListId=Number(match?.id||0);
-      if(!aniListId)throw new Error('Не удалось точно сопоставить это аниме с AniList. Aniweeb недоступен для этого тайтла.');
+      const aniListId=Number(selectedAnime?.aniListId||0);
+      if(!aniListId)throw new Error('Не удалось определить AniList ID для Aniweeb.');
       embedUrl='https://api.aniweeb.net/embed/ani/'+encodeURIComponent(aniListId)+'/'+encodeURIComponent(episode)+'?track='+track;
       playerTitle='Aniweeb';
     }else throw new Error('Выбранный плеер недоступен.');
@@ -395,8 +378,46 @@ document.querySelectorAll('.player-tab').forEach(tab=>tab.addEventListener('clic
   $('playerName').textContent='Плеер '+(selectedPlayer==='aniweeb'?'Aniweeb':'AniVibe');
   setStatus('Выбран плеер '+(selectedPlayer==='aniweeb'?'Aniweeb':'AniVibe')+'.');
 }));
+async function findAniListIdByTitle(searchTitle){
+  const response=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query:'query ($search: String) { Page(perPage: 10) { media(search: $search, type: ANIME) { id title { romaji english native } synonyms } } }',variables:{search:searchTitle}})});
+  if(!response.ok)throw new Error('AniList не ответил при поиске аниме.');
+  const data=await response.json(),items=data?.data?.Page?.media||[];
+  const norm=value=>String(value||'').toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu,' ').trim();
+  const wanted=norm(searchTitle);
+  const exact=items.find(item=>[item.title?.romaji,item.title?.english,item.title?.native,...(item.synonyms||[])].filter(Boolean).some(value=>norm(value)===wanted));
+  if(!exact?.id)throw new Error('Не удалось точно найти это аниме в AniList.');
+  return Number(exact.id);
+}
+async function loadAniweebEpisodesByTitle(searchTitle){
+  selectedAnime={id:0,title_ru:searchTitle,aniListId:0};selectedEpisode=null;episodeItems=[];
+  seasonsSelect.disabled=true;episodesSelect.disabled=true;translationsSelect.disabled=true;playButton.disabled=true;
+  seasonsSelect.innerHTML='<option value="">Поиск аниме…</option>';episodesSelect.innerHTML='<option value="">Загрузка серий…</option>';
+  setStatus('Ищу аниме и загружаю серии Aniweeb…');
+  try{
+    selectedAnime.aniListId=await findAniListIdByTitle(searchTitle);
+    const response=await fetch('https://api.aniweeb.net/episodes/'+selectedAnime.aniListId,{headers:{'Accept':'application/json'}});
+    if(!response.ok)throw new Error('Aniweeb не смог загрузить серии этого аниме.');
+    const data=await response.json();episodeItems=Array.isArray(data?.episodes)?data.episodes:[];
+    if(!episodeItems.length)throw new Error('Aniweeb пока не нашёл доступных серий для этого аниме.');
+    seasonsSelect.innerHTML='<option value="1">Основной сезон</option>';seasonsSelect.disabled=false;
+    episodesSelect.innerHTML='';
+    episodeItems.forEach((ep,index)=>{const opt=document.createElement('option');opt.value=String(index);opt.textContent='Серия '+(Number(ep.number)||index+1);episodesSelect.appendChild(opt);});
+    episodesSelect.disabled=false;
+    episodesSelect.onchange=()=>{
+      selectedEpisode=episodeItems[Number(episodesSelect.value)]||null;translationsSelect.innerHTML='';
+      const tracks=[];if(selectedEpisode?.sub!==false)tracks.push(['sub','Субтитры']);if(selectedEpisode?.dub===true)tracks.push(['dub','Дубляж']);
+      (tracks.length?tracks:[['sub','Субтитры']]).forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;translationsSelect.appendChild(opt);});
+      translationsSelect.disabled=false;playButton.disabled=false;setStatus('Выбери озвучку и нажми «Смотреть серию».');
+    };
+    episodesSelect.dispatchEvent(new Event('change'));setStatus('Серии загружены через Aniweeb.');
+  }catch(error){seasonsSelect.innerHTML='<option value="">Серии недоступны</option>';episodesSelect.innerHTML='<option value="">Не удалось загрузить серии</option>';setStatus(error.message);showMessage(error.message);}
+}
 const directAniVibeId=Number(params.get('anivibe_id')||0);
-if(directAniVibeId>0){selectedAnime={id:directAniVibeId,title_ru:title};loadAnimeDetails(directAniVibeId);loadEpisodes(directAniVibeId);}
-else {seasonsSelect.innerHTML='<option value="">Не удалось определить аниме</option>';setStatus('Открой страницу аниме из каталога, чтобы загрузить сезоны.');}
+if(directAniVibeId>0){selectedAnime={id:directAniVibeId,title_ru:title};selectedPlayer='anivibe';loadAnimeDetails(directAniVibeId);loadEpisodes(directAniVibeId);}
+else if(params.get('id')){
+  selectedPlayer='aniweeb';
+  document.querySelectorAll('.player-tab').forEach(tab=>{const active=tab.dataset.player==='aniweeb';tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));});
+  $('playerName').textContent='Плеер Aniweeb';loadAniweebEpisodesByTitle(title);
+}else{seasonsSelect.innerHTML='<option value="">Не удалось определить аниме</option>';setStatus('Открой страницу аниме из каталога, чтобы загрузить сезоны.');}
 </script>
 </body></html>

@@ -779,6 +779,10 @@ function setGenre(genre,button){
   document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));
   button.classList.add('active');
   renderAnime();
+  // После выбора жанра плавно переводим пользователя к отфильтрованному каталогу.
+  requestAnimationFrame(()=>{
+    document.getElementById('catalog')?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
 }
 
 

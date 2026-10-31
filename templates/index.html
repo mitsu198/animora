@@ -661,6 +661,7 @@ function scrollOngoing(direction){
 async function loadOngoingAnime(){
   const target=document.getElementById("ongoingGrid");
   if(!target)return;
+  if(!target.dataset.carouselReady){target.addEventListener("scroll",updateOngoingArrows,{passive:true});target.dataset.carouselReady="1";}
   try{
     let payload=null;
     // Jikan ограничивает частоту запросов; повторяем запрос при 429 и временных сетевых сбоях.

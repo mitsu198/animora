@@ -626,7 +626,7 @@ async function loadOngoingAnime(){
     // Jikan ограничивает частоту запросов; повторяем запрос при 429 и временных сетевых сбоях.
     for(let attempt=0;attempt<5;attempt++){
       try{
-        const response=await fetch("https://api.jikan.moe/v4/seasons/now?limit=25",{headers:{"Accept":"application/json"},cache:"no-store"});
+        const response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"no-store"});
         if(response.status===429)throw new Error("RATE_LIMIT");
         if(!response.ok)throw new Error("JIKAN_"+response.status);
         payload=await response.json();
@@ -762,7 +762,7 @@ function updateCatalogLoadStatus(message){
   if(status)status.textContent=message;
 }
 async function fetchJikanPage(page){
-  const response=await fetch("https://api.jikan.moe/v4/anime?page="+page+"&limit=25&order_by=start_date&sort=desc",{headers:{"Accept":"application/json"},cache:"no-store"});
+  const response=await fetch("/api/anime/catalog?page="+page,{headers:{"Accept":"application/json"},cache:"no-store"});
   if(response.status===429)throw new Error("RATE_LIMIT");
   if(!response.ok)throw new Error("JIKAN_HTTP_"+response.status);
   return response.json();

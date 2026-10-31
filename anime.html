@@ -17,6 +17,8 @@ main{max-width:1200px;margin:auto;padding:34px 6% 70px}.back{display:inline-bloc
 .info{align-self:center}.eyebrow{color:#c58aff;text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:bold}
 h1{font-size:clamp(30px,5vw,48px);margin:12px 0}.genre{color:#c9b8d8;line-height:1.7}
 .description{color:#bdb5c7;line-height:1.8;max-width:680px;margin:22px 0}
+.anime-facts{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 22px}
+.anime-fact{display:inline-flex;align-items:center;padding:8px 11px;border:1px solid #49305f;border-radius:9px;background:#100d17;color:#e6d8f2;font-size:12px}
 .primary{border:0;border-radius:12px;padding:15px 30px;background:linear-gradient(100deg,#8e35e8,#bd72ff);color:white;font-weight:bold;font-size:16px;cursor:pointer;box-shadow:0 8px 25px #963fff40}
 .primary:hover{filter:brightness(1.12);transform:translateY(-1px)}
 .watch{margin-top:28px;padding:28px;border:1px solid #382747;border-radius:20px;background:#15121f}
@@ -148,7 +150,8 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
 <section class="hero">
 <div class="poster-wrap" id="posterWrap"><div class="poster-fallback" id="posterFallback">ANIMORA</div></div>
 <div class="info"><div class="eyebrow">ANIMORA • Страница аниме</div><h1 id="title">Название аниме</h1><div class="genre" id="genre"></div>
-<p class="description">Выбери удобную озвучку и плеер в блоке просмотра. Здесь будет доступна информация о тайтле.</p>
+<p class="description" id="animeDescription">Загружаем описание аниме…</p>
+<div class="anime-facts" id="animeFacts" aria-live="polite"></div>
 <button class="primary" onclick="document.getElementById('watch').scrollIntoView({behavior:'smooth'})">▶ Смотреть</button></div>
 </section>
 <section class="watch" id="watch"><h2>Просмотр ANIMORA</h2><p class="sub">Найди аниме в каталоге AniVibe, выбери серию и озвучку.</p>
@@ -217,6 +220,46 @@ function animeLabel(item){return String(valueOf(item,['title_ru','russian','name
 function episodeNumber(item){return Number(valueOf(item,['episode','number','episode_number','ordinal']));}
 function translationsOf(item){return listFrom(item,['translations','voices','voiceovers','dubs','players']);}
 function translationLabel(item){return String(typeof item==='string'?item:valueOf(item,['title','name','translation','voice','label'])||'Озвучка');}
+async function loadAnimeDetails(id){
+  try{
+    const payload=await api('/api/anivibe/anime/'+id);
+    let item=payload?.data??payload?.anime??payload?.result??payload;
+    if(item?.anime&&typeof item.anime==='object')item=item.anime;
+    const pick=(...values)=>values.find(value=>value!==undefined&&value!==null&&value!=='');
+    const detailTitle=pick(item.title_ru,item.russian,item.name_ru,item.title,item.title_en,item.title_english);
+    if(detailTitle){
+      $('title').textContent=String(detailTitle);
+      document.title=String(detailTitle)+' — ANIMORA';
+    }
+    const description=pick(item.description_ru,item.synopsis_ru,item.description,item.synopsis,item.summary,item.plot);
+    if(description)$('animeDescription').textContent=String(description);
+    const rawGenres=Array.isArray(item.genres)?item.genres:(Array.isArray(item.genre)?item.genre:[]);
+    const genres=rawGenres.map(genre=>typeof genre==='string'?genre:
+      valueOf(genre,['title_ru','title','name_ru','name'])).filter(Boolean);
+    if(genres.length)$('genre').textContent='Жанры: '+[...new Set(genres)].join(', ');
+    const ratingValue=pick(item.score,item.rating?.average,item.rating?.score,item.rating?.value,
+      typeof item.rating==='number'?item.rating:null);
+    const rating=Number(ratingValue);
+    const year=pick(item.year,item.aired?.from?.slice?.(0,4),item.release_year);
+    const episodeCount=pick(item.episodes_count,item.episodes_total,item.episodes);
+    const statusText=pick(item.status_ru,item.status);
+    const facts=[];
+    if(Number.isFinite(rating)&&rating>0)facts.push('★ '+rating.toFixed(1)+'/10');
+    if(year)facts.push('Год: '+year);
+    if(episodeCount)facts.push('Серий: '+episodeCount);
+    if(statusText)facts.push(String(statusText));
+    $('animeFacts').innerHTML=facts.map(fact=>'<span class="anime-fact">'+String(fact).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))+'</span>').join('');
+    const poster=pick(item.poster,item.poster_url,item.image,item.images?.webp?.large_image_url,item.images?.jpg?.large_image_url);
+    if(poster&&!params.get('poster')){
+      const img=document.createElement('img');img.src=poster;img.alt=String(detailTitle||title);
+      img.onerror=()=>{img.remove();$('posterFallback').style.display='flex';};
+      $('posterFallback').style.display='none';$('posterWrap').appendChild(img);
+    }
+  }catch(error){
+    console.warn('Не удалось загрузить описание аниме:',error);
+    $('animeDescription').textContent='Описание пока недоступно. Можно выбрать серию и озвучку ниже.';
+  }
+}
 function renderTranslations(items){
   translationsSelect.innerHTML='';
   const unique=items.length?items:['По умолчанию'];
@@ -254,7 +297,7 @@ async function runSearch(){
     resultsSelect.dispatchEvent(new Event('change'));setStatus('Найдено: '+searchItems.length+'. Выбери нужный тайтл.');
   }catch(e){resultsSelect.innerHTML='<option value="">Ошибка поиска</option>';setStatus(e.message);}
 }
-resultsSelect.addEventListener('change',()=>{const item=searchItems[Number(resultsSelect.value)];if(!item)return;const id=animeId(item);if(!id){setStatus('AniVibe вернул результат без ID тайтла.');return;}loadEpisodes(id);});
+resultsSelect.addEventListener('change',()=>{const item=searchItems[Number(resultsSelect.value)];if(!item)return;const id=animeId(item);if(!id){setStatus('AniVibe вернул результат без ID тайтла.');return;}loadAnimeDetails(id);loadEpisodes(id);});
 episodesSelect.addEventListener('change',()=>{
   const ep=episodeItems[Number(episodesSelect.value)];selectedEpisode=ep||null;
   const translations=ep?translationsOf(ep):[];
@@ -295,7 +338,7 @@ playButton.addEventListener('click',async()=>{
   finally{playButton.disabled=false;}
 });
 const directAniVibeId=Number(params.get('anivibe_id')||0);
-if(directAniVibeId>0){searchItems=[{id:directAniVibeId,title_ru:title}];resultsSelect.innerHTML='';const opt=document.createElement('option');opt.value='0';opt.textContent=title;resultsSelect.appendChild(opt);loadEpisodes(directAniVibeId);}
+if(directAniVibeId>0){searchItems=[{id:directAniVibeId,title_ru:title}];resultsSelect.innerHTML='';const opt=document.createElement('option');opt.value='0';opt.textContent=title;resultsSelect.appendChild(opt);loadAnimeDetails(directAniVibeId);loadEpisodes(directAniVibeId);}
 else if(title&&title!=='Аниме'){searchInput.value=title;runSearch();}
 </script>
 </body></html>

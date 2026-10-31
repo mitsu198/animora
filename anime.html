@@ -357,20 +357,26 @@ playButton.addEventListener('click',async()=>{
       embedUrl=parsed.href;
       playerTitle='AniVibe';
     }else if(selectedPlayer==='aniweeb'){
-      // Aniweeb officially supports MAL IDs; require an exact title match to avoid loading another anime.
-      let malId=Number(selectedAnime?.mal_id||selectedAnime?.malId||0);
-      if(!malId){
-        const searchUrl='https://api.jikan.moe/v4/anime?q='+encodeURIComponent(animeLabel(selectedAnime))+'&limit=10&sfw=true';
-        const searchResponse=await fetch(searchUrl,{headers:{'Accept':'application/json'}});
-        if(!searchResponse.ok)throw new Error('Не удалось определить ID аниме для Aniweeb. Попробуй ещё раз.');
-        const searchData=await searchResponse.json(),candidates=Array.isArray(searchData?.data)?searchData.data:[];
-        const normalize=value=>String(value||'').toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu,' ').trim();
-        const wanted=normalize(animeLabel(selectedAnime));
-        const match=candidates.find(item=>[item.title,item.title_english,item.title_japanese,...(item.titles||[]).map(x=>x.title)].filter(Boolean).some(value=>normalize(value)===wanted));
-        malId=Number(match?.mal_id||0);
-      }
-      if(!malId)throw new Error('Не удалось точно сопоставить это аниме с MyAnimeList. Aniweeb пока недоступен для этого тайтла.');
-      embedUrl='https://api.aniweeb.net/embed/mal/'+encodeURIComponent(malId)+'/'+encodeURIComponent(episode)+'?track='+track;
+      // Aniweeb requires an AniList ID, not the AniVibe catalog ID or a MAL ID.
+      const normalize=value=>String(value||'').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+      const wanted=normalize(animeLabel(selectedAnime));
+      const searchResponse=await fetch('https://graphql.anilist.co',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({
+          query:'query ($search: String) { Page(perPage: 10) { media(search: $search, type: ANIME) { id title { romaji english native } synonyms } } }',
+          variables:{search:animeLabel(selectedAnime)}
+        })
+      });
+      if(!searchResponse.ok)throw new Error('Не удалось найти AniList ID для Aniweeb. Попробуй ещё раз.');
+      const searchData=await searchResponse.json();
+      const candidates=searchData?.data?.Page?.media||[];
+      const match=candidates.find(item=>[
+        item.title?.romaji,item.title?.english,item.title?.native,...(item.synonyms||[])
+      ].filter(Boolean).some(value=>normalize(value)===wanted));
+      const aniListId=Number(match?.id||0);
+      if(!aniListId)throw new Error('Не удалось точно сопоставить это аниме с AniList. Aniweeb недоступен для этого тайтла.');
+      embedUrl='https://api.aniweeb.net/embed/ani/'+encodeURIComponent(aniListId)+'/'+encodeURIComponent(episode)+'?track='+track;
       playerTitle='Aniweeb';
     }else throw new Error('Выбранный плеер недоступен.');
     stopWatchHeartbeat();stage.innerHTML='';

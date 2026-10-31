@@ -878,7 +878,16 @@ async function loadOngoingAnime(){
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),10000);
   try{
-    const response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"default",signal:controller.signal});
+    const edgeUrl="https://animora-catalog-cache.f86478662.workers.dev/api/anime/ongoing";
+    let response;
+    try{
+      response=await fetch(edgeUrl,{headers:{"Accept":"application/json"},cache:"no-store",signal:controller.signal});
+      if(!response.ok)throw new Error("EDGE_HTTP_"+response.status);
+    }catch(edgeError){
+      if(controller.signal.aborted)throw edgeError;
+      console.warn("Cloudflare cache unavailable; using Render directly:",edgeError);
+      response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"default",signal:controller.signal});
+    }
     if(!response.ok)throw new Error("ONGOING_HTTP_"+response.status);
     const payload=await response.json();
     const items=(payload?.data||[]).filter(item=>item.mal_id&&item.title).slice(0,25);

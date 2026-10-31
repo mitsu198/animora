@@ -151,13 +151,17 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
 <p class="description">Выбери удобную озвучку и плеер в блоке просмотра. Здесь будет доступна информация о тайтле.</p>
 <button class="primary" onclick="document.getElementById('watch').scrollIntoView({behavior:'smooth'})">▶ Смотреть</button></div>
 </section>
-<section class="watch" id="watch"><h2>Просмотр</h2><p class="sub">Официальный просмотр появится после подключения видеопартнёра ANIMORA.</p>
-<div class="player-shell">
-<div class="video-stage" id="videoStage">
-<div class="video-empty" id="videoEmpty"><div class="play-mark">▶</div><strong>Плеер ANIMORA</strong>Полные серии будут воспроизводиться здесь, прямо на сайте.<br>Источник видео пока не подключён.</div>
+<section class="watch" id="watch"><h2>Просмотр ANIMORA</h2><p class="sub">Найди аниме в каталоге AniVibe, выбери серию и озвучку.</p>
+<div class="controls">
+  <div class="control"><label for="anivibeSearch">Поиск аниме</label><input id="anivibeSearch" type="search" placeholder="Например, One Piece" autocomplete="off" style="width:100%;padding:14px;border:1px solid #49305f;border-radius:11px;background:#0e0c15;color:white;font-size:15px"></div>
+  <div class="control"><label for="anivibeResults">Результаты поиска</label><select id="anivibeResults"><option value="">Сначала выполни поиск</option></select></div>
+  <div class="control"><label for="anivibeEpisodes">Серия</label><select id="anivibeEpisodes" disabled><option value="">Выбери аниме</option></select></div>
+  <div class="control"><label for="anivibeTranslations">Озвучка</label><select id="anivibeTranslations" disabled><option value="">Сначала выбери серию</option></select></div>
 </div>
-<div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Полноэкранный режим поддерживается</span></div>
-</div>
+<div class="watch-action"><button class="primary" id="anivibePlay" disabled>▶ Смотреть серию</button><span class="status" id="anivibeStatus" role="status">Поиск доступен через подключённый AniVibe API.</span></div>
+<div class="player-shell"><div class="video-stage" id="videoStage"><div class="video-empty" id="videoEmpty"><div class="play-mark">▶</div><strong>Плеер ANIMORA</strong>Выбери аниме, серию и озвучку, затем нажми «Смотреть серию».</div></div><div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Плеер AniVibe</span></div></div>
+<div class="player-message" id="anivibeMessage" hidden></div>
+</section>
 <section class="watch" id="legalServices">
 <h2>Где смотреть легально</h2>
 <p class="sub">Открой официальный сервис и проверь, доступно ли это аниме в твоём регионе.</p>
@@ -189,6 +193,92 @@ document.getElementById('crunchyrollLink').href='https://www.crunchyroll.com/sea
 document.getElementById('primeLink').href='https://www.primevideo.com/search/ref=atv_nb_sr?phrase='+encodedTitle;
 if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;img.onerror=()=>{img.remove();document.getElementById('posterFallback').style.display='flex'};document.getElementById('posterFallback').style.display='none';document.getElementById('posterWrap').appendChild(img);}
 
-
-
+const $=id=>document.getElementById(id);
+const searchInput=$('anivibeSearch'),resultsSelect=$('anivibeResults'),episodesSelect=$('anivibeEpisodes'),translationsSelect=$('anivibeTranslations'),playButton=$('anivibePlay'),status=$('anivibeStatus'),message=$('anivibeMessage'),stage=$('videoStage');
+let searchItems=[],episodeItems=[],selectedAnime=null,selectedEpisode=null;
+function listFrom(data,keys){
+  if(Array.isArray(data))return data;
+  for(const key of keys){if(Array.isArray(data?.[key]))return data[key];}
+  if(Array.isArray(data?.data))return data.data;
+  return [];
+}
+function valueOf(obj,keys){for(const k of keys){if(obj?.[k]!==undefined&&obj[k]!==null)return obj[k];}return '';}
+function setStatus(text){status.textContent=text;}
+function showMessage(text){message.hidden=false;message.textContent=text;}
+function clearMessage(){message.hidden=true;message.textContent='';}
+async function api(path,options={}){
+  const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||data.message||'Ошибка запроса к AniVibe.');
+  return data;
+}
+function animeId(item){return Number(valueOf(item,['id','anime_id','shikimori_id']));}
+function animeLabel(item){return String(valueOf(item,['title_ru','russian','name_ru','title','name','title_en'])||('Аниме #'+animeId(item)));}
+function episodeNumber(item){return Number(valueOf(item,['episode','number','episode_number','ordinal']));}
+function translationsOf(item){return listFrom(item,['translations','voices','voiceovers','dubs','players']);}
+function translationLabel(item){return String(typeof item==='string'?item:valueOf(item,['title','name','translation','voice','label'])||'Озвучка');}
+function renderTranslations(items){
+  translationsSelect.innerHTML='';
+  const unique=items.length?items:['По умолчанию'];
+  unique.forEach((item,index)=>{const opt=document.createElement('option');opt.value=String(index);opt.textContent=translationLabel(item);translationsSelect.appendChild(opt);});
+  translationsSelect.disabled=false;playButton.disabled=!selectedEpisode;
+}
+async function loadEpisodes(id){
+  selectedAnime=searchItems.find(x=>animeId(x)===id)||selectedAnime;
+  selectedEpisode=null;episodeItems=[];
+  episodesSelect.disabled=true;episodesSelect.innerHTML='<option value="">Загрузка серий…</option>';
+  translationsSelect.disabled=true;translationsSelect.innerHTML='<option value="">Выбери серию</option>';playButton.disabled=true;
+  clearMessage();setStatus('Загружаю серии и озвучки…');
+  try{
+    const data=await api('/api/anivibe/anime/'+id+'/episodes?from=1&limit=100');
+    episodeItems=listFrom(data,['episodes','items','results']);
+    episodesSelect.innerHTML='';
+    if(!episodeItems.length){episodesSelect.innerHTML='<option value="">Серии не найдены</option>';setStatus('AniVibe не вернул список серий для этого тайтла.');return;}
+    episodeItems.forEach((ep,index)=>{const n=episodeNumber(ep)||index+1;const opt=document.createElement('option');opt.value=String(index);opt.textContent='Серия '+n;episodesSelect.appendChild(opt);});
+    episodesSelect.disabled=false;episodesSelect.dispatchEvent(new Event('change'));
+    setStatus('Выбери серию и доступную озвучку.');
+  }catch(e){episodesSelect.innerHTML='<option value="">Не удалось загрузить серии</option>';setStatus(e.message);}
+}
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch();});
+let searchTimer;
+searchInput.addEventListener('input',()=>{clearTimeout(searchTimer);if(searchInput.value.trim().length>=2)searchTimer=setTimeout(runSearch,500);});
+async function runSearch(){
+  const q=searchInput.value.trim();if(q.length<2){setStatus('Введи минимум два символа.');return;}
+  setStatus('Ищу аниме…');resultsSelect.innerHTML='<option value="">Поиск…</option>';episodesSelect.disabled=true;playButton.disabled=true;clearMessage();
+  try{
+    const data=await api('/api/anivibe/search?q='+encodeURIComponent(q)+'&limit=20');
+    searchItems=listFrom(data,['results','items','anime','data']);
+    resultsSelect.innerHTML='';
+    if(!searchItems.length){resultsSelect.innerHTML='<option value="">Ничего не найдено</option>';setStatus('По этому запросу ничего не найдено.');return;}
+    searchItems.forEach((item,index)=>{const opt=document.createElement('option');opt.value=String(index);opt.textContent=animeLabel(item);resultsSelect.appendChild(opt);});
+    resultsSelect.dispatchEvent(new Event('change'));setStatus('Найдено: '+searchItems.length+'. Выбери нужный тайтл.');
+  }catch(e){resultsSelect.innerHTML='<option value="">Ошибка поиска</option>';setStatus(e.message);}
+}
+resultsSelect.addEventListener('change',()=>{const item=searchItems[Number(resultsSelect.value)];if(!item)return;const id=animeId(item);if(!id){setStatus('AniVibe вернул результат без ID тайтла.');return;}loadEpisodes(id);});
+episodesSelect.addEventListener('change',()=>{
+  const ep=episodeItems[Number(episodesSelect.value)];selectedEpisode=ep||null;
+  const translations=ep?translationsOf(ep):[];
+  renderTranslations(translations);
+  if(ep)setStatus(translations.length?'Выбери озвучку и нажми «Смотреть серию».':'Озвучки не указаны отдельно — попробуй вариант по умолчанию.');
+});
+playButton.addEventListener('click',async()=>{
+  if(!selectedAnime||!selectedEpisode)return;
+  const id=animeId(selectedAnime),episode=episodeNumber(selectedEpisode)||Number(episodesSelect.value)+1;
+  const translations=translationsOf(selectedEpisode),chosen=translations[Number(translationsSelect.value)];
+  const translation=chosen?translationLabel(chosen):'';
+  playButton.disabled=true;setStatus('Получаю временную ссылку на плеер…');clearMessage();
+  try{
+    const data=await api('/api/anivibe/embed-token',{method:'POST',body:JSON.stringify({anime_id:id,episode,translation})});
+    const embedUrl=valueOf(data,['embed_url','iframe_url','url','embed','player_url']);
+    if(!embedUrl||typeof embedUrl!=='string')throw new Error('AniVibe не вернул iframe URL. Проверь формат ответа API или настройки партнёра.');
+    const parsed=new URL(embedUrl);
+    if(parsed.protocol!=='https:'||parsed.hostname!=='anivibe.pro')throw new Error('Получен неожиданный адрес плеера. Встраивание остановлено для безопасности.');
+    stage.innerHTML='';const frame=document.createElement('iframe');frame.src=parsed.href;frame.title='AniVibe player';frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';stage.appendChild(frame);
+    $('nowPlaying').textContent=animeLabel(selectedAnime)+' — серия '+episode+(translation?' · '+translation:'');
+    setStatus('Плеер загружен. Если видео не запускается, проверь домен в кабинете AniVibe.');
+  }catch(e){setStatus(e.message);showMessage(e.message);}
+  finally{playButton.disabled=false;}
+});
+if(title&&title!=='Аниме'){searchInput.value=title;runSearch();}
+</script>
 </body></html>

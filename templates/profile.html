@@ -509,6 +509,29 @@ function closeProfileSettings(){
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileSettings();});
 </script>
 
+<style id="animora-mobile-ux">
+/* Animora profile mobile layout */
+@media(max-width:700px){
+ html,body{width:100%;overflow-x:hidden}
+ header{padding:14px 16px;gap:10px;flex-wrap:wrap}
+ header .logo{font-size:23px}
+ header nav{display:flex;gap:13px;flex-wrap:wrap}
+ header nav a{font-size:13px}
+ main{width:100%;max-width:none;margin:12px auto;padding:12px}
+ .card,.profile-card,.favorites-section,.stat{min-width:0;max-width:100%}
+ .card{padding:16px!important}
+ h1{font-size:25px;line-height:1.2}
+ h2{font-size:20px}
+ input,select,textarea,button{max-width:100%;font-size:16px}
+ input,select,textarea{width:100%;min-height:46px}
+ button,.link-button{min-height:44px;padding:11px 15px}
+ .grid,.favorites-grid,#favoritesGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .anime-card{min-width:0}
+ .anime-card img,.anime-card .poster{width:100%;height:auto;aspect-ratio:2/3;object-fit:cover}
+}
+@media(max-width:380px){.grid,.favorites-grid,#favoritesGrid{grid-template-columns:1fr}}
+
+</style>
 </head>
 
 <body>

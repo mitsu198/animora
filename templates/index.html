@@ -306,6 +306,29 @@ html[data-theme="glass"] .logo{filter:drop-shadow(0 0 12px rgba(160,218,255,.5))
 html[data-theme="glass"] .theme-modal{background:rgba(3,10,20,.56)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 html[data-theme="glass"] .theme-backdrop{background:rgba(3,10,20,.42)!important}
 html[data-theme="glass"] footer{color:#c9dced}
+
+/* Тонкие анимации интерфейса без вмешательства в логику каталога и избранного. */
+html{scroll-behavior:smooth}
+.card,.shelf-card{transform:translateZ(0);will-change:transform}
+.card .poster img,.shelf-card .shelf-poster img{transition:transform .45s cubic-bezier(.2,.7,.2,1),filter .45s ease}
+.card:hover .poster img,.shelf-card:hover .shelf-poster img{transform:scale(1.045);filter:saturate(1.08)}
+.favorite-btn{transition:transform .18s ease,color .18s ease,background .18s ease}
+.favorite-btn:active{transform:scale(.88)}
+button,a,input,select{ -webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{
+ outline:2px solid #c99aff;outline-offset:3px
+}
+html[data-theme="glass"] .card,html[data-theme="glass"] .shelf-card{
+ transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease
+}
+html[data-theme="glass"] .card:hover,html[data-theme="glass"] .shelf-card:hover{
+ transform:translateY(-5px);border-color:rgba(226,243,255,.62)!important;
+ box-shadow:0 24px 58px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.35)!important
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 @media(prefers-reduced-transparency:reduce){html[data-theme="glass"] header,html[data-theme="glass"] nav,html[data-theme="glass"] main>section,html[data-theme="glass"] .card,html[data-theme="glass"] form,html[data-theme="glass"] .anime-card{background:#1b2d45!important}}
 </style>
 </head>

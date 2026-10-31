@@ -104,7 +104,7 @@ def get_favorites():
 def anime_catalog_api():
     """Прокси к Jikan: запросы выполняются сервером, а не браузером посетителя."""
     try:
-        page = max(1, min(int(request.args.get("page", 1)), 100))
+        page = max(1, min(int(request.args.get("page", 1)), 1000))
         response = requests.get(
             "https://api.jikan.moe/v4/anime",
             params={"page": page, "limit": 25, "order_by": "start_date", "sort": "desc"},

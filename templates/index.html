@@ -99,7 +99,7 @@ header{position:sticky;top:0;z-index:30;padding:13px 5.5%;background:rgba(9,10,1
 .main-nav .nav-current:after{content:"";display:block;height:2px;background:#c58cff;border-radius:3px;margin-top:7px}
 .main-nav .profile-avatar-link{margin-left:4px;flex:none}
 .hero-cinema{position:relative;isolation:isolate;min-height:570px;padding:76px 7% 45px;display:flex;align-items:center;overflow:hidden;background:radial-gradient(ellipse at 75% 40%,#49305f 0,#1c1429 38%,#0b0b11 78%)}
-.hero-backdrop{position:absolute;z-index:-2;inset:0;background-position:center 35%;background-size:cover;opacity:.48;filter:saturate(.82);transition:background-image .4s}
+.hero-backdrop{position:absolute;z-index:-2;inset:0;background-position:center 28%;background-size:cover;background-repeat:no-repeat;opacity:.62;filter:saturate(1.04) contrast(1.04);transform:scale(1.015);transition:opacity .35s,background-position .5s}.hero-backdrop.hero-image-ready{opacity:.68}
 .hero-cinema:before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#08090df5 0%,#08090ddd 38%,#08090d66 72%,#08090d88 100%),linear-gradient(0deg,#08090d 0%,transparent 34%)}
 .hero-content{max-width:690px;position:relative}
 .hero-kicker{display:block;color:#d1a3ff;font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:30px}
@@ -221,10 +221,17 @@ html[data-theme] .category-strip .filters button{background:var(--site-panel);bo
 }
 </style>
 <style id="animora-ongoing-badge">
-.ongoing-shelf .shelf-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.ongoing-shelf .shelf-title{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.ongoing-arrows{display:flex;gap:8px;flex-shrink:0}
+.ongoing-arrow{width:38px;height:38px;border:1px solid var(--site-border,rgba(255,255,255,.14));border-radius:50%;background:var(--site-panel-2,rgba(255,255,255,.07));color:inherit;font-size:25px;line-height:1;cursor:pointer;transition:background .2s,opacity .2s,transform .2s}
+.ongoing-arrow:hover:not(:disabled){background:var(--site-accent,#a447e8);transform:scale(1.06)}
+.ongoing-arrow:disabled{opacity:.3;cursor:default}
+.ongoing-shelf .shelf-grid{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 12px}
+.ongoing-shelf .shelf-grid::-webkit-scrollbar{display:none}
+.ongoing-shelf .shelf-grid>.shelf-card{flex:0 0 calc((100% - 90px)/6);min-width:0;scroll-snap-align:start}
 .shelf-poster .ongoing-badge{position:absolute;top:9px;left:9px;inset:auto;background:#a447e8;color:#fff;padding:5px 8px;border-radius:6px;font-size:9px;letter-spacing:.7px;box-shadow:0 3px 12px #0006}
-@media(max-width:1000px){.ongoing-shelf .shelf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:600px){.ongoing-shelf .shelf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1000px){.ongoing-shelf .shelf-grid>.shelf-card{flex-basis:calc((100% - 36px)/3)}}
+@media(max-width:600px){.ongoing-shelf .shelf-grid{gap:12px}.ongoing-shelf .shelf-grid>.shelf-card{flex-basis:calc((100% - 12px)/2)}.ongoing-arrow{width:34px;height:34px}}
 </style>
 
 <style id="animora-liquid-glass">
@@ -386,12 +393,199 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
  if(document.body){document.body.removeAttribute('data-animated');}
 })();
 </script>
+<style id="animora-cinema-redesign">
+:root{color-scheme:dark;--bg:#080a12;--panel:#111522;--panel2:#171d2d;--line:#293247;--muted:#9aa6bd;--accent:#9b6cff;--accent2:#e35bba;--glow:rgba(155,108,255,.22)}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body{background:radial-gradient(ellipse at 78% -12%,rgba(102,69,170,.2),transparent 38%),var(--bg)!important;color:#f5f6fb;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;line-height:1.55}
+a{transition:color .2s,opacity .2s}
+header,.site-header{background:rgba(10,13,23,.88)!important;border-bottom:1px solid rgba(148,163,184,.14)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);position:relative;z-index:20}
+.logo{color:#c4a4ff!important;font-weight:900!important;letter-spacing:2.5px;text-shadow:0 0 28px var(--glow)}
+nav a,.main-nav a{color:#c3cadd!important;font-weight:600;text-decoration:none}
+nav a:hover,.main-nav a:hover,.main-nav .nav-current{color:#d2b8ff!important}
+button,.random-btn,.primary{transition:transform .2s,filter .2s,box-shadow .2s}
+button:hover,.random-btn:hover,.primary:hover{filter:brightness(1.12);transform:translateY(-2px)}
+input,select,textarea{background:#101625!important;color:#f5f6fb!important;border:1px solid #303b52!important;border-radius:12px!important}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(155,108,255,.45);border-color:#a78bfa!important}
+main{max-width:1480px}
+.shelf,.discover,.category-strip,#catalog,.watch,.profile-panel,.card,.anime-card{scroll-margin-top:110px}
+.shelf-card,.anime-card,.card,.stat,.profile-stat,.profile-panel,.watch,.controls,.control,.favorites-tools{background:linear-gradient(155deg,rgba(25,32,49,.96),rgba(14,19,31,.98))!important;border:1px solid rgba(129,145,177,.18)!important;border-radius:17px!important;box-shadow:0 12px 34px rgba(0,0,0,.18)}
+.shelf-card:hover,.anime-card:hover,.card:hover{border-color:rgba(183,148,255,.62)!important;box-shadow:0 16px 42px rgba(0,0,0,.32),0 0 26px var(--glow);transform:translateY(-4px)}
+.shelf-poster{background:linear-gradient(145deg,#29213f,#161d31)!important}
+.shelf-poster img,.poster img{transition:transform .45s}
+.shelf-card:hover .shelf-poster img,.anime-card:hover img{transform:scale(1.045)}
+h1,h2,h3{letter-spacing:-.025em}
+h2{color:#f1edff}
+p,.muted,.sub{color:#aeb8cc}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#090d16}
+::-webkit-scrollbar-thumb{background:#39415a;border-radius:99px}
+@media(max-width:760px){header,.site-header{padding-left:16px!important;padding-right:16px!important}.logo{font-size:23px!important}main{padding-left:16px!important;padding-right:16px!important}.shelf-card{border-radius:13px!important}}
+</style><style id="animora-home-cinema">
+.site-header{position:sticky!important;top:0}
+.header-topline{max-width:1500px;margin:auto}
+.header-search-wrap{background:#111827!important;border:1px solid #30384c!important;border-radius:14px!important}
+.header-search-wrap input{background:transparent!important;border:0!important;box-shadow:none!important}
+.category-strip{background:rgba(13,17,29,.94)!important;border-bottom:1px solid #242d40!important}
+.filters button{border:1px solid #303a50!important;background:#151c2c!important;color:#cbd3e3!important;border-radius:999px!important;padding:9px 16px!important}
+.filters button.active,.filters button:hover{background:linear-gradient(110deg,#7048c7,#a56cf0)!important;border-color:transparent!important;color:white!important}
+.hero{border-radius:0 0 28px 28px;background:linear-gradient(100deg,rgba(8,10,18,.96),rgba(20,16,37,.76)),linear-gradient(135deg,#38265d,#121a2b)!important}
+.discover{background:linear-gradient(180deg,#101522,#080a12)!important}
+.random-btn,.primary{background:linear-gradient(110deg,#7954d5,#b36bea)!important;border:0!important;border-radius:12px!important;box-shadow:0 8px 26px rgba(155,108,255,.2)}
+.shelf-title h2,#catalog h2{font-size:clamp(21px,2.4vw,29px)!important}
+.shelf-grid{gap:16px!important}
+.shelf-poster{border-radius:14px 14px 0 0}
+.ongoing-badge{background:#8a55dc!important;border-radius:6px!important}
+</style>
+
+<style id="animora-layout-v2">
+/* ANIMORA v2 — новая компоновка главной страницы */
+:root{--v2-bg:#090a10;--v2-panel:#11131d;--v2-panel2:#171a27;--v2-line:#292d3d;--v2-accent:#b58aff;--v2-muted:#969caf}
+html,body{background:var(--v2-bg)!important;color:#f5f4fa!important}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important}
+.site-header{
+ position:fixed!important;inset:0 auto 0 0!important;width:238px!important;height:100vh!important;
+ padding:30px 18px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+ gap:28px!important;background:linear-gradient(180deg,#12131e 0%,#0e1018 100%)!important;
+ border:0!important;border-right:1px solid #292d3d!important;border-radius:0!important;
+ box-shadow:12px 0 40px #0002!important;backdrop-filter:none!important;z-index:100!important
+}
+.header-topline{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important;width:100%}
+.brand-row{display:flex;align-items:center;justify-content:flex-start;gap:8px;width:100%}
+.site-header .logo{font-size:27px!important;letter-spacing:3px!important;line-height:1.2!important}
+.site-header .logo:after{content:"ТВОЙ МИР АНИМЕ";display:block;margin-top:7px;font-size:9px;letter-spacing:2px;color:#73798d;-webkit-text-fill-color:#73798d}
+.header-search-wrap{width:100%!important;height:44px!important;margin-top:12px!important;border-radius:11px!important;background:#090b12!important;border:1px solid #292d3d!important}
+.header-search-wrap>span{font-size:22px!important}
+.header-search-wrap kbd{display:none!important}
+.header-profile{position:absolute!important;right:19px!important;top:27px!important;width:34px!important;height:34px!important;margin:0!important}
+.main-nav{width:100%!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;margin:0!important;padding:22px 0 0!important;border-top:1px solid #292d3d!important;overflow:visible!important}
+.main-nav a{display:flex!important;align-items:center!important;min-height:43px!important;padding:0 13px!important;border-radius:10px!important;color:#aeb3c3!important;font-size:14px!important;font-weight:600!important}
+.main-nav a:before{content:"";width:6px;height:6px;margin-right:12px;border-radius:50%;background:#555b70;transition:.2s}
+.main-nav a:hover,.main-nav .nav-current{background:#211a31!important;color:#e8d9ff!important}
+.main-nav .nav-current:after{display:none!important}
+.main-nav a:hover:before,.main-nav .nav-current:before{background:#b58aff;box-shadow:0 0 12px #b58aff}
+.category-strip,.hero-cinema,.discover,main,footer{margin-left:238px!important}
+.category-strip{padding:15px 4.5%!important;min-height:62px!important;background:#0c0e16!important;border:0!important;border-bottom:1px solid #242838!important;gap:16px!important}
+.category-strip-label{color:#777f95!important}
+.category-strip .filters{flex-wrap:nowrap!important;min-width:0}
+.category-strip .filters button{padding:8px 15px!important;background:#151824!important;border:1px solid #2a2e40!important;color:#bfc4d2!important}
+.category-strip .filters button.active,.category-strip .filters button:hover{background:#8e63cb!important;border-color:#8e63cb!important;color:white!important}
+.hero-cinema{min-height:570px!important;padding:78px 5.5%!important;border-radius:0!important;background:#11131c!important}
+.hero-cinema:before{background:linear-gradient(90deg,#090a10f5 0%,#090a10d9 38%,#090a1055 75%,#090a1080 100%),linear-gradient(0deg,#090a10 0%,transparent 42%)!important}
+.hero-content{max-width:620px!important}
+.hero-kicker{font-size:10px!important;letter-spacing:3px!important;color:#c3a0ff!important}
+.hero-label{background:#a879df20!important;border:1px solid #a879df77!important;border-radius:5px!important;color:#dfcaff!important}
+.hero-cinema h1{font-size:clamp(42px,5vw,66px)!important;line-height:1.03!important;max-width:620px!important}
+.hero-cinema p{max-width:510px!important;color:#c0c3d0!important}
+.hero-watch{background:#eee7fa!important;color:#21182d!important;border-radius:9px!important;padding:15px 25px!important}
+.hero-more{border-radius:9px!important}
+.hero-bottom{left:5.5%!important;right:5.5%!important}
+.discover{padding:44px 4.5% 20px!important;background:#090a10!important}
+.discover-head{align-items:flex-end!important;margin-bottom:30px!important}
+.discover-head h2{font-size:clamp(26px,3vw,36px)!important;letter-spacing:-1px!important}
+.discover-head p{color:#9299ad!important}
+.random-btn{border-radius:9px!important;background:#1b1727!important;border:1px solid #5c4778!important;box-shadow:none!important}
+.shelf{margin:36px 0 48px!important}
+.shelf-title{margin-bottom:19px!important}
+.shelf-title h2{font-size:20px!important;letter-spacing:-.4px!important}
+.shelf-title span{color:#777f95!important;font-size:11px!important}
+.shelf-grid{gap:15px!important}
+.shelf-card{flex:0 0 176px!important;background:#121520!important;border:1px solid #272c3b!important;border-radius:11px!important;box-shadow:none!important}
+.shelf-card:hover{border-color:#9671c7!important;box-shadow:0 16px 35px #0006!important}
+.shelf-poster{height:238px!important;background:#1b1d2a!important}
+.shelf-card h3{font-size:13px!important;line-height:1.4!important}
+.shelf-card p{color:#8e95a8!important}
+main{max-width:none!important;padding:48px 4.5%!important;background:#0b0d14!important}
+#catalog>h2{font-size:32px!important;margin:0 0 8px!important}
+#counter{color:#82899d!important;font-size:13px!important}
+.search{background:#141824!important;border:1px solid #2a3042!important;border-radius:10px!important}
+.filters button{background:#151824!important;border-color:#2a3042!important}
+.grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:18px!important}
+.card{background:#121520!important;border:1px solid #272c3b!important;border-radius:11px!important;box-shadow:none!important}
+.card:hover{border-color:#9671c7!important;box-shadow:0 15px 35px #0006!important}
+.poster{height:250px!important;background:#1b1d2a!important}
+.card h3{font-size:14px!important;line-height:1.4!important}
+.card p{color:#8e95a8!important}
+.favorite-btn{backdrop-filter:blur(8px)!important}
+.anivibe-discovery{background:#111520!important;border:1px solid #2a3042!important;border-radius:14px!important}
+.catalog-more-btn{border-radius:10px!important;background:#8e63cb!important;box-shadow:none!important}
+footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px solid #242838!important;color:#737b90!important}
+@media(max-width:850px){
+ .site-header{position:relative!important;inset:auto!important;width:auto!important;height:auto!important;padding:14px 4%!important;display:block!important;border-right:0!important;border-bottom:1px solid #292d3d!important}
+ .header-topline{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important}
+ .brand-row{grid-column:1;grid-row:1;justify-content:flex-start;gap:10px}
+ .site-header .logo{font-size:22px!important}
+ .site-header .logo:after{display:none!important}
+ .header-search-wrap{margin:0!important;height:40px!important}
+ .header-profile{position:static!important;justify-self:end!important;width:36px!important;height:36px!important}
+ .main-nav{flex-direction:row!important;gap:7px!important;overflow-x:auto!important;margin-top:13px!important;padding:11px 0 0!important;border-top:1px solid #292d3d!important}
+ .main-nav a{white-space:nowrap!important;min-height:36px!important;padding:0 10px!important;font-size:12px!important}
+ .main-nav a:before{display:none!important}
+ .category-strip,.hero-cinema,.discover,main,footer{margin-left:0!important}
+ .category-strip{padding:11px 4%!important}
+ .hero-cinema{min-height:510px!important;padding:58px 5%!important}
+ .discover{padding:30px 4% 12px!important}
+ main{padding:34px 4%!important}
+ footer{padding:25px 4%!important}
+}
+@media(max-width:560px){
+ .header-topline{grid-template-columns:1fr auto!important}
+ .header-search-wrap{grid-column:1/-1;grid-row:2}
+ .site-header .logo{grid-column:1;grid-row:1}
+ .header-profile{grid-column:2;grid-row:1}
+ .main-nav{gap:3px!important}
+ .main-nav a{font-size:11px!important;padding:0 8px!important}
+ .category-strip{align-items:flex-start!important;flex-direction:column!important;gap:8px!important}
+ .category-strip .filters{width:100%}
+ .hero-cinema{min-height:490px!important;padding:48px 5%!important}
+ .hero-cinema h1{font-size:39px!important}
+ .hero-bottom{font-size:7px!important}
+ .discover-head{align-items:flex-start!important;flex-direction:column!important}
+ .shelf-card{flex-basis:150px!important}
+ .shelf-poster{height:205px!important}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+ .poster{height:215px!important}
+}
+</style>
+
+
+<style id="animora-hero-carousel">
+.hero-cinema{position:relative;isolation:isolate;overflow:hidden;background:#0b0e17!important}
+.hero-backdrop{position:absolute;inset:0;z-index:-2;background-position:center 32%;background-size:cover;opacity:0;transform:scale(1.035);transition:opacity .75s ease,transform 7s ease}
+.hero-backdrop.hero-image-ready{opacity:1;transform:scale(1)}
+.hero-cinema:before{z-index:-1!important;content:"";position:absolute;inset:0;background:linear-gradient(90deg,#080a10f5 0%,#080a10d9 38%,#080a1070 72%,#080a1080 100%),linear-gradient(0deg,#080a10 0%,transparent 48%)!important}
+.hero-content{position:relative;z-index:2}
+.hero-meta{display:flex;gap:9px;flex-wrap:wrap}
+.hero-meta span{padding:6px 10px;border:1px solid #ffffff24;border-radius:6px;background:#10152288;color:#e4d9f7;font-size:11px}
+.hero-carousel-controls{position:absolute;right:5.5%;bottom:44px;z-index:4;display:flex;align-items:center;gap:9px}
+.hero-carousel-controls button{width:37px;height:37px;border-radius:50%;border:1px solid #ffffff50;background:#111522aa;color:white;font-size:19px;cursor:pointer;backdrop-filter:blur(10px)}
+.hero-carousel-controls button:hover{background:#8e63cb}
+.hero-dots{display:flex;gap:6px;margin:0 6px}
+.hero-dot{width:7px;height:7px;border-radius:20px;background:#ffffff66;border:0;padding:0;transition:width .25s}
+.hero-dot.active{width:23px;background:#d4b5ff}
+@media(max-width:560px){.hero-carousel-controls{right:5%;bottom:25px}.hero-carousel-controls button{width:32px;height:32px}.hero-bottom{bottom:20px!important}.hero-cinema{padding-bottom:90px!important}}
+@media(prefers-reduced-motion:reduce){.hero-backdrop{transition:none;transform:none}}
+</style>
+
+
+<style id="animora-subtle-home-polish">
+/* Small visual refinements while keeping ANIMORA's original dark identity */
+.site-header{backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.16)}
+.main-nav a{transition:color .18s ease,opacity .18s ease}
+.main-nav a:hover{opacity:.88}
+.shelf-card,.card{border-radius:14px;overflow:hidden;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.shelf-card:hover,.card:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(0,0,0,.24)}
+.shelf-poster,.poster{overflow:hidden}
+.shelf-poster img,.poster img{transition:transform .35s ease}
+.shelf-card:hover .shelf-poster img,.card:hover .poster img{transform:scale(1.035)}
+.shelf-title h2{letter-spacing:-.35px}
+@media(max-width:700px){.shelf-card:hover,.card:hover{transform:none}}
+</style>
 </head>
 <body>
 
 <header class="site-header">
   <div class="header-topline">
-    <a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a>
+    <div class="brand-row"><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a></div>
     <div class="header-search-wrap">
       <span aria-hidden="true">⌕</span>
       <input class="search header-search" id="search" placeholder="Найти аниме..." oninput="handleCatalogSearch()" aria-label="Поиск аниме">
@@ -400,14 +594,13 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
     <a class="profile-avatar-link header-profile" href="{{ '/profile' if logged_in else '/login' }}" aria-label="{{ 'Открыть профиль' if logged_in else 'Войти' }}" title="{{ 'Мой профиль' if logged_in else 'Войти' }}">
       {% if avatar_url %}<img src="{{ avatar_url }}" alt="Аватар пользователя">{% else %}<span>👤</span>{% endif %}
     </a>
-    {% if is_admin %}<span class="admin-header-tag">👑 ADMIN</span>{% endif %}
   </div>
   <nav class="main-nav">
     <a class="nav-current" href="/">Главная</a>
     <a href="#popularGrid">Подборки</a>
     <a href="#ongoing">Онгоинги</a>
     <a href="#catalog">Каталог</a>
-    <a href="/profile#favorites">Избранное</a>
+    <a href="/profile#favoritesSection">Избранное</a>
   </nav>
 </header>
 <div class="category-strip" aria-label="Категории аниме">
@@ -438,6 +631,11 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
     </div>
   </div>
   <div class="hero-bottom"><span>ТВОЯ СЛЕДУЮЩАЯ ИСТОРИЯ НАЧИНАЕТСЯ ЗДЕСЬ</span><span class="hero-scroll">ЛИСТАЙ ВНИЗ ↓</span></div>
+  <div class="hero-carousel-controls" aria-label="Баннеры аниме">
+    <button type="button" onclick="changeHeroSlide(-1)" aria-label="Предыдущий баннер">‹</button>
+    <div class="hero-dots" id="heroDots"></div>
+    <button type="button" onclick="changeHeroSlide(1)" aria-label="Следующий баннер">›</button>
+  </div>
 </section>
 
 <section class="discover" aria-label="Подборки аниме">
@@ -446,7 +644,7 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
       <div><span class="eyebrow">ANIMORA подборки</span><h2>Найди свою следующую историю</h2><p>Подборки для любого настроения — от захватывающих приключений до уютной романтики.</p></div>
       <button class="random-btn" onclick="pickRandomAnime()">🎲 Случайное аниме</button>
     </div>
-    <section class="shelf ongoing-shelf" id="ongoing"><div class="shelf-title"><h2>📺 Сейчас выходит</h2><span>Онгоинги этого сезона</span></div><div class="shelf-grid" id="ongoingGrid"><p class="ongoing-loading">Загружаем актуальные онгоинги…</p></div></section>
+    <section class="shelf ongoing-shelf" id="ongoing"><div class="shelf-title"><div><h2>📺 Сейчас выходит</h2><span>Онгоинги этого сезона</span></div><div class="ongoing-arrows"><button class="ongoing-arrow" id="ongoingPrev" type="button" aria-label="Предыдущие онгоинги" onclick="scrollOngoing(-1)">‹</button><button class="ongoing-arrow" id="ongoingNext" type="button" aria-label="Следующие онгоинги" onclick="scrollOngoing(1)">›</button></div></div><div class="shelf-grid" id="ongoingGrid"><p class="ongoing-loading">Загружаем актуальные онгоинги…</p></div></section>
     <section class="shelf"><div class="shelf-title"><h2>🔥 Популярное</h2><span>Выбор зрителей</span></div><div class="shelf-grid" id="popularGrid"></div></section>
     <section class="shelf"><div class="shelf-title"><h2>✨ Советуем посмотреть</h2><span>Наши рекомендации</span></div><div class="shelf-grid" id="recommendedGrid"></div></section>
     <section class="shelf"><div class="shelf-title"><h2>🌟 Ещё интересное</h2><span>Открой что-то новое</span></div><div class="shelf-grid" id="discoveryGrid"></div></section>
@@ -461,8 +659,8 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
 
   <section class="anivibe-discovery" id="anivibeDiscovery" hidden><div class="anivibe-discovery-head"><h2>Найдено на AniVibe</h2><span id="anivibeSearchStatus">Ищем в каталоге AniVibe…</span></div><div class="grid" id="anivibeSearchGrid"></div></section>
   <div class="catalog-more">
-    <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить до 10 000 аниме</button>
-    <p class="catalog-more-status" id="catalogMoreStatus">В каталоге 123 тайтра. Загружаем большую коллекцию до 10 000 аниме.</p>
+    <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить ещё 50 аниме</button>
+    <p class="catalog-more-status" id="catalogMoreStatus">Нажми кнопку, чтобы добавить новые аниме с настоящими постерами.</p>
   </div>
 </main>
 
@@ -608,7 +806,7 @@ async function searchAniVibeCatalog(query){
  if(anivibeSearchCache.has(key)){renderAniVibeResults(anivibeSearchCache.get(key),grid,status);return;}
  status.textContent="Ищем на AniVibe…";
  if(anivibeSearchController)anivibeSearchController.abort();anivibeSearchController=new AbortController();
- try{const response=await fetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},cache:"no-store",signal:anivibeSearchController.signal});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
+ try{const response=await fetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},signal:anivibeSearchController.signal});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
  const items=Array.isArray(payload)?payload:(payload.data||payload.results||payload.items||payload.anime||[]);const unique=[],ids=new Set(),titles=new Set();
  for(const item of items){const id=Number(item.id??item.anime_id??item.shikimori_id);const title=String(item.title_ru||item.russian||item.name_ru||item.title||item.name||item.title_en||"").trim();if(!id||!title||ids.has(id)||titles.has(title.toLowerCase()))continue;ids.add(id);titles.add(title.toLowerCase());unique.push({id,title,poster:String(item.poster||item.image||item.cover||item.poster_url||""),status:String(item.status||"Каталог AniVibe"),kind:String(item.kind||"")});}
  anivibeSearchCache.set(key,unique);if(anivibeSearchCache.size>30)anivibeSearchCache.delete(anivibeSearchCache.keys().next().value);renderAniVibeResults(unique,grid,status);
@@ -620,6 +818,10 @@ function setGenre(genre,button){
   document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));
   button.classList.add('active');
   renderAnime();
+  // После выбора жанра плавно переводим пользователя к отфильтрованному каталогу.
+  requestAnimationFrame(()=>{
+    document.getElementById('catalog')?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
 }
 
 
@@ -628,36 +830,57 @@ const featuredCollections={
  recommended:["frieren","fullmetal-alchemist","steins-gate","vinland-saga","violet-evergarden","hunter-x-hunter"],
  discovery:["dandadan","the-apothecary-diaries","odd-taxi","ranking-of-kings","86-eighty-six","bocchi-the-rock"]
 };
-function renderCinemaHero(){
-  const backdrop=document.getElementById("heroBackdrop");
-  if(!backdrop)return;
-  // High-resolution promotional artwork; use the small catalog poster only as a fallback.
-  const highResArtwork="https://m.media-amazon.com/images/S/pv-target-images/0eaaca5d01575caf2fda5fcad6a09e8c5a35bdcf8f4a2850741e262458273837.jpg";
-  const fallback=posterCache["frieren"]||"";
-  const img=new Image();
-  img.onload=()=>{backdrop.style.backgroundImage='url("'+highResArtwork+'")';backdrop.classList.add("hero-image-ready");};
-  img.onerror=()=>{if(fallback){backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';}};
-  img.src=highResArtwork;
+const heroSlides=[
+ {id:"frieren",title:"Провожающая в последний путь Фрирен",description:"Большое путешествие не заканчивается вместе с победой. История о памяти, дружбе и времени.",genres:["Фэнтези","Приключения"],background:"https://m.media-amazon.com/images/S/pv-target-images/0eaaca5d01575caf2fda5fcad6a09e8c5a35bdcf8f4a2850741e262458273837.jpg"},
+ {id:"demon-slayer",title:"Клинок, рассекающий демонов",description:"Путь сквозь опасности, невероятные битвы и сила, которая рождается из любви к близким.",genres:["Экшен","Фэнтези"],background:"https://s2-techtudo.glbimg.com/fscjBXjyh15CsR0umO4h0i8O05M%3D/0x0%3A1280x720/888x0/smart/filters%3Astrip_icc%28%29/i.s3.glbimg.com/v1/AUTH_08fbf48bc0524877943fe86e43087e7a/internal_photos/bs/2023/J/8/EbfA0BTv2pV98gASWdfA/f5d0f04e85a224493fe9caa2e59740811630901421-main.png"},
+ {id:"jujutsu-kaisen",title:"Магическая битва",description:"Мир проклятий, мощные противники и сражения, от которых невозможно оторваться.",genres:["Экшен","Сёнен"],background:"https://images7.alphacoders.com/114/thumb-1920-1144151.jpg"},
+ {id:"your-name",title:"Твоё имя",description:"Две судьбы переплетаются сквозь расстояние, время и одно необъяснимое чудо.",genres:["Романтика","Драма"],background:"https://wallpapercat.com/w/full/f/e/2/118447-3840x2160-desktop-4k-your-name-wallpaper-image.jpg"},
+ {id:"attack-on-titan",title:"Атака титанов",description:"За стенами скрывается правда, способная изменить весь мир. Начни это путешествие.",genres:["Экшен","Драма"],background:"https://image.tmdb.org/t/p/original/w1RGPXbRRZ1OBHV060p4KUDX0dd.jpg"}
+];
+let activeHeroSlide=0,heroTimer=null;
+function showHeroSlide(index){
+ const backdrop=document.getElementById("heroBackdrop");
+ const slide=heroSlides[index];if(!backdrop||!slide)return;
+ activeHeroSlide=(index+heroSlides.length)%heroSlides.length;
+ const title=document.getElementById("heroTitle"),description=document.getElementById("heroDescription");
+ const meta=document.querySelector(".hero-meta"),watch=document.querySelector(".hero-watch"),dots=document.getElementById("heroDots");
+ if(title)title.textContent=slide.title;
+ if(description)description.textContent=slide.description;
+ if(meta)meta.innerHTML=slide.genres.map((g,i)=>'<span>'+(i===0?'✦ ':'')+g+'</span>').join('')+'<span>Рекомендация ANIMORA</span>';
+ if(watch)watch.onclick=()=>openAnimeCard(slide.id);
+ const backdropUrl=slide.background||"";
+ backdrop.classList.remove("hero-image-ready");
+ backdrop.style.backgroundImage='linear-gradient(90deg,#08090df5 0%,#08090ddd 38%,#08090d66 72%,#08090d88 100%),url("'+backdropUrl+'")';
+ backdrop.classList.add("hero-image-ready");
+ if(dots)dots.innerHTML=heroSlides.map((item,i)=>'<button type="button" class="hero-dot '+(i===activeHeroSlide?'active':'')+'" aria-label="Баннер '+(i+1)+'" onclick="goHeroSlide('+i+')"></button>').join('');
+}
+function goHeroSlide(index){showHeroSlide(index);restartHeroTimer();}
+function changeHeroSlide(direction){goHeroSlide(activeHeroSlide+direction);}
+function restartHeroTimer(){if(heroTimer)clearInterval(heroTimer);heroTimer=setInterval(()=>showHeroSlide(activeHeroSlide+1),7000);}
+function renderCinemaHero(){showHeroSlide(0);restartHeroTimer();}
+
+function updateOngoingArrows(){
+  const track=document.getElementById("ongoingGrid"),prev=document.getElementById("ongoingPrev"),next=document.getElementById("ongoingNext");
+  if(!track||!prev||!next)return;
+  const maxScroll=Math.max(0,track.scrollWidth-track.clientWidth);
+  prev.disabled=track.scrollLeft<=4; next.disabled=track.scrollLeft>=maxScroll-4;
+  prev.hidden=next.hidden=maxScroll<=4;
+}
+function scrollOngoing(direction){
+  const track=document.getElementById("ongoingGrid"); if(!track)return;
+  const card=track.querySelector(".shelf-card"),step=card?card.getBoundingClientRect().width+18:track.clientWidth*.8;
+  track.scrollBy({left:direction*step*3,behavior:"smooth"}); setTimeout(updateOngoingArrows,400);
 }
 async function loadOngoingAnime(){
   const target=document.getElementById("ongoingGrid");
   if(!target)return;
+  if(!target.dataset.carouselReady){target.addEventListener("scroll",updateOngoingArrows,{passive:true});target.dataset.carouselReady="1";}
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),10000);
   try{
-    let payload=null;
-    // Jikan ограничивает частоту запросов; повторяем запрос при 429 и временных сетевых сбоях.
-    for(let attempt=0;attempt<5;attempt++){
-      try{
-        const response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"no-store"});
-        if(response.status===429)throw new Error("RATE_LIMIT");
-        if(!response.ok)throw new Error("JIKAN_"+response.status);
-        payload=await response.json();
-        break;
-      }catch(error){
-        const retryable=error.message==="RATE_LIMIT"||error.message==="Failed to fetch"||error.name==="TypeError";
-        if(!retryable||attempt===4)throw error;
-        await new Promise(resolve=>setTimeout(resolve,2500*Math.pow(1.8,attempt)));
-      }
-    }
+    const response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"default",signal:controller.signal});
+    if(!response.ok)throw new Error("ONGOING_HTTP_"+response.status);
+    const payload=await response.json();
     const items=(payload?.data||[]).filter(item=>item.mal_id&&item.title).slice(0,25);
     if(!items.length)throw new Error("EMPTY");
     const cards=items.map(item=>{
@@ -674,15 +897,17 @@ async function loadOngoingAnime(){
       <div class="shelf-poster">${item.poster?'<img src="'+item.poster+'" alt="'+item.title+'" loading="lazy" onerror="this.remove()">':''}<span>${item.title}</span><b class="ongoing-badge">ОНГОИНГ</b></div>
       <h3>${item.title}</h3><p>${item.genreText.replaceAll(", "," · ")}</p>
     </article>`).join("");
-    // Раньше онгоинги добавлялись в массив, но основной каталог после этого не перерисовывался.
     renderAnime();
     renderFeatured();
     savePosterCache();
     saveExpandedCatalog();
+    requestAnimationFrame(updateOngoingArrows);
     updateCatalogLoadStatus("Актуальные онгоинги обновлены. В каталоге "+animeList.length+" аниме.");
   }catch(error){
     console.warn("Не удалось загрузить онгоинги:",error);
-    target.innerHTML='<p class="ongoing-loading">Не удалось загрузить онгоинги. Попробуй обновить страницу позже.</p>';
+    target.innerHTML='<p class="ongoing-loading">Онгоинги временно недоступны. Остальной каталог работает.</p>';
+  }finally{
+    clearTimeout(timeout);
   }
 }
 function renderFeatured(){
@@ -719,20 +944,23 @@ function renderAnime(){
   });
 
   grid.innerHTML=filtered.map(anime=>{
-    const poster=posterCache[anime[0]]||'';
+    const cardId=escapeCatalogText(anime[0]);
+    const cardTitle=escapeCatalogText(anime[1]);
+    const cardGenre=escapeCatalogText(anime[2]);
+    const poster=escapeCatalogText(posterCache[anime[0]]||'');
     return `
-      <div class="card" data-id="${anime[0]}" role="link" tabindex="0" aria-label="Открыть ${anime[1]}">
+      <div class="card" data-id="${cardId}" role="link" tabindex="0" aria-label="Открыть ${cardTitle}">
         <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-          data-id="${anime[0]}"
-          data-title="${anime[1]}"
+          data-id="${cardId}"
+          data-title="${cardTitle}"
           data-poster="${poster}"
-          data-genre="${anime[2]}">♡</button>
+          data-genre="${cardGenre}">♡</button>
         <div class="poster">
-          ${poster?'<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy" onerror="this.remove()">':''}
-          <span>${anime[1]}</span>
+          ${poster?'<img src="'+poster+'" alt="'+cardTitle+'" loading="lazy" onerror="this.remove()">':''}
+          <span>${cardTitle}</span>
         </div>
-        <h3>${anime[1]}</h3>
-        <p>${anime[2].replaceAll(', ',' · ')}</p>
+        <h3>${cardTitle}</h3>
+        <p>${cardGenre.replaceAll(', ',' · ')}</p>
       </div>
     `;
   }).join('');
@@ -740,14 +968,15 @@ function renderAnime(){
   document.getElementById('counter').textContent=
     `Найдено аниме: ${filtered.length} из ${animeList.length}`;
 
-  loadFavorites();
 }
 
 
 const BASE_ANIME_IDS=animeList.map(item=>item[0]);
 const ANIMORA_CATALOG_KEY="animora_expanded_catalog_v1";
-const ANIMORA_JIKAN_PAGE_KEY="animora_jikan_page_v1";
-let jikanPage=1;
+const ANIVIBE_CURSOR_KEY="animora_anivibe_catalog_cursor_v1";
+const ANIVIBE_FINISHED_KEY="animora_anivibe_catalog_finished_v1";
+let anivibeCursor="";
+let anivibeCatalogFinished=false;
 try{
   const savedCatalog=JSON.parse(localStorage.getItem(ANIMORA_CATALOG_KEY)||"[]");
   const knownIds=new Set(animeList.map(item=>item[0]));
@@ -759,7 +988,8 @@ try{
       knownTitles.add(String(item[1]).toLowerCase().trim());
     }
   });
-  jikanPage=Math.max(1,Number(localStorage.getItem(ANIMORA_JIKAN_PAGE_KEY)||1));
+  anivibeCursor=localStorage.getItem(ANIVIBE_CURSOR_KEY)||"";
+  anivibeCatalogFinished=localStorage.getItem(ANIVIBE_FINISHED_KEY)==="true";
 }catch(error){console.warn("Не удалось восстановить расширенный каталог:",error);}
 let isLoadingMoreAnime=false;
 function saveExpandedCatalog(){
@@ -767,7 +997,8 @@ function saveExpandedCatalog(){
     const baseIds=new Set(BASE_ANIME_IDS);
     const additions=animeList.filter(item=>!baseIds.has(item[0]));
     localStorage.setItem(ANIMORA_CATALOG_KEY,JSON.stringify(additions));
-    localStorage.setItem(ANIMORA_JIKAN_PAGE_KEY,String(jikanPage));
+    localStorage.setItem(ANIVIBE_CURSOR_KEY,anivibeCursor);
+    localStorage.setItem(ANIVIBE_FINISHED_KEY,String(anivibeCatalogFinished));
   }catch(error){console.warn("Не удалось сохранить расширенный каталог:",error);}
 }
 const MAX_CATALOG_SIZE=10000;
@@ -782,70 +1013,109 @@ function updateCatalogLoadStatus(message){
   const status=document.getElementById("catalogMoreStatus");
   if(status)status.textContent=message;
 }
-async function fetchJikanPage(page){
-  const response=await fetch("/api/anime/catalog?page="+page,{headers:{"Accept":"application/json"},cache:"no-store"});
-  if(response.status===429)throw new Error("RATE_LIMIT");
-  if(!response.ok)throw new Error("JIKAN_HTTP_"+response.status);
-  return response.json();
+function escapeCatalogText(value){
+  return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}
+function extractAniVibeCursor(payload){
+  const data=payload?.data&&!Array.isArray(payload.data)?payload.data:null;
+  return payload?.next_cursor
+    ??payload?.nextCursor
+    ??payload?.cursor_next
+    ??payload?.pagination?.next_cursor
+    ??payload?.pagination?.nextCursor
+    ??payload?.meta?.next_cursor
+    ??payload?.meta?.nextCursor
+    ??payload?.meta?.cursor_next
+    ??payload?.next?.cursor
+    ??data?.next_cursor
+    ??data?.nextCursor
+    ??data?.cursor_next
+    ??data?.pagination?.next_cursor
+    ??"";
 }
 async function loadMoreAnime(){
-  if(isLoadingMoreAnime||animeList.length>=MAX_CATALOG_SIZE)return;
+  if(isLoadingMoreAnime||anivibeCatalogFinished||animeList.length>=MAX_CATALOG_SIZE)return;
   const button=document.getElementById("loadMoreAnimeBtn");
   isLoadingMoreAnime=true;
-  if(button){button.disabled=true;button.textContent="Загружаем подборку…";}
+  if(button){button.disabled=true;button.textContent="Загружаем аниме…";}
+  updateCatalogLoadStatus("Получаем следующую подборку из AniVibe…");
   let added=0;
-  let finished=false;
   try{
-    for(let batch=0;batch<4&&animeList.length<MAX_CATALOG_SIZE;batch++){
-      let result=null;
-      for(let attempt=0;attempt<5;attempt++){
-        try{result=await fetchJikanPage(jikanPage);break;}
-        catch(error){
-          const retryable=error.message==="RATE_LIMIT"||error.message==="Failed to fetch"||error.name==="TypeError";
-          if(!retryable||attempt===4)throw error;
-          const waitMs=2500*Math.pow(1.7,attempt);
-          updateCatalogLoadStatus("Источник временно ограничивает запросы. Повторяем через "+Math.ceil(waitMs/1000)+" сек…");
-          await new Promise(resolve=>setTimeout(resolve,waitMs));
-        }
+    const params=new URLSearchParams({limit:"50"});
+    if(anivibeCursor)params.set("cursor",anivibeCursor);
+    const response=await fetch("/api/anivibe/recent?"+params.toString(),{
+      headers:{"Accept":"application/json"}
+    });
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload.error||"AniVibe HTTP "+response.status);
+    const dataEnvelope=payload?.data&&!Array.isArray(payload.data)?payload.data:payload;
+    const entries=Array.isArray(payload?.data)?payload.data:
+      Array.isArray(dataEnvelope?.items)?dataEnvelope.items:
+      Array.isArray(dataEnvelope?.results)?dataEnvelope.results:
+      Array.isArray(dataEnvelope?.anime)?dataEnvelope.anime:
+      Array.isArray(payload?.results)?payload.results:
+      Array.isArray(payload?.items)?payload.items:
+      Array.isArray(payload)?payload:[];
+    const nextCursor=extractAniVibeCursor(payload);
+    if(!entries.length){
+      const cursorAdvanced=nextCursor!==null&&nextCursor!==undefined&&String(nextCursor)!==""&&String(nextCursor)!==String(anivibeCursor||"");
+      if(cursorAdvanced){
+        anivibeCursor=String(nextCursor);
+        anivibeCatalogFinished=false;
+        saveExpandedCatalog();
+        updateCatalogLoadStatus("В этой подборке нет новых тайтлов. Курсор обновлён — нажми кнопку, чтобы продолжить.");
+        if(button)button.textContent="＋ Продолжить загрузку";
+      }else{
+        anivibeCatalogFinished=true;
+        if(button)button.hidden=true;
+        saveExpandedCatalog();
+        updateCatalogLoadStatus("Новых тайтлов больше нет. В каталоге "+animeList.length+" аниме.");
       }
-      const entries=Array.isArray(result?.data)?result.data:[];
-      if(!entries.length){finished=true;break;}
-      for(const item of entries){
-        if(animeList.length>=MAX_CATALOG_SIZE)break;
-        if(!item.mal_id)continue;
-        const id="mal-"+item.mal_id;
-        const title=(item.title_english||item.title||"").trim();
-        if(!title)continue;
-        const normalizedTitle=title.toLowerCase().trim();
-        if(animeList.some(anime=>anime[0]===id||anime[1].toLowerCase().trim()===normalizedTitle))continue;
-        const genreList=[...(item.genres||[]),...(item.themes||[])];
-        const genres=[...new Set(genreList.map(g=>jikanGenreNames[g.name]).filter(Boolean))];
-        const genreText=genres.slice(0,3).join(", ")||"Аниме";
-        animeList.push([id,title,genreText]);
-        const image=item.images?.jpg?.large_image_url||item.images?.jpg?.image_url||item.images?.webp?.large_image_url||"";
-        if(image)posterCache[id]=image;
-        added++;
-      }
-      jikanPage++;
-      if(jikanPage>Number(result?.pagination?.last_visible_page||40)){finished=true;break;}
-      if(batch<3)await new Promise(resolve=>setTimeout(resolve,430));
+      return;
     }
+    const knownIds=new Set(animeList.map(item=>item[0]));
+    const knownTitles=new Set(animeList.map(item=>item[1].toLowerCase().trim()));
+    for(const item of entries){
+      if(animeList.length>=MAX_CATALOG_SIZE)break;
+      if(!item||typeof item!=="object")continue;
+      const sourceId=Number(item.id??item.anime_id??item.shikimori_id);
+      const title=String(item.title_ru||item.russian||item.name_ru||item.title||item.name||item.title_en||item.title_english||"").trim();
+      if(!sourceId||!title)continue;
+      const id="av-"+sourceId;
+      const normalizedTitle=title.toLowerCase().trim();
+      if(knownIds.has(id)||knownTitles.has(normalizedTitle))continue;
+      const rawGenres=Array.isArray(item.genres)?item.genres:
+        Array.isArray(item.genre)?item.genre:[];
+      const genres=rawGenres.map(genre=>{
+        if(typeof genre==="string")return genre;
+        return genre?.title_ru||genre?.title||genre?.name_ru||genre?.name||"";
+      }).filter(Boolean);
+      const genreText=[...new Set(genres)].slice(0,3).join(", ")
+        ||String(item.status||item.year||"Аниме");
+      const poster=String(item.poster||item.image||item.poster_url||
+        item.images?.webp?.large_image_url||item.images?.jpg?.large_image_url||"");
+      animeList.push([id,title,genreText]);
+      knownIds.add(id);knownTitles.add(normalizedTitle);
+      if(poster)posterCache[id]=poster;
+      added++;
+    }
+    anivibeCatalogFinished=nextCursor===null||nextCursor===undefined||nextCursor===""||String(nextCursor)===String(anivibeCursor||"");
+    anivibeCursor=anivibeCatalogFinished?"":String(nextCursor);
     saveExpandedCatalog();
     renderAnime();
     renderFeatured();
     savePosterCache();
     const total=animeList.length;
-    updateCatalogLoadStatus("Загружено "+total+" из "+MAX_CATALOG_SIZE+" аниме. Добавлено сейчас: "+added+". Продолжаем загрузку…");
-    if(total>=MAX_CATALOG_SIZE||finished){
+    updateCatalogLoadStatus("Добавлено: "+added+". Всего в каталоге: "+total+
+      (anivibeCatalogFinished?". Больше новых тайтлов пока нет.":". Нажми кнопку, чтобы загрузить следующую подборку."));
+    if(anivibeCatalogFinished){
       if(button)button.hidden=true;
-      updateCatalogLoadStatus("Готово! В каталоге "+total+" аниме.");
-    }else{
-      if(button)button.textContent="Загружаем автоматически…";
-      setTimeout(()=>loadMoreAnime(),700);
+    }else if(button){
+      button.textContent="＋ Загрузить ещё 50 аниме";
     }
   }catch(error){
-    console.error("Не удалось загрузить аниме:",error);
-    updateCatalogLoadStatus("Не удалось загрузить подборку. Проверь интернет и попробуй ещё раз.");
+    console.error("Не удалось загрузить аниме из AniVibe:",error);
+    updateCatalogLoadStatus("Не удалось загрузить подборку: "+error.message);
     if(button)button.textContent="Повторить загрузку";
   }finally{
     isLoadingMoreAnime=false;
@@ -1001,7 +1271,14 @@ async function fetchAnimePoster(anime){
   const normalize=value=>(value||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
   for(const query of [...new Set(queries)]){
     const url='https://api.tenrai.org/v1/anime?q='+encodeURIComponent(query)+'&limit=10&sfw=true';
-    const response=await fetch(url,{headers:{'Accept':'application/json'}});
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),5000);
+    let response;
+    try {
+      response=await fetch(url,{headers:{'Accept':'application/json'},signal:controller.signal});
+    } finally {
+      clearTimeout(timeout);
+    }
     if(!response.ok)throw new Error('Tenrai HTTP '+response.status);
     const result=await response.json();
     const entries=Array.isArray(result.data)?result.data:[];
@@ -1023,7 +1300,8 @@ async function fetchAnimePoster(anime){
 }
 
 async function loadAnimePosters(){
-  const missing=animeList.filter(anime=>!posterCache[anime[0]]);
+  // Не блокируем старт страницы массовым поиском обложек: подгружаем только первые карточки.
+  const missing=animeList.filter(anime=>!posterCache[anime[0]]).slice(0,6);
   let index=0;
   async function worker(){
     while(index<missing.length){
@@ -1035,19 +1313,14 @@ async function loadAnimePosters(){
           document.querySelectorAll('.card[data-id="'+anime[0]+'"] .poster').forEach(container=>{
             container.innerHTML='<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy"><span>'+anime[1]+'</span>';
           });
-          document.querySelectorAll('.favorite-btn[data-id="'+anime[0]+'"]').forEach(button=>{
-            button.dataset.poster=poster;
-          });
+          document.querySelectorAll('.favorite-btn[data-id="'+anime[0]+'"]').forEach(button=>{button.dataset.poster=poster;});
           savePosterCache();
-          renderFeatured();
-          renderCinemaHero();
         }
-      }catch(error){
-        console.warn('Не удалось загрузить обложку '+anime[1]+':',error);
-      }
+      }catch(error){console.warn('Не удалось загрузить обложку '+anime[1]+':',error);}
     }
   }
   await Promise.all([worker(),worker(),worker()]);
+  renderFeatured();
 }
 function showNotice(message){
   const notice=document.getElementById('notice');
@@ -1111,6 +1384,24 @@ async function toggleFavorite(event,button){
   }
 }
 
+document.getElementById("search").addEventListener("keydown",async event=>{
+  if(event.key!=="Enter")return;
+  event.preventDefault();
+  event.stopPropagation();
+  clearTimeout(anivibeSearchTimer);
+  const query=event.currentTarget.value.trim();
+  renderAnime();
+  if(query.length>=2){
+    await searchAniVibeCatalog(query);
+    const results=document.getElementById("anivibeDiscovery");
+    if(results){
+      results.hidden=false;
+      requestAnimationFrame(()=>results.scrollIntoView({behavior:"smooth",block:"start"}));
+    }
+  }else{
+    document.getElementById("catalog").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+});
 document.getElementById("anivibeSearchGrid").addEventListener("click",event=>{const card=event.target.closest(".anivibe-result-card");if(card)openAniVibeCard(card.dataset.anivibeId,card.dataset.title,card.dataset.poster);});
 document.getElementById("anivibeSearchGrid").addEventListener("keydown",event=>{if(event.key!=="Enter"&&event.key!==" ")return;const card=event.target.closest(".anivibe-result-card");if(!card)return;event.preventDefault();openAniVibeCard(card.dataset.anivibeId,card.dataset.title,card.dataset.poster);});
 document.getElementById('animeGrid').addEventListener('click',event=>{
@@ -1128,20 +1419,27 @@ document.getElementById('animeGrid').addEventListener('keydown',event=>{
 function openAnimeCard(id){
   const anime=animeList.find(item=>item[0]===id);
   if(!anime)return;
+  if(String(id).startsWith("av-")){
+    openAniVibeCard(String(id).slice(3),anime[1],posterCache[id]||"");
+    return;
+  }
   const params=new URLSearchParams({id:anime[0],title:anime[1],genre:anime[2],poster:posterCache[anime[0]]||''});
   window.location.href='/anime?'+params.toString();
 }
 renderAnime();
 renderFeatured();
 renderCinemaHero();
+loadFavorites();
 loadOngoingAnime();
-updateCatalogLoadStatus("В каталоге "+animeList.length+" из "+MAX_CATALOG_SIZE+" аниме. Загружаем коллекцию автоматически…");
-loadAnimePosters();
-if(animeList.length<MAX_CATALOG_SIZE){
+updateCatalogLoadStatus("В каталоге "+animeList.length+" аниме. Новые карточки загружаются порциями из AniVibe.");
+if(anivibeCatalogFinished){
   const loadButton=document.getElementById("loadMoreAnimeBtn");
-  if(loadButton)loadButton.textContent="Загружаем автоматически…";
-  setTimeout(()=>loadMoreAnime(),900);
+  if(loadButton)loadButton.hidden=true;
+}else{
+  const loadButton=document.getElementById("loadMoreAnimeBtn");
+  if(loadButton)loadButton.textContent="＋ Загрузить ещё 50 аниме";
 }
+loadAnimePosters();
 </script>
 
 

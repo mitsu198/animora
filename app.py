@@ -272,10 +272,19 @@ def anivibe_request(method, path, *, params=None, payload=None, authenticated=Fa
 
 @app.route("/api/anivibe/recent")
 def anivibe_recent():
-    """Прокси для проверки недавно добавленных тайтлов AniVibe."""
+    """Постраничная загрузка каталога AniVibe через cursor."""
     try:
-        data, error = anivibe_request("GET", "/api/v1/recent")
+        limit = max(1, min(int(request.args.get("limit", 50)), 50))
+        cursor = request.args.get("cursor", "").strip()
+        if len(cursor) > 500:
+            return jsonify({"error": "Некорректный курсор каталога."}), 400
+        params = {"limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+        data, error = anivibe_request("GET", "/api/v1/recent", params=params)
         return error if error else jsonify(data)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректные параметры каталога."}), 400
     except requests.RequestException:
         app.logger.exception("ANIVIBE RECENT CONNECTION ERROR")
         return jsonify({"error": "Не удалось получить последние тайтлы AniVibe."}), 502

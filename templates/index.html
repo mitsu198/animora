@@ -461,8 +461,8 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
 
   <section class="anivibe-discovery" id="anivibeDiscovery" hidden><div class="anivibe-discovery-head"><h2>Найдено на AniVibe</h2><span id="anivibeSearchStatus">Ищем в каталоге AniVibe…</span></div><div class="grid" id="anivibeSearchGrid"></div></section>
   <div class="catalog-more">
-    <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить до 10 000 аниме</button>
-    <p class="catalog-more-status" id="catalogMoreStatus">В каталоге 123 тайтра. Загружаем большую коллекцию до 10 000 аниме.</p>
+    <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить ещё 50 аниме</button>
+    <p class="catalog-more-status" id="catalogMoreStatus">Нажми кнопку, чтобы добавить новые аниме с настоящими постерами.</p>
   </div>
 </main>
 
@@ -746,8 +746,10 @@ function renderAnime(){
 
 const BASE_ANIME_IDS=animeList.map(item=>item[0]);
 const ANIMORA_CATALOG_KEY="animora_expanded_catalog_v1";
-const ANIMORA_JIKAN_PAGE_KEY="animora_jikan_page_v1";
-let jikanPage=1;
+const ANIVIBE_CURSOR_KEY="animora_anivibe_catalog_cursor_v1";
+const ANIVIBE_FINISHED_KEY="animora_anivibe_catalog_finished_v1";
+let anivibeCursor="";
+let anivibeCatalogFinished=false;
 try{
   const savedCatalog=JSON.parse(localStorage.getItem(ANIMORA_CATALOG_KEY)||"[]");
   const knownIds=new Set(animeList.map(item=>item[0]));
@@ -759,7 +761,8 @@ try{
       knownTitles.add(String(item[1]).toLowerCase().trim());
     }
   });
-  jikanPage=Math.max(1,Number(localStorage.getItem(ANIMORA_JIKAN_PAGE_KEY)||1));
+  anivibeCursor=localStorage.getItem(ANIVIBE_CURSOR_KEY)||"";
+  anivibeCatalogFinished=localStorage.getItem(ANIVIBE_FINISHED_KEY)==="true";
 }catch(error){console.warn("Не удалось восстановить расширенный каталог:",error);}
 let isLoadingMoreAnime=false;
 function saveExpandedCatalog(){
@@ -767,7 +770,8 @@ function saveExpandedCatalog(){
     const baseIds=new Set(BASE_ANIME_IDS);
     const additions=animeList.filter(item=>!baseIds.has(item[0]));
     localStorage.setItem(ANIMORA_CATALOG_KEY,JSON.stringify(additions));
-    localStorage.setItem(ANIMORA_JIKAN_PAGE_KEY,String(jikanPage));
+    localStorage.setItem(ANIVIBE_CURSOR_KEY,anivibeCursor);
+    localStorage.setItem(ANIVIBE_FINISHED_KEY,String(anivibeCatalogFinished));
   }catch(error){console.warn("Не удалось сохранить расширенный каталог:",error);}
 }
 const MAX_CATALOG_SIZE=10000;
@@ -782,70 +786,89 @@ function updateCatalogLoadStatus(message){
   const status=document.getElementById("catalogMoreStatus");
   if(status)status.textContent=message;
 }
-async function fetchJikanPage(page){
-  const response=await fetch("/api/anime/catalog?page="+page,{headers:{"Accept":"application/json"},cache:"no-store"});
-  if(response.status===429)throw new Error("RATE_LIMIT");
-  if(!response.ok)throw new Error("JIKAN_HTTP_"+response.status);
-  return response.json();
+function escapeCatalogText(value){
+  return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}
+function extractAniVibeCursor(payload){
+  return payload?.next_cursor
+    ||payload?.nextCursor
+    ||payload?.cursor_next
+    ||payload?.pagination?.next_cursor
+    ||payload?.pagination?.nextCursor
+    ||payload?.meta?.next_cursor
+    ||payload?.meta?.nextCursor
+    ||payload?.next?.cursor
+    ||"";
 }
 async function loadMoreAnime(){
-  if(isLoadingMoreAnime||animeList.length>=MAX_CATALOG_SIZE)return;
+  if(isLoadingMoreAnime||anivibeCatalogFinished||animeList.length>=MAX_CATALOG_SIZE)return;
   const button=document.getElementById("loadMoreAnimeBtn");
   isLoadingMoreAnime=true;
-  if(button){button.disabled=true;button.textContent="Загружаем подборку…";}
+  if(button){button.disabled=true;button.textContent="Загружаем аниме…";}
+  updateCatalogLoadStatus("Получаем следующую подборку из AniVibe…");
   let added=0;
-  let finished=false;
   try{
-    for(let batch=0;batch<4&&animeList.length<MAX_CATALOG_SIZE;batch++){
-      let result=null;
-      for(let attempt=0;attempt<5;attempt++){
-        try{result=await fetchJikanPage(jikanPage);break;}
-        catch(error){
-          const retryable=error.message==="RATE_LIMIT"||error.message==="Failed to fetch"||error.name==="TypeError";
-          if(!retryable||attempt===4)throw error;
-          const waitMs=2500*Math.pow(1.7,attempt);
-          updateCatalogLoadStatus("Источник временно ограничивает запросы. Повторяем через "+Math.ceil(waitMs/1000)+" сек…");
-          await new Promise(resolve=>setTimeout(resolve,waitMs));
-        }
-      }
-      const entries=Array.isArray(result?.data)?result.data:[];
-      if(!entries.length){finished=true;break;}
-      for(const item of entries){
-        if(animeList.length>=MAX_CATALOG_SIZE)break;
-        if(!item.mal_id)continue;
-        const id="mal-"+item.mal_id;
-        const title=(item.title_english||item.title||"").trim();
-        if(!title)continue;
-        const normalizedTitle=title.toLowerCase().trim();
-        if(animeList.some(anime=>anime[0]===id||anime[1].toLowerCase().trim()===normalizedTitle))continue;
-        const genreList=[...(item.genres||[]),...(item.themes||[])];
-        const genres=[...new Set(genreList.map(g=>jikanGenreNames[g.name]).filter(Boolean))];
-        const genreText=genres.slice(0,3).join(", ")||"Аниме";
-        animeList.push([id,title,genreText]);
-        const image=item.images?.jpg?.large_image_url||item.images?.jpg?.image_url||item.images?.webp?.large_image_url||"";
-        if(image)posterCache[id]=image;
-        added++;
-      }
-      jikanPage++;
-      if(jikanPage>Number(result?.pagination?.last_visible_page||40)){finished=true;break;}
-      if(batch<3)await new Promise(resolve=>setTimeout(resolve,430));
+    const params=new URLSearchParams({limit:"50"});
+    if(anivibeCursor)params.set("cursor",anivibeCursor);
+    const response=await fetch("/api/anivibe/recent?"+params.toString(),{
+      headers:{"Accept":"application/json"},cache:"no-store"
+    });
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload.error||"AniVibe HTTP "+response.status);
+    const entries=Array.isArray(payload?.data)?payload.data:
+      Array.isArray(payload?.results)?payload.results:
+      Array.isArray(payload?.items)?payload.items:
+      Array.isArray(payload)?payload:[];
+    if(!entries.length){
+      anivibeCatalogFinished=true;
+      if(button)button.hidden=true;
+      saveExpandedCatalog();
+      updateCatalogLoadStatus("Новых тайтлов больше нет. В каталоге "+animeList.length+" аниме.");
+      return;
     }
+    const knownIds=new Set(animeList.map(item=>item[0]));
+    const knownTitles=new Set(animeList.map(item=>item[1].toLowerCase().trim()));
+    for(const item of entries){
+      if(animeList.length>=MAX_CATALOG_SIZE)break;
+      if(!item||typeof item!=="object")continue;
+      const sourceId=Number(item.id??item.anime_id??item.shikimori_id);
+      const title=String(item.title_ru||item.russian||item.name_ru||item.title||item.name||item.title_en||item.title_english||"").trim();
+      if(!sourceId||!title)continue;
+      const id="av-"+sourceId;
+      const normalizedTitle=title.toLowerCase().trim();
+      if(knownIds.has(id)||knownTitles.has(normalizedTitle))continue;
+      const rawGenres=Array.isArray(item.genres)?item.genres:
+        Array.isArray(item.genre)?item.genre:[];
+      const genres=rawGenres.map(genre=>{
+        if(typeof genre==="string")return genre;
+        return genre?.title_ru||genre?.title||genre?.name_ru||genre?.name||"";
+      }).filter(Boolean);
+      const genreText=[...new Set(genres)].slice(0,3).join(", ")
+        ||String(item.status||item.year||"Аниме");
+      const poster=String(item.poster||item.image||item.poster_url||
+        item.images?.webp?.large_image_url||item.images?.jpg?.large_image_url||"");
+      animeList.push([id,title,genreText]);
+      knownIds.add(id);knownTitles.add(normalizedTitle);
+      if(poster)posterCache[id]=poster;
+      added++;
+    }
+    anivibeCursor=String(extractAniVibeCursor(payload)||"");
+    if(!anivibeCursor||entries.length<50)anivibeCatalogFinished=true;
     saveExpandedCatalog();
     renderAnime();
     renderFeatured();
     savePosterCache();
     const total=animeList.length;
-    updateCatalogLoadStatus("Загружено "+total+" из "+MAX_CATALOG_SIZE+" аниме. Добавлено сейчас: "+added+". Продолжаем загрузку…");
-    if(total>=MAX_CATALOG_SIZE||finished){
+    updateCatalogLoadStatus("Добавлено: "+added+". Всего в каталоге: "+total+
+      (anivibeCatalogFinished?". Больше новых тайтлов пока нет.":". Нажми кнопку, чтобы загрузить следующую подборку."));
+    if(anivibeCatalogFinished){
       if(button)button.hidden=true;
-      updateCatalogLoadStatus("Готово! В каталоге "+total+" аниме.");
-    }else{
-      if(button)button.textContent="Загружаем автоматически…";
-      setTimeout(()=>loadMoreAnime(),700);
+    }else if(button){
+      button.textContent="＋ Загрузить ещё 50 аниме";
     }
   }catch(error){
-    console.error("Не удалось загрузить аниме:",error);
-    updateCatalogLoadStatus("Не удалось загрузить подборку. Проверь интернет и попробуй ещё раз.");
+    console.error("Не удалось загрузить аниме из AniVibe:",error);
+    updateCatalogLoadStatus("Не удалось загрузить подборку: "+error.message);
     if(button)button.textContent="Повторить загрузку";
   }finally{
     isLoadingMoreAnime=false;
@@ -1128,6 +1151,10 @@ document.getElementById('animeGrid').addEventListener('keydown',event=>{
 function openAnimeCard(id){
   const anime=animeList.find(item=>item[0]===id);
   if(!anime)return;
+  if(String(id).startsWith("av-")){
+    openAniVibeCard(String(id).slice(3),anime[1],posterCache[id]||"");
+    return;
+  }
   const params=new URLSearchParams({id:anime[0],title:anime[1],genre:anime[2],poster:posterCache[anime[0]]||''});
   window.location.href='/anime?'+params.toString();
 }
@@ -1135,13 +1162,15 @@ renderAnime();
 renderFeatured();
 renderCinemaHero();
 loadOngoingAnime();
-updateCatalogLoadStatus("В каталоге "+animeList.length+" из "+MAX_CATALOG_SIZE+" аниме. Загружаем коллекцию автоматически…");
-loadAnimePosters();
-if(animeList.length<MAX_CATALOG_SIZE){
+updateCatalogLoadStatus("В каталоге "+animeList.length+" аниме. Новые карточки загружаются порциями из AniVibe.");
+if(anivibeCatalogFinished){
   const loadButton=document.getElementById("loadMoreAnimeBtn");
-  if(loadButton)loadButton.textContent="Загружаем автоматически…";
-  setTimeout(()=>loadMoreAnime(),900);
+  if(loadButton)loadButton.hidden=true;
+}else{
+  const loadButton=document.getElementById("loadMoreAnimeBtn");
+  if(loadButton)loadButton.textContent="＋ Загрузить ещё 50 аниме";
 }
+loadAnimePosters();
 </script>
 
 

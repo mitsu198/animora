@@ -662,22 +662,12 @@ async function loadOngoingAnime(){
   const target=document.getElementById("ongoingGrid");
   if(!target)return;
   if(!target.dataset.carouselReady){target.addEventListener("scroll",updateOngoingArrows,{passive:true});target.dataset.carouselReady="1";}
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),10000);
   try{
-    let payload=null;
-    // Jikan ограничивает частоту запросов; повторяем запрос при 429 и временных сетевых сбоях.
-    for(let attempt=0;attempt<5;attempt++){
-      try{
-        const response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"no-store"});
-        if(response.status===429)throw new Error("RATE_LIMIT");
-        if(!response.ok)throw new Error("JIKAN_"+response.status);
-        payload=await response.json();
-        break;
-      }catch(error){
-        const retryable=error.message==="RATE_LIMIT"||error.message==="Failed to fetch"||error.name==="TypeError";
-        if(!retryable||attempt===4)throw error;
-        await new Promise(resolve=>setTimeout(resolve,2500*Math.pow(1.8,attempt)));
-      }
-    }
+    const response=await fetch("/api/anime/ongoing",{headers:{"Accept":"application/json"},cache:"default",signal:controller.signal});
+    if(!response.ok)throw new Error("ONGOING_HTTP_"+response.status);
+    const payload=await response.json();
     const items=(payload?.data||[]).filter(item=>item.mal_id&&item.title).slice(0,25);
     if(!items.length)throw new Error("EMPTY");
     const cards=items.map(item=>{
@@ -694,16 +684,17 @@ async function loadOngoingAnime(){
       <div class="shelf-poster">${item.poster?'<img src="'+item.poster+'" alt="'+item.title+'" loading="lazy" onerror="this.remove()">':''}<span>${item.title}</span><b class="ongoing-badge">ОНГОИНГ</b></div>
       <h3>${item.title}</h3><p>${item.genreText.replaceAll(", "," · ")}</p>
     </article>`).join("");
-    // Раньше онгоинги добавлялись в массив, но основной каталог после этого не перерисовывался.
     renderAnime();
     renderFeatured();
     savePosterCache();
     saveExpandedCatalog();
-     requestAnimationFrame(updateOngoingArrows);
+    requestAnimationFrame(updateOngoingArrows);
     updateCatalogLoadStatus("Актуальные онгоинги обновлены. В каталоге "+animeList.length+" аниме.");
   }catch(error){
     console.warn("Не удалось загрузить онгоинги:",error);
-    target.innerHTML='<p class="ongoing-loading">Не удалось загрузить онгоинги. Попробуй обновить страницу позже.</p>';
+    target.innerHTML='<p class="ongoing-loading">Онгоинги временно недоступны. Остальной каталог работает.</p>';
+  }finally{
+    clearTimeout(timeout);
   }
 }
 function renderFeatured(){
@@ -1090,7 +1081,8 @@ async function fetchAnimePoster(anime){
 }
 
 async function loadAnimePosters(){
-  const missing=animeList.filter(anime=>!posterCache[anime[0]]);
+  // Не блокируем старт страницы массовым поиском обложек: подгружаем только первые карточки.
+  const missing=animeList.filter(anime=>!posterCache[anime[0]]).slice(0,12);
   let index=0;
   async function worker(){
     while(index<missing.length){
@@ -1102,19 +1094,15 @@ async function loadAnimePosters(){
           document.querySelectorAll('.card[data-id="'+anime[0]+'"] .poster').forEach(container=>{
             container.innerHTML='<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy"><span>'+anime[1]+'</span>';
           });
-          document.querySelectorAll('.favorite-btn[data-id="'+anime[0]+'"]').forEach(button=>{
-            button.dataset.poster=poster;
-          });
+          document.querySelectorAll('.favorite-btn[data-id="'+anime[0]+'"]').forEach(button=>{button.dataset.poster=poster;});
           savePosterCache();
-          renderFeatured();
-          renderCinemaHero();
         }
-      }catch(error){
-        console.warn('Не удалось загрузить обложку '+anime[1]+':',error);
-      }
+      }catch(error){console.warn('Не удалось загрузить обложку '+anime[1]+':',error);}
     }
   }
-  await Promise.all([worker(),worker(),worker()]);
+  await Promise.all([worker(),worker()]);
+  renderFeatured();
+  renderCinemaHero();
 }
 function showNotice(message){
   const notice=document.getElementById('notice');

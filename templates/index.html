@@ -806,7 +806,7 @@ async function searchAniVibeCatalog(query){
  if(anivibeSearchCache.has(key)){renderAniVibeResults(anivibeSearchCache.get(key),grid,status);return;}
  status.textContent="Ищем на AniVibe…";
  if(anivibeSearchController)anivibeSearchController.abort();anivibeSearchController=new AbortController();
- try{const response=await fetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},cache:"no-store",signal:anivibeSearchController.signal});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
+ try{const response=await anivibeEdgeFetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},signal:anivibeSearchController.signal});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
  const items=Array.isArray(payload)?payload:(payload.data||payload.results||payload.items||payload.anime||[]);const unique=[],ids=new Set(),titles=new Set();
  for(const item of items){const id=Number(item.id??item.anime_id??item.shikimori_id);const title=String(item.title_ru||item.russian||item.name_ru||item.title||item.name||item.title_en||"").trim();if(!id||!title||ids.has(id)||titles.has(title.toLowerCase()))continue;ids.add(id);titles.add(title.toLowerCase());unique.push({id,title,poster:String(item.poster||item.image||item.cover||item.poster_url||""),status:String(item.status||"Каталог AniVibe"),kind:String(item.kind||"")});}
  anivibeSearchCache.set(key,unique);if(anivibeSearchCache.size>30)anivibeSearchCache.delete(anivibeSearchCache.keys().next().value);renderAniVibeResults(unique,grid,status);
@@ -870,6 +870,19 @@ function scrollOngoing(direction){
   const track=document.getElementById("ongoingGrid"); if(!track)return;
   const card=track.querySelector(".shelf-card"),step=card?card.getBoundingClientRect().width+18:track.clientWidth*.8;
   track.scrollBy({left:direction*step*3,behavior:"smooth"}); setTimeout(updateOngoingArrows,400);
+}
+async function anivibeEdgeFetch(path,options={}) {
+  const edgeUrl="https://animora-catalog-cache.f86478662.workers.dev"+path;
+  const headers={"Accept":"application/json",...(options.headers||{})};
+  try {
+    const response=await fetch(edgeUrl,{...options,headers,cache:"no-store"});
+    if(!response.ok)throw new Error("EDGE_HTTP_"+response.status);
+    return response;
+  } catch(error) {
+    if(options.signal?.aborted)throw error;
+    console.warn("Cloudflare cache unavailable; using Render directly:",error);
+    return fetch(path,{...options,headers,cache:"no-store"});
+  }
 }
 async function loadOngoingAnime(){
   const target=document.getElementById("ongoingGrid");
@@ -1052,8 +1065,8 @@ async function loadMoreAnime(){
   try{
     const params=new URLSearchParams({limit:"50"});
     if(anivibeCursor)params.set("cursor",anivibeCursor);
-    const response=await fetch("/api/anivibe/recent?"+params.toString(),{
-      headers:{"Accept":"application/json"},cache:"no-store"
+    const response=await anivibeEdgeFetch("/api/anivibe/recent?"+params.toString(),{
+      headers:{"Accept":"application/json"}
     });
     const payload=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(payload.error||"AniVibe HTTP "+response.status);

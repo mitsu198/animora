@@ -122,105 +122,149 @@ def anime_catalog_api():
         return jsonify({"error": "Некорректный номер страницы."}), 400
 
 
-# Кэш онгоингов снижает нагрузку на Jikan и позволяет показать последние
-# данные, даже если внешний API временно недоступен.
+# Кэш каталога онгоингов AniVibe. Публичный каталог отдаёт карточки HTML-страницей,
+# поэтому читаем его постранично через ?status=Онгоинг&page=N.
 ONGOING_CACHE = {"payload": None, "updated_at": 0}
 ONGOING_CACHE_TTL = 15 * 60
 
 
+class AniVibeCatalogParser(__import__("html.parser", fromlist=["HTMLParser"]).HTMLParser):
+    """Извлекает карточки anime-item из HTML публичного каталога AniVibe."""
+    def __init__(self):
+        super().__init__()
+        self.items = []
+        self.current = None
+        self.capture = None
+        self.capture_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        classes = attrs.get("class", "").split()
+
+        if tag == "div" and "anime-item" in classes:
+            self.current = {"href": "", "poster": "", "title": "", "genres": "", "score": None, "year": None}
+        if self.current is None:
+            return
+
+        if tag == "a" and attrs.get("href", "").startswith("/anime/"):
+            self.current["href"] = attrs["href"]
+        elif tag == "img" and attrs.get("src"):
+            self.current["poster"] = attrs["src"]
+        elif tag == "div" and "title" in classes:
+            self.capture, self.capture_depth = "title", 1
+        elif tag == "div" and "genres" in classes:
+            self.capture, self.capture_depth = "genres", 1
+        elif tag == "span" and "rating" in classes:
+            self.capture, self.capture_depth = "score", 1
+        elif tag == "span" and "year" in classes:
+            self.capture, self.capture_depth = "year", 1
+        elif self.capture:
+            self.capture_depth += 1
+
+    def handle_data(self, data):
+        if self.current is not None and self.capture:
+            value = data.strip()
+            if value:
+                key = self.capture
+                if key in ("title", "genres"):
+                    self.current[key] = (self.current[key] + " " + value).strip()
+                elif key == "score":
+                    try:
+                        self.current[key] = float(value.replace(",", "."))
+                    except ValueError:
+                        pass
+                elif key == "year":
+                    try:
+                        self.current[key] = int(value)
+                    except ValueError:
+                        pass
+
+    def handle_endtag(self, tag):
+        if self.current is None:
+            return
+        if self.capture:
+            if (tag == "div" and self.capture in ("title", "genres")) or (tag == "span" and self.capture in ("score", "year")):
+                self.capture = None
+                self.capture_depth = 0
+        if tag == "div" and not self.capture and self.current.get("href") and self.current.get("title"):
+            # Закрывающий div карточки — сохраняем только валидные карточки.
+            if not self.items or self.items[-1] is not self.current:
+                self.items.append(self.current)
+                self.current = None
+
+
 @app.route("/api/anime/ongoing")
 def anime_ongoing_api():
-    """Собирает до 18 онгоингов из нескольких страниц AniVibe recent."""
+    """Загружает все доступные страницы публичного каталога AniVibe со статусом Онгоинг."""
     now = time.time()
     cached = ONGOING_CACHE.get("payload")
-    age = now - ONGOING_CACHE.get("updated_at", 0)
-
-    if cached and age < ONGOING_CACHE_TTL:
+    if cached and now - ONGOING_CACHE.get("updated_at", 0) < ONGOING_CACHE_TTL:
         response = jsonify(cached)
         response.headers["X-Animora-Cache"] = "HIT"
         return response
 
     try:
-        ongoing = []
-        seen_ids = set()
-        cursor = ""
-        # До четырёх страниц по 50 записей: достаточно для расширенной полки,
-        # но ограничивает число запросов и время ответа.
-        for _ in range(4):
-            params = {"limit": 50}
-            if cursor:
-                params["cursor"] = cursor
-            recent, error = anivibe_request("GET", "/api/v1/recent", params=params)
-            if error:
-                if cached:
-                    response = jsonify(cached)
-                    response.headers["X-Animora-Cache"] = "STALE"
-                    return response
-                return error
+        ongoing, seen_ids = [], set()
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; Animora/1.0)", "Accept": "text/html"}
+        # У каталога есть обычная page=N пагинация. Ограничиваем максимум 20 страниц,
+        # чтобы не допустить бесконечных запросов при изменении разметки сайта.
+        for page in range(1, 21):
+            response = requests.get(
+                f"{ANIVIBE_BASE_URL}/catalog",
+                params={"status": "Онгоинг", "page": page},
+                headers=headers,
+                timeout=12,
+            )
+            response.raise_for_status()
+            parser = AniVibeCatalogParser()
+            parser.feed(response.text)
+            page_items = parser.items
+            if not page_items:
+                break
 
-            if not isinstance(recent, dict):
-                raise ValueError("Unexpected AniVibe recent response")
-            entries = recent.get("data", [])
-            if isinstance(entries, dict):
-                entries = entries.get("items") or entries.get("results") or entries.get("anime") or []
-            if not isinstance(entries, list):
-                raise ValueError("Unexpected AniVibe recent entries")
-
-            for item in entries:
-                if not isinstance(item, dict) or str(item.get("status", "")).strip().casefold() != "онгоинг":
+            added = 0
+            for item in page_items:
+                match = __import__("re").search(r"/anime/(\\d+)", item["href"])
+                if not match:
                     continue
-                anime_id = item.get("id") or item.get("shikimori_id")
-                title = (item.get("title_ru") or item.get("title_en") or "").strip()
-                if not anime_id or not title or str(anime_id) in seen_ids:
+                anime_id = match.group(1)
+                if anime_id in seen_ids:
                     continue
-                seen_ids.add(str(anime_id))
-                poster = item.get("poster") or ""
+                seen_ids.add(anime_id)
+                added += 1
+                poster = item.get("poster", "")
+                if poster.startswith("/"):
+                    poster = ANIVIBE_BASE_URL + poster
                 ongoing.append({
                     "mal_id": anime_id,
-                    "title": title,
-                    "title_english": item.get("title_en"),
+                    "title": item["title"],
+                    "title_english": item["title"],
                     "images": {"jpg": {"image_url": poster, "large_image_url": poster}},
-                    "genres": [],
+                    "genres": [{"name": name.strip()} for name in item.get("genres", "").split(",") if name.strip()],
                     "themes": [],
-                    "episodes": item.get("episodes"),
                     "status": "Currently Airing",
                     "score": item.get("score"),
                     "year": item.get("year"),
+                    "anivibe_catalog_url": ANIVIBE_BASE_URL + item["href"],
                 })
-                if len(ongoing) >= 18:
-                    break
-
-            if len(ongoing) >= 18:
+            if added == 0:
                 break
-            next_cursor = (
-                recent.get("next_cursor")
-                or recent.get("nextCursor")
-                or recent.get("cursor_next")
-                or (recent.get("pagination") or {}).get("next_cursor")
-                or (recent.get("meta") or {}).get("next_cursor")
-                or (recent.get("next") or {}).get("cursor")
-                or ((recent.get("data") or {}).get("next_cursor") if isinstance(recent.get("data"), dict) else "")
-                or ((recent.get("data") or {}).get("nextCursor") if isinstance(recent.get("data"), dict) else "")
-                or ""
-            )
-            next_cursor = str(next_cursor).strip()
-            if not next_cursor or next_cursor == cursor:
-                break
-            cursor = next_cursor
 
+        if not ongoing:
+            raise ValueError("AniVibe catalog returned no ongoing cards")
         payload = {"data": ongoing}
         ONGOING_CACHE["payload"] = payload
         ONGOING_CACHE["updated_at"] = time.time()
-        response = jsonify(payload)
-        response.headers["X-Animora-Cache"] = "MISS"
-        return response
+        result = jsonify(payload)
+        result.headers["X-Animora-Cache"] = "MISS"
+        return result
     except (requests.RequestException, ValueError):
-        app.logger.exception("ANIVIBE ONGOING API ERROR")
+        app.logger.exception("ANIVIBE ONGOING CATALOG ERROR")
         if cached:
-            response = jsonify(cached)
-            response.headers["X-Animora-Cache"] = "STALE"
-            return response
-        return jsonify({"error": "Не удалось загрузить онгоинги из AniVibe."}), 502
+            result = jsonify(cached)
+            result.headers["X-Animora-Cache"] = "STALE"
+            return result
+        return jsonify({"error": "Не удалось загрузить каталог онгоингов AniVibe."}), 502
 
 @app.route("/api/diagnostics/network")
 def network_diagnostics():

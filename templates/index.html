@@ -436,6 +436,116 @@ p,.muted,.sub{color:#aeb8cc}
 .shelf-poster{border-radius:14px 14px 0 0}
 .ongoing-badge{background:#8a55dc!important;border-radius:6px!important}
 </style>
+
+<style id="animora-layout-v2">
+/* ANIMORA v2 — новая компоновка главной страницы */
+:root{--v2-bg:#090a10;--v2-panel:#11131d;--v2-panel2:#171a27;--v2-line:#292d3d;--v2-accent:#b58aff;--v2-muted:#969caf}
+html,body{background:var(--v2-bg)!important;color:#f5f4fa!important}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important}
+.site-header{
+ position:fixed!important;inset:0 auto 0 0!important;width:238px!important;height:100vh!important;
+ padding:30px 18px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+ gap:28px!important;background:linear-gradient(180deg,#12131e 0%,#0e1018 100%)!important;
+ border:0!important;border-right:1px solid #292d3d!important;border-radius:0!important;
+ box-shadow:12px 0 40px #0002!important;backdrop-filter:none!important;z-index:100!important
+}
+.header-topline{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important;width:100%}
+.site-header .logo{font-size:27px!important;letter-spacing:3px!important;line-height:1.2!important}
+.site-header .logo:after{content:"ТВОЙ МИР АНИМЕ";display:block;margin-top:7px;font-size:9px;letter-spacing:2px;color:#73798d;-webkit-text-fill-color:#73798d}
+.header-search-wrap{width:100%!important;height:44px!important;margin-top:12px!important;border-radius:11px!important;background:#090b12!important;border:1px solid #292d3d!important}
+.header-search-wrap>span{font-size:22px!important}
+.header-search-wrap kbd{display:none!important}
+.header-profile{position:absolute!important;right:19px!important;top:27px!important;width:34px!important;height:34px!important;margin:0!important}
+.site-header .admin-header-tag{align-self:flex-start;margin:0!important}
+.main-nav{width:100%!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;margin:0!important;padding:22px 0 0!important;border-top:1px solid #292d3d!important;overflow:visible!important}
+.main-nav a{display:flex!important;align-items:center!important;min-height:43px!important;padding:0 13px!important;border-radius:10px!important;color:#aeb3c3!important;font-size:14px!important;font-weight:600!important}
+.main-nav a:before{content:"";width:6px;height:6px;margin-right:12px;border-radius:50%;background:#555b70;transition:.2s}
+.main-nav a:hover,.main-nav .nav-current{background:#211a31!important;color:#e8d9ff!important}
+.main-nav .nav-current:after{display:none!important}
+.main-nav a:hover:before,.main-nav .nav-current:before{background:#b58aff;box-shadow:0 0 12px #b58aff}
+.category-strip,.hero-cinema,.discover,main,footer{margin-left:238px!important}
+.category-strip{padding:15px 4.5%!important;min-height:62px!important;background:#0c0e16!important;border:0!important;border-bottom:1px solid #242838!important;gap:16px!important}
+.category-strip-label{color:#777f95!important}
+.category-strip .filters{flex-wrap:nowrap!important;min-width:0}
+.category-strip .filters button{padding:8px 15px!important;background:#151824!important;border:1px solid #2a2e40!important;color:#bfc4d2!important}
+.category-strip .filters button.active,.category-strip .filters button:hover{background:#8e63cb!important;border-color:#8e63cb!important;color:white!important}
+.hero-cinema{min-height:570px!important;padding:78px 5.5%!important;border-radius:0!important;background:#11131c!important}
+.hero-cinema:before{background:linear-gradient(90deg,#090a10f5 0%,#090a10d9 38%,#090a1055 75%,#090a1080 100%),linear-gradient(0deg,#090a10 0%,transparent 42%)!important}
+.hero-content{max-width:620px!important}
+.hero-kicker{font-size:10px!important;letter-spacing:3px!important;color:#c3a0ff!important}
+.hero-label{background:#a879df20!important;border:1px solid #a879df77!important;border-radius:5px!important;color:#dfcaff!important}
+.hero-cinema h1{font-size:clamp(42px,5vw,66px)!important;line-height:1.03!important;max-width:620px!important}
+.hero-cinema p{max-width:510px!important;color:#c0c3d0!important}
+.hero-watch{background:#eee7fa!important;color:#21182d!important;border-radius:9px!important;padding:15px 25px!important}
+.hero-more{border-radius:9px!important}
+.hero-bottom{left:5.5%!important;right:5.5%!important}
+.discover{padding:44px 4.5% 20px!important;background:#090a10!important}
+.discover-head{align-items:flex-end!important;margin-bottom:30px!important}
+.discover-head h2{font-size:clamp(26px,3vw,36px)!important;letter-spacing:-1px!important}
+.discover-head p{color:#9299ad!important}
+.random-btn{border-radius:9px!important;background:#1b1727!important;border:1px solid #5c4778!important;box-shadow:none!important}
+.shelf{margin:36px 0 48px!important}
+.shelf-title{margin-bottom:19px!important}
+.shelf-title h2{font-size:20px!important;letter-spacing:-.4px!important}
+.shelf-title span{color:#777f95!important;font-size:11px!important}
+.shelf-grid{gap:15px!important}
+.shelf-card{flex:0 0 176px!important;background:#121520!important;border:1px solid #272c3b!important;border-radius:11px!important;box-shadow:none!important}
+.shelf-card:hover{border-color:#9671c7!important;box-shadow:0 16px 35px #0006!important}
+.shelf-poster{height:238px!important;background:#1b1d2a!important}
+.shelf-card h3{font-size:13px!important;line-height:1.4!important}
+.shelf-card p{color:#8e95a8!important}
+main{max-width:none!important;padding:48px 4.5%!important;background:#0b0d14!important}
+#catalog>h2{font-size:32px!important;margin:0 0 8px!important}
+#counter{color:#82899d!important;font-size:13px!important}
+.search{background:#141824!important;border:1px solid #2a3042!important;border-radius:10px!important}
+.filters button{background:#151824!important;border-color:#2a3042!important}
+.grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:18px!important}
+.card{background:#121520!important;border:1px solid #272c3b!important;border-radius:11px!important;box-shadow:none!important}
+.card:hover{border-color:#9671c7!important;box-shadow:0 15px 35px #0006!important}
+.poster{height:250px!important;background:#1b1d2a!important}
+.card h3{font-size:14px!important;line-height:1.4!important}
+.card p{color:#8e95a8!important}
+.favorite-btn{backdrop-filter:blur(8px)!important}
+.anivibe-discovery{background:#111520!important;border:1px solid #2a3042!important;border-radius:14px!important}
+.catalog-more-btn{border-radius:10px!important;background:#8e63cb!important;box-shadow:none!important}
+footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px solid #242838!important;color:#737b90!important}
+@media(max-width:850px){
+ .site-header{position:relative!important;inset:auto!important;width:auto!important;height:auto!important;padding:14px 4%!important;display:block!important;border-right:0!important;border-bottom:1px solid #292d3d!important}
+ .header-topline{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important}
+ .site-header .logo{font-size:22px!important}
+ .site-header .logo:after{display:none!important}
+ .header-search-wrap{margin:0!important;height:40px!important}
+ .header-profile{position:static!important;justify-self:end!important;width:36px!important;height:36px!important}
+ .main-nav{flex-direction:row!important;gap:7px!important;overflow-x:auto!important;margin-top:13px!important;padding:11px 0 0!important;border-top:1px solid #292d3d!important}
+ .main-nav a{white-space:nowrap!important;min-height:36px!important;padding:0 10px!important;font-size:12px!important}
+ .main-nav a:before{display:none!important}
+ .category-strip,.hero-cinema,.discover,main,footer{margin-left:0!important}
+ .category-strip{padding:11px 4%!important}
+ .hero-cinema{min-height:510px!important;padding:58px 5%!important}
+ .discover{padding:30px 4% 12px!important}
+ main{padding:34px 4%!important}
+ footer{padding:25px 4%!important}
+}
+@media(max-width:560px){
+ .header-topline{grid-template-columns:1fr auto!important}
+ .header-search-wrap{grid-column:1/-1;grid-row:2}
+ .site-header .logo{grid-column:1;grid-row:1}
+ .header-profile{grid-column:2;grid-row:1}
+ .main-nav{gap:3px!important}
+ .main-nav a{font-size:11px!important;padding:0 8px!important}
+ .category-strip{align-items:flex-start!important;flex-direction:column!important;gap:8px!important}
+ .category-strip .filters{width:100%}
+ .hero-cinema{min-height:490px!important;padding:48px 5%!important}
+ .hero-cinema h1{font-size:39px!important}
+ .hero-bottom{font-size:7px!important}
+ .discover-head{align-items:flex-start!important;flex-direction:column!important}
+ .shelf-card{flex-basis:150px!important}
+ .shelf-poster{height:205px!important}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+ .poster{height:215px!important}
+}
+</style>
+
 </head>
 <body>
 

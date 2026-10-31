@@ -119,6 +119,27 @@ html[data-theme="glass"] .theme-backdrop{background:rgba(3,10,20,.42)!important}
 html[data-theme="glass"] footer{color:#c9dced}
 @media(prefers-reduced-transparency:reduce){html[data-theme="glass"] header,html[data-theme="glass"] nav,html[data-theme="glass"] main>section,html[data-theme="glass"] .card,html[data-theme="glass"] form,html[data-theme="glass"] .anime-card{background:#1b2d45!important}}
 </style>
+<style id="animora-single-night-theme">
+:root{--site-bg:#0c0b13!important;--site-panel:#171321!important;--site-panel-2:#100d17!important;--site-border:#49305f!important;--site-accent:#bd72ff!important;--site-text:#fff!important;--site-muted:#aaa!important}
+html,html body{background:#0c0b13!important;color:#fff!important}
+html body{background-image:none!important;animation:none!important}
+html[data-theme] body,html[data-theme="light"] body,html[data-theme="custom"] body{background:#0c0b13!important;background-image:none!important;color:#fff!important}
+html[data-theme] header,html[data-theme] .card,html[data-theme] .shelf-card,html[data-theme] .theme-panel,html[data-theme] .anime-card,html[data-theme] form,html[data-theme] .theme-dialog{background-color:#171321!important;color:#fff!important;border-color:#49305f!important}
+html[data-theme] .search,html[data-theme] input,html[data-theme] select{background-color:#100d17!important;color:#fff!important;border-color:#49305f!important}
+</style>
+<script>
+(function(){
+ try{
+  localStorage.setItem('animora_site_theme','default');
+  localStorage.removeItem('animora_custom_theme');
+ }catch(e){}
+ document.documentElement.removeAttribute('data-theme');
+ document.documentElement.style.removeProperty('--custom-bg');
+ document.documentElement.style.removeProperty('--custom-accent');
+ document.documentElement.style.removeProperty('--custom-panel');
+ if(document.body){document.body.removeAttribute('data-animated');}
+})();
+</script>
 </head>
 <body>
 <header><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a><nav><a href="/">Главная</a><a href="/#catalog">Каталог</a><a class="profile-avatar-link" href="/profile" aria-label="Открыть профиль" title="Мой профиль"><span>👤</span></a></nav></header>
@@ -169,15 +190,5 @@ document.getElementById('primeLink').href='https://www.primevideo.com/search/ref
 if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;img.onerror=()=>{img.remove();document.getElementById('posterFallback').style.display='flex'};document.getElementById('posterFallback').style.display='none';document.getElementById('posterWrap').appendChild(img);}
 
 
-<script>
-(function(){
- const key='animora_site_theme',customKey='animora_custom_theme',root=document.documentElement;
- const allowed=['default','ocean','forest','rose','light','sunset','neon','lavender','glass','custom'];
- function applyTheme(theme){const value=allowed.includes(theme)?theme:'default';if(value==='default')root.removeAttribute('data-theme');else root.setAttribute('data-theme',value);try{localStorage.setItem(key,value)}catch(e){}}
- function applyCustom(data){root.style.setProperty('--custom-bg',data.bg||'#171321');root.style.setProperty('--custom-accent',data.accent||'#bd72ff');root.style.setProperty('--custom-panel',data.panel||data.bg||'#171321');document.body.dataset.animated=data.animated===false?'false':'true';try{localStorage.setItem(customKey,JSON.stringify(data))}catch(e){}applyTheme('custom')}
- let saved='default',custom={};try{saved=localStorage.getItem(key)||'default';custom=JSON.parse(localStorage.getItem(customKey)||'{}')||{}}catch(e){}
- if(saved==='custom')applyCustom(custom);else applyTheme(saved);
- window.animoraApplyTheme=applyTheme;window.animoraApplyCustomTheme=applyCustom;
-})();
-</script>
+
 </body></html>

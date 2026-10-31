@@ -793,17 +793,21 @@ function escapeCatalogText(value){
   return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 }
 function extractAniVibeCursor(payload){
+  const data=payload?.data&&!Array.isArray(payload.data)?payload.data:null;
   return payload?.next_cursor
-    ||payload?.nextCursor
-    ||payload?.cursor_next
-    ||payload?.pagination?.next_cursor
-    ||payload?.pagination?.nextCursor
-    ||payload?.meta?.next_cursor
-    ||payload?.meta?.nextCursor
-    ||payload?.meta?.cursor_next
-    ||payload?.pagination?.next
-    ||payload?.next?.cursor
-    ||"";
+    ??payload?.nextCursor
+    ??payload?.cursor_next
+    ??payload?.pagination?.next_cursor
+    ??payload?.pagination?.nextCursor
+    ??payload?.meta?.next_cursor
+    ??payload?.meta?.nextCursor
+    ??payload?.meta?.cursor_next
+    ??payload?.next?.cursor
+    ??data?.next_cursor
+    ??data?.nextCursor
+    ??data?.cursor_next
+    ??data?.pagination?.next_cursor
+    ??"";
 }
 async function loadMoreAnime(){
   if(isLoadingMoreAnime||anivibeCatalogFinished||animeList.length>=MAX_CATALOG_SIZE)return;
@@ -820,7 +824,11 @@ async function loadMoreAnime(){
     });
     const payload=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(payload.error||"AniVibe HTTP "+response.status);
+    const dataEnvelope=payload?.data&&!Array.isArray(payload.data)?payload.data:payload;
     const entries=Array.isArray(payload?.data)?payload.data:
+      Array.isArray(dataEnvelope?.items)?dataEnvelope.items:
+      Array.isArray(dataEnvelope?.results)?dataEnvelope.results:
+      Array.isArray(dataEnvelope?.anime)?dataEnvelope.anime:
       Array.isArray(payload?.results)?payload.results:
       Array.isArray(payload?.items)?payload.items:
       Array.isArray(payload)?payload:[];
@@ -857,8 +865,9 @@ async function loadMoreAnime(){
       if(poster)posterCache[id]=poster;
       added++;
     }
-    anivibeCursor=String(extractAniVibeCursor(payload)||"");
-    if(!anivibeCursor||entries.length<50)anivibeCatalogFinished=true;
+    const nextCursor=extractAniVibeCursor(payload);
+    anivibeCatalogFinished=nextCursor===null||nextCursor===undefined||nextCursor==="";
+    anivibeCursor=anivibeCatalogFinished?"":String(nextCursor);
     saveExpandedCatalog();
     renderAnime();
     renderFeatured();

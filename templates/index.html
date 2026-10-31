@@ -71,6 +71,8 @@ footer{text-align:center;padding:30px;color:#777}
 .catalog-more-btn:disabled{opacity:.65;cursor:wait;transform:none}
 .catalog-more-status{color:#9f94ac;font-size:13px;line-height:1.5;margin:12px 0 0}
 </style><style>
+.anivibe-discovery{margin:28px 0 34px;padding:22px;border:1px solid #49305f;border-radius:12px;background:#171321}.anivibe-discovery-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.anivibe-discovery-head h2{margin:0;font-size:21px}.anivibe-discovery-head span{color:#aaa;font-size:12px}.anivibe-result-card{cursor:pointer}.anivibe-source{color:#c58cff!important}@media(max-width:600px){.anivibe-discovery{padding:14px}.anivibe-discovery-head{align-items:flex-start;flex-direction:column}}
+
 :root{--site-bg:#0c0b13;--site-panel:#171321;--site-panel-2:#100d17;--site-border:#49305f;--site-accent:#bd72ff;--site-text:#fff;--site-muted:#aaa}
 html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef}
 html[data-theme="forest"]{--site-bg:#0b1510;--site-panel:#14251b;--site-panel-2:#0e1c14;--site-border:#315b40;--site-accent:#78d69a}
@@ -392,7 +394,7 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
     <a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a>
     <div class="header-search-wrap">
       <span aria-hidden="true">⌕</span>
-      <input class="search header-search" id="search" placeholder="Найти аниме..." oninput="renderAnime()" aria-label="Поиск аниме">
+      <input class="search header-search" id="search" placeholder="Найти аниме..." oninput="handleCatalogSearch()" aria-label="Поиск аниме">
       <kbd>Поиск</kbd>
     </div>
     <a class="profile-avatar-link header-profile" href="{{ '/profile' if logged_in else '/login' }}" aria-label="{{ 'Открыть профиль' if logged_in else 'Войти' }}" title="{{ 'Мой профиль' if logged_in else 'Войти' }}">
@@ -456,6 +458,8 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
 
   <div id="counter"></div>
   <div class="grid" id="animeGrid"></div>
+
+  <section class="anivibe-discovery" id="anivibeDiscovery" hidden><div class="anivibe-discovery-head"><h2>Найдено на AniVibe</h2><span id="anivibeSearchStatus">Ищем в каталоге AniVibe…</span></div><div class="grid" id="anivibeSearchGrid"></div></section>
   <div class="catalog-more">
     <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить до 10 000 аниме</button>
     <p class="catalog-more-status" id="catalogMoreStatus">В каталоге 123 тайтра. Загружаем большую коллекцию до 10 000 аниме.</p>
@@ -593,6 +597,21 @@ const animeList = [
 ];
 
 let selectedGenre = "Все";
+
+let anivibeSearchTimer=null,anivibeSearchSequence=0;
+function handleCatalogSearch(){renderAnime();clearTimeout(anivibeSearchTimer);const q=document.getElementById("search").value.trim();if(q.length<2){const box=document.getElementById("anivibeDiscovery");if(box)box.hidden=true;return;}anivibeSearchTimer=setTimeout(()=>searchAniVibeCatalog(q),550);}
+function safeAniText(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+async function searchAniVibeCatalog(query){
+ const box=document.getElementById("anivibeDiscovery"),grid=document.getElementById("anivibeSearchGrid"),status=document.getElementById("anivibeSearchStatus");if(!box||!grid||!status)return;
+ const seq=++anivibeSearchSequence;box.hidden=false;status.textContent="Ищем на AniVibe…";grid.innerHTML="";
+ try{const response=await fetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},cache:"no-store"});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
+ const items=Array.isArray(payload)?payload:(payload.data||payload.results||payload.items||payload.anime||[]);const unique=[],ids=new Set(),titles=new Set();
+ for(const item of items){const id=Number(item.id??item.anime_id??item.shikimori_id);const title=String(item.title_ru||item.russian||item.name_ru||item.title||item.name||item.title_en||"").trim();if(!id||!title||ids.has(id)||titles.has(title.toLowerCase()))continue;ids.add(id);titles.add(title.toLowerCase());unique.push({id,title,poster:String(item.poster||item.image||item.cover||item.poster_url||""),status:String(item.status||"Каталог AniVibe"),kind:String(item.kind||"")});}
+ if(!unique.length){status.textContent="AniVibe не нашёл совпадений.";return;}status.textContent="Найдено: "+unique.length+" · источник: AniVibe";
+ grid.innerHTML=unique.map(item=>{const title=safeAniText(item.title),poster=safeAniText(item.poster),meta=safeAniText([item.kind,item.status].filter(Boolean).join(" · "));return '<article class="card anivibe-result-card" role="link" tabindex="0" data-anivibe-id="'+item.id+'" data-title="'+title+'" data-poster="'+poster+'"><div class="poster">'+(poster?'<img src="'+poster+'" alt="'+title+'" loading="lazy" onerror="this.remove()">':"")+'<span>'+title+'</span></div><h3>'+title+'</h3><p class="anivibe-source">'+(meta||"Есть на AniVibe")+'</p></article>';}).join("");
+ }catch(error){if(seq!==anivibeSearchSequence)return;status.textContent=error.message||"Не удалось выполнить поиск AniVibe.";}
+}
+function openAniVibeCard(id,title,poster){const params=new URLSearchParams({anivibe_id:String(id),title:title||"Аниме",poster:poster||"",genre:"Каталог AniVibe"});window.location.href="/anime?"+params.toString();}
 
 function setGenre(genre,button){
   selectedGenre=genre;
@@ -1090,6 +1109,8 @@ async function toggleFavorite(event,button){
   }
 }
 
+document.getElementById("anivibeSearchGrid").addEventListener("click",event=>{const card=event.target.closest(".anivibe-result-card");if(card)openAniVibeCard(card.dataset.anivibeId,card.dataset.title,card.dataset.poster);});
+document.getElementById("anivibeSearchGrid").addEventListener("keydown",event=>{if(event.key!=="Enter"&&event.key!==" ")return;const card=event.target.closest(".anivibe-result-card");if(!card)return;event.preventDefault();openAniVibeCard(card.dataset.anivibeId,card.dataset.title,card.dataset.poster);});
 document.getElementById('animeGrid').addEventListener('click',event=>{
   if(event.target.closest('.favorite-btn'))return;
   const card=event.target.closest('.card[data-id]');

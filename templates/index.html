@@ -719,20 +719,23 @@ function renderAnime(){
   });
 
   grid.innerHTML=filtered.map(anime=>{
-    const poster=posterCache[anime[0]]||'';
+    const cardId=escapeCatalogText(anime[0]);
+    const cardTitle=escapeCatalogText(anime[1]);
+    const cardGenre=escapeCatalogText(anime[2]);
+    const poster=escapeCatalogText(posterCache[anime[0]]||'');
     return `
-      <div class="card" data-id="${anime[0]}" role="link" tabindex="0" aria-label="Открыть ${anime[1]}">
+      <div class="card" data-id="${cardId}" role="link" tabindex="0" aria-label="Открыть ${cardTitle}">
         <button class="favorite-btn" onclick="toggleFavorite(event,this)"
-          data-id="${anime[0]}"
-          data-title="${anime[1]}"
+          data-id="${cardId}"
+          data-title="${cardTitle}"
           data-poster="${poster}"
-          data-genre="${anime[2]}">♡</button>
+          data-genre="${cardGenre}">♡</button>
         <div class="poster">
-          ${poster?'<img src="'+poster+'" alt="'+anime[1]+'" loading="lazy" onerror="this.remove()">':''}
-          <span>${anime[1]}</span>
+          ${poster?'<img src="'+poster+'" alt="'+cardTitle+'" loading="lazy" onerror="this.remove()">':''}
+          <span>${cardTitle}</span>
         </div>
-        <h3>${anime[1]}</h3>
-        <p>${anime[2].replaceAll(', ',' · ')}</p>
+        <h3>${cardTitle}</h3>
+        <p>${cardGenre.replaceAll(', ',' · ')}</p>
       </div>
     `;
   }).join('');
@@ -797,6 +800,8 @@ function extractAniVibeCursor(payload){
     ||payload?.pagination?.nextCursor
     ||payload?.meta?.next_cursor
     ||payload?.meta?.nextCursor
+    ||payload?.meta?.cursor_next
+    ||payload?.pagination?.next
     ||payload?.next?.cursor
     ||"";
 }

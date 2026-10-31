@@ -254,20 +254,40 @@ def anime_ongoing_api():
                 break
 
         if not ongoing:
-            raise ValueError("AniVibe catalog returned no ongoing cards")
-        payload = {"data": ongoing}
+            # Если AniVibe поменял HTML-разметку, используем структурированный
+            # Jikan API как резервный источник текущих онгоингов.
+            app.logger.warning("AniVibe ongoing parser returned no cards; using Jikan fallback")
+            fallback_items = []
+            for page in range(1, 5):
+                fallback_response = requests.get(
+                    "https://api.jikan.moe/v4/seasons/now",
+                    params={"page": page, "limit": 25},
+                    headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
+                    timeout=15,
+                )
+                fallback_response.raise_for_status()
+                fallback_data = fallback_response.json()
+                fallback_items.extend(fallback_data.get("data", []))
+                if not fallback_data.get("pagination", {}).get("has_next_page"):
+                    break
+                time.sleep(0.35)
+            if not fallback_items:
+                raise ValueError("AniVibe and Jikan returned no ongoing anime")
+            payload = {"data": fallback_items, "source": "jikan-fallback"}
+        else:
+            payload = {"data": ongoing, "source": "anivibe"}
         ONGOING_CACHE["payload"] = payload
         ONGOING_CACHE["updated_at"] = time.time()
         result = jsonify(payload)
         result.headers["X-Animora-Cache"] = "MISS"
         return result
     except (requests.RequestException, ValueError):
-        app.logger.exception("ANIVIBE ONGOING CATALOG ERROR")
+        app.logger.exception("ONGOING ANIME CATALOG ERROR")
         if cached:
             result = jsonify(cached)
             result.headers["X-Animora-Cache"] = "STALE"
             return result
-        return jsonify({"error": "Не удалось загрузить каталог онгоингов AniVibe."}), 502
+        return jsonify({"error": "Не удалось загрузить список онгоингов."}), 502
 
 @app.route("/api/diagnostics/network")
 def network_diagnostics():

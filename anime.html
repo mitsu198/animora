@@ -294,6 +294,8 @@ playButton.addEventListener('click',async()=>{
   }catch(e){setStatus(e.message);showMessage(e.message);}
   finally{playButton.disabled=false;}
 });
-if(title&&title!=='Аниме'){searchInput.value=title;runSearch();}
+const directAniVibeId=Number(params.get('anivibe_id')||0);
+if(directAniVibeId>0){searchItems=[{id:directAniVibeId,title_ru:title}];resultsSelect.innerHTML='';const opt=document.createElement('option');opt.value='0';opt.textContent=title;resultsSelect.appendChild(opt);loadEpisodes(directAniVibeId);}
+else if(title&&title!=='Аниме'){searchInput.value=title;runSearch();}
 </script>
 </body></html>

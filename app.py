@@ -227,7 +227,7 @@ def anime_ongoing_api():
 
             added = 0
             for item in page_items:
-                match = __import__("re").search(r"/anime/(\\d+)", item["href"])
+                match = __import__("re").search(r"/anime/(\d+)", item["href"])
                 if not match:
                     continue
                 anime_id = match.group(1)

@@ -215,7 +215,23 @@ function setStatus(text){status.textContent=text;}
 function showMessage(text){message.hidden=false;message.textContent=text;}
 function clearMessage(){message.hidden=true;message.textContent='';}
 async function api(path,options={}){
-  const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+  const headers={'Content-Type':'application/json',...(options.headers||{})};
+  const isPublicGet=(options.method||'GET').toUpperCase()==='GET' &&
+    (/^\/api\/anivibe\/anime\/\d+$/.test(path) ||
+     /^\/api\/anivibe\/anime\/\d+\/episodes(?:\?.*)?$/.test(path));
+  let response;
+  if(isPublicGet){
+    try{
+      response=await fetch('https://animora-catalog-cache.f86478662.workers.dev'+path,{...options,headers,cache:'no-store'});
+      if(!response.ok)throw new Error('EDGE_HTTP_'+response.status);
+    }catch(edgeError){
+      if(options.signal?.aborted)throw edgeError;
+      console.warn('Cloudflare cache unavailable; using Render directly:',edgeError);
+      response=await fetch(path,{...options,headers});
+    }
+  }else{
+    response=await fetch(path,{...options,headers});
+  }
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error||data.message||'Ошибка запроса к AniVibe.');
   return data;

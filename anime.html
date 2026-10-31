@@ -142,6 +142,45 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
  if(document.body){document.body.removeAttribute('data-animated');}
 })();
 </script>
+<style id="animora-cinema-redesign">
+:root{color-scheme:dark;--bg:#080a12;--panel:#111522;--panel2:#171d2d;--line:#293247;--muted:#9aa6bd;--accent:#9b6cff;--accent2:#e35bba;--glow:rgba(155,108,255,.22)}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body{background:radial-gradient(ellipse at 78% -12%,rgba(102,69,170,.2),transparent 38%),var(--bg)!important;color:#f5f6fb;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;line-height:1.55}
+a{transition:color .2s,opacity .2s}
+header,.site-header{background:rgba(10,13,23,.88)!important;border-bottom:1px solid rgba(148,163,184,.14)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);position:relative;z-index:20}
+.logo{color:#c4a4ff!important;font-weight:900!important;letter-spacing:2.5px;text-shadow:0 0 28px var(--glow)}
+nav a,.main-nav a{color:#c3cadd!important;font-weight:600;text-decoration:none}
+nav a:hover,.main-nav a:hover,.main-nav .nav-current{color:#d2b8ff!important}
+button,.random-btn,.primary{transition:transform .2s,filter .2s,box-shadow .2s}
+button:hover,.random-btn:hover,.primary:hover{filter:brightness(1.12);transform:translateY(-2px)}
+input,select,textarea{background:#101625!important;color:#f5f6fb!important;border:1px solid #303b52!important;border-radius:12px!important}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(155,108,255,.45);border-color:#a78bfa!important}
+main{max-width:1480px}
+.shelf,.discover,.category-strip,#catalog,.watch,.profile-panel,.card,.anime-card{scroll-margin-top:110px}
+.shelf-card,.anime-card,.card,.stat,.profile-stat,.profile-panel,.watch,.controls,.control,.favorites-tools{background:linear-gradient(155deg,rgba(25,32,49,.96),rgba(14,19,31,.98))!important;border:1px solid rgba(129,145,177,.18)!important;border-radius:17px!important;box-shadow:0 12px 34px rgba(0,0,0,.18)}
+.shelf-card:hover,.anime-card:hover,.card:hover{border-color:rgba(183,148,255,.62)!important;box-shadow:0 16px 42px rgba(0,0,0,.32),0 0 26px var(--glow);transform:translateY(-4px)}
+.shelf-poster{background:linear-gradient(145deg,#29213f,#161d31)!important}
+.shelf-poster img,.poster img{transition:transform .45s}
+.shelf-card:hover .shelf-poster img,.anime-card:hover img{transform:scale(1.045)}
+h1,h2,h3{letter-spacing:-.025em}
+h2{color:#f1edff}
+p,.muted,.sub{color:#aeb8cc}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#090d16}
+::-webkit-scrollbar-thumb{background:#39415a;border-radius:99px}
+@media(max-width:760px){header,.site-header{padding-left:16px!important;padding-right:16px!important}.logo{font-size:23px!important}main{padding-left:16px!important;padding-right:16px!important}.shelf-card{border-radius:13px!important}}
+</style><style id="animora-anime-cinema">
+header{position:sticky;top:0;padding:18px 6%!important}
+main{max-width:1240px!important}
+.hero{background:linear-gradient(105deg,rgba(8,10,18,.97),rgba(18,22,36,.88))!important;border:1px solid #293247!important;border-radius:24px!important;padding:30px!important;box-shadow:0 22px 60px #0005}
+.info h1{font-size:clamp(30px,5vw,54px)!important;line-height:1.08}
+.poster-wrap{border-radius:18px!important;overflow:hidden;box-shadow:0 18px 40px #0007}
+.primary{background:linear-gradient(110deg,#7954d5,#b36bea)!important;border:0!important;border-radius:12px!important;padding:14px 24px!important}
+.watch{padding:26px!important}
+.controls{padding:18px!important}
+.control input,.control select{min-height:48px}
+.back{color:#c4a4ff!important}
+</style>
 </head>
 <body>
 <header><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a><nav><a href="/">Главная</a><a href="/#catalog">Каталог</a><a class="profile-avatar-link" href="/profile" aria-label="Открыть профиль" title="Мой профиль"><span>👤</span></a></nav></header>

@@ -457,8 +457,8 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
   <div id="counter"></div>
   <div class="grid" id="animeGrid"></div>
   <div class="catalog-more">
-    <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить ещё 100 аниме</button>
-    <p class="catalog-more-status" id="catalogMoreStatus">В каталоге 123 тайтра. Загружай новые подборки из большой базы аниме.</p>
+    <button class="catalog-more-btn" id="loadMoreAnimeBtn" type="button" onclick="loadMoreAnime()">＋ Загрузить до 10 000 аниме</button>
+    <p class="catalog-more-status" id="catalogMoreStatus">В каталоге 123 тайтра. Загружаем большую коллекцию до 10 000 аниме.</p>
   </div>
 </main>
 
@@ -749,7 +749,7 @@ function saveExpandedCatalog(){
     localStorage.setItem(ANIMORA_JIKAN_PAGE_KEY,String(jikanPage));
   }catch(error){console.warn("Не удалось сохранить расширенный каталог:",error);}
 }
-const MAX_CATALOG_SIZE=1200;
+const MAX_CATALOG_SIZE=10000;
 const jikanGenreNames={
   "Action":"Экшен","Adventure":"Приключения","Fantasy":"Фэнтези",
   "Romance":"Романтика","Drama":"Драма","Comedy":"Комедия",
@@ -814,7 +814,7 @@ async function loadMoreAnime(){
     renderFeatured();
     savePosterCache();
     const total=animeList.length;
-    updateCatalogLoadStatus("Загружено "+total+" из "+MAX_CATALOG_SIZE+" аниме. Добавлено сейчас: "+added+". Продолжаем автоматически…");
+    updateCatalogLoadStatus("Загружено "+total+" из "+MAX_CATALOG_SIZE+" аниме. Добавлено сейчас: "+added+". Продолжаем загрузку…");
     if(total>=MAX_CATALOG_SIZE||finished){
       if(button)button.hidden=true;
       updateCatalogLoadStatus("Готово! В каталоге "+total+" аниме.");
@@ -1112,7 +1112,7 @@ renderAnime();
 renderFeatured();
 renderCinemaHero();
 loadOngoingAnime();
-updateCatalogLoadStatus("В каталоге "+animeList.length+" из "+MAX_CATALOG_SIZE+" аниме. Автоматически загружаем большую коллекцию…");
+updateCatalogLoadStatus("В каталоге "+animeList.length+" из "+MAX_CATALOG_SIZE+" аниме. Загружаем коллекцию автоматически…");
 loadAnimePosters();
 if(animeList.length<MAX_CATALOG_SIZE){
   const loadButton=document.getElementById("loadMoreAnimeBtn");

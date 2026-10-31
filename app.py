@@ -314,7 +314,11 @@ def network_diagnostics():
 
 # AniVibe Partner API: ключ хранится только в переменных окружения Render.
 ANIVIBE_BASE_URL = "https://anivibe.pro"
-ANIMORA_PUBLIC_ORIGIN = "https://animora.dpdns.org"
+ANIMORA_ALLOWED_ORIGINS = {
+    "animora.dpdns.org": "https://animora.dpdns.org",
+    "animora-pr-1.onrender.com": "https://animora-pr-1.onrender.com",
+    "animora-f6xm.onrender.com": "https://animora-f6xm.onrender.com",
+}
 
 
 def anivibe_request(method, path, *, params=None, payload=None, authenticated=False):
@@ -427,7 +431,10 @@ def anivibe_embed_token():
     if anime_id < 1 or episode < 1:
         return jsonify({"error": "Выбери аниме и серию."}), 400
 
-    payload = {"anime_id": anime_id, "episode": episode, "origin": ANIMORA_PUBLIC_ORIGIN}
+    public_origin = ANIMORA_ALLOWED_ORIGINS.get(request.host.split(":")[0].lower())
+    if not public_origin:
+        return jsonify({"error": "Этот домен не разрешён для воспроизведения AniVibe."}), 403
+    payload = {"anime_id": anime_id, "episode": episode, "origin": public_origin}
     translation = str(data.get("translation", "")).strip()
     if translation:
         if len(translation) > 120:

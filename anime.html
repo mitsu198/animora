@@ -44,18 +44,7 @@ select:focus{border-color:#bd72ff}
 .player-message.show{display:block}
 @media(max-width:700px){header{padding:18px 5%}.hero{grid-template-columns:1fr;padding:18px}.poster-wrap{height:360px;max-width:260px;width:100%;margin:auto}.info{text-align:center}.controls{grid-template-columns:1fr}main{padding:25px 5%}.watch{padding:20px}}
 
-.service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:20px}
-.service-card{display:flex;align-items:center;gap:13px;min-width:0;padding:16px;border:1px solid #49305f;border-radius:13px;background:#0e0c15;color:white;text-decoration:none;transition:.2s}
-.service-card:hover{border-color:#bd72ff;transform:translateY(-2px);background:#21152d}
-.service-icon{width:42px;height:42px;flex:0 0 42px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:#e50914;color:white;font-size:23px;font-weight:bold}
-.service-icon.go3{background:#f5c400;color:#16121f;font-size:17px}
-.service-icon.cr{background:#f47521;font-size:14px}
-.service-icon.prime{background:#1684b9}
-.service-card strong,.service-card small{display:block}
-.service-card small{margin-top:5px;color:#a99db5;font-size:12px;line-height:1.4}
-.service-arrow{margin-left:auto;color:#c58aff;font-size:20px}
-.legal-note{margin:20px 0 0;color:#91869c;font-size:12px;line-height:1.7}
-@media(max-width:600px){.service-grid{grid-template-columns:1fr}}
+
 @keyframes animoraGlobalFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}html[data-theme="sunset"]{--site-bg:#32142c;--site-panel:#49203b;--site-panel-2:#2a1728;--site-border:#a34b65;--site-accent:#ff9a62}html[data-theme="neon"]{--site-bg:#10102b;--site-panel:#1a2040;--site-panel-2:#14172f;--site-border:#386b83;--site-accent:#4fffe1}html[data-theme="lavender"]{--site-bg:#211735;--site-panel:#30234a;--site-panel-2:#251c39;--site-border:#5b4479;--site-accent:#d6a6ff}html[data-theme="custom"] body{background:linear-gradient(125deg,var(--custom-bg,#171321),var(--custom-panel,#241432),var(--custom-accent,#bd72ff),var(--custom-bg,#171321))!important;background-size:300% 300%!important;color:#fff!important}html[data-theme="custom"] body[data-animated="true"]{animation:animoraGlobalFlow 18s ease infinite}html[data-theme="custom"] header,html[data-theme="custom"] .card,html[data-theme="custom"] .anime-card,html[data-theme="custom"] .shelf-card,html[data-theme="custom"] .service-card,html[data-theme="custom"] .empty{background:var(--custom-panel,#241432)!important;border-color:var(--custom-accent,#bd72ff)!important;color:#fff!important}html[data-theme="custom"] h1,html[data-theme="custom"] h2,html[data-theme="custom"] .logo{color:var(--custom-accent,#bd72ff)!important}.profile-avatar-link{width:44px;height:44px;margin-left:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid var(--site-accent,#bd72ff);background:#241432;color:white;text-decoration:none;vertical-align:middle;box-shadow:0 0 0 3px #bd72ff22;transition:.2s}.profile-avatar-link:hover{transform:scale(1.07);box-shadow:0 0 18px #bd72ff66}.profile-avatar-link img{width:100%;height:100%;object-fit:cover}.profile-avatar-link span{font-size:23px}@media(max-width:600px){.profile-avatar-link{width:38px;height:38px;margin-left:8px}}@keyframes animoraGlobalFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}html[data-theme="sunset"]{--site-bg:#32142c;--site-panel:#49203b;--site-panel-2:#2a1728;--site-border:#a34b65;--site-accent:#ff9a62}html[data-theme="neon"]{--site-bg:#10102b;--site-panel:#1a2040;--site-panel-2:#14172f;--site-border:#386b83;--site-accent:#4fffe1}html[data-theme="lavender"]{--site-bg:#211735;--site-panel:#30234a;--site-panel-2:#251c39;--site-border:#5b4479;--site-accent:#d6a6ff}html[data-theme="custom"] body{background:linear-gradient(125deg,var(--custom-bg,#171321),var(--custom-panel,#241432),var(--custom-accent,#bd72ff),var(--custom-bg,#171321))!important;background-size:300% 300%!important;color:#fff!important}html[data-theme="custom"] body[data-animated="true"]{animation:animoraGlobalFlow 18s ease infinite}html[data-theme="custom"] header,html[data-theme="custom"] .card,html[data-theme="custom"] .anime-card,html[data-theme="custom"] .shelf-card,html[data-theme="custom"] .service-card,html[data-theme="custom"] .empty{background:var(--custom-panel,#241432)!important;border-color:var(--custom-accent,#bd72ff)!important;color:#fff!important}html[data-theme="custom"] h1,html[data-theme="custom"] h2,html[data-theme="custom"] .logo{color:var(--custom-accent,#bd72ff)!important}</style><style>
 :root{--site-bg:#0c0b13;--site-panel:#171321;--site-panel-2:#100d17;--site-border:#49305f;--site-accent:#bd72ff;--site-text:#fff;--site-muted:#aaa}
 html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef}
@@ -204,35 +193,13 @@ main{max-width:1240px!important}
 <div class="player-shell"><div class="video-stage" id="videoStage"><div class="video-empty" id="videoEmpty"><div class="play-mark">▶</div><strong>Плеер ANIMORA</strong>Выбери аниме, серию и озвучку, затем нажми «Смотреть серию».</div></div><div class="player-toolbar"><span id="nowPlaying">ANIMORA PLAYER</span><span>Плеер AniVibe</span></div></div>
 <div class="player-message" id="anivibeMessage" hidden></div>
 </section>
-<section class="watch" id="legalServices">
-<h2>Где смотреть легально</h2>
-<p class="sub">Открой официальный сервис и проверь, доступно ли это аниме в твоём регионе.</p>
-<div class="service-grid">
-<a class="service-card" id="netflixLink" target="_blank" rel="noopener noreferrer">
-<span class="service-icon">N</span><span><strong>Netflix</strong><small>Официальный поиск по каталогу</small></span><span class="service-arrow">↗</span>
-</a>
-<a class="service-card" id="go3Link" href="https://go3.ee/" target="_blank" rel="noopener noreferrer">
-<span class="service-icon go3">go3</span><span><strong>Go3</strong><small>Стриминг для стран Балтии</small></span><span class="service-arrow">↗</span>
-</a>
-<a class="service-card" id="crunchyrollLink" target="_blank" rel="noopener noreferrer">
-<span class="service-icon cr">CR</span><span><strong>Crunchyroll</strong><small>Проверь региональную доступность</small></span><span class="service-arrow">↗</span>
-</a>
-<a class="service-card" id="primeLink" target="_blank" rel="noopener noreferrer">
-<span class="service-icon prime">▶</span><span><strong>Prime Video</strong><small>Официальный поиск по каталогу</small></span><span class="service-arrow">↗</span>
-</a>
-</div>
-<p class="legal-note">ANIMORA не размещает видеофайлы и не встраивает чужие трансляции. Просмотр проходит на официальных сайтах сервисов. Каталоги и озвучки могут отличаться по странам.</p>
-</section>
+
 </section></main>
 <script>
 const params=new URLSearchParams(window.location.search),title=params.get('title')||'Аниме',poster=params.get('poster')||'';
 document.getElementById('title').textContent=title;
 document.getElementById('genre').textContent='Жанры: '+(params.get('genre')||'Аниме');
 document.title=title+' — ANIMORA';
-const encodedTitle=encodeURIComponent(title);
-document.getElementById('netflixLink').href='https://www.netflix.com/search?q='+encodedTitle;
-document.getElementById('crunchyrollLink').href='https://www.crunchyroll.com/search?q='+encodedTitle;
-document.getElementById('primeLink').href='https://www.primevideo.com/search/ref=atv_nb_sr?phrase='+encodedTitle;
 if(poster){const img=document.createElement('img');img.src=poster;img.alt=title;img.onerror=()=>{img.remove();document.getElementById('posterFallback').style.display='flex'};document.getElementById('posterFallback').style.display='none';document.getElementById('posterWrap').appendChild(img);}
 
 const $=id=>document.getElementById(id);

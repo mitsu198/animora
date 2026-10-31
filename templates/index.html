@@ -598,21 +598,23 @@ const animeList = [
 
 let selectedGenre = "Все";
 
-let anivibeSearchTimer=null,anivibeSearchSequence=0;
-function handleCatalogSearch(){renderAnime();clearTimeout(anivibeSearchTimer);const q=document.getElementById("search").value.trim();if(q.length<2){const box=document.getElementById("anivibeDiscovery");if(box)box.hidden=true;return;}anivibeSearchTimer=setTimeout(()=>searchAniVibeCatalog(q),550);}
+let anivibeSearchTimer=null,anivibeSearchSequence=0,anivibeSearchCache=new Map(),anivibeSearchController=null;
+function handleCatalogSearch(){renderAnime();clearTimeout(anivibeSearchTimer);const q=document.getElementById("search").value.trim();if(q.length<2){anivibeSearchSequence++;if(anivibeSearchController)anivibeSearchController.abort();const box=document.getElementById("anivibeDiscovery");if(box)box.hidden=true;return;}anivibeSearchTimer=setTimeout(()=>searchAniVibeCatalog(q),180);}
 function safeAniText(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function renderAniVibeResults(unique,grid,status){if(!unique.length){grid.innerHTML="";status.textContent="AniVibe не нашёл совпадений.";return;}status.textContent="Найдено: "+unique.length+" · источник: AniVibe";grid.innerHTML=unique.map(item=>{const title=safeAniText(item.title),poster=safeAniText(item.poster),meta=safeAniText([item.kind,item.status].filter(Boolean).join(" · "));return '<article class="card anivibe-result-card" role="link" tabindex="0" data-anivibe-id="'+item.id+'" data-title="'+title+'" data-poster="'+poster+'"><div class="poster">'+(poster?'<img src="'+poster+'" alt="'+title+'" loading="lazy" onerror="this.remove()">':"")+'<span>'+title+'</span></div><h3>'+title+'</h3><p class="anivibe-source">'+(meta||"Есть на AniVibe")+'</p></article>';}).join("");}
 async function searchAniVibeCatalog(query){
  const box=document.getElementById("anivibeDiscovery"),grid=document.getElementById("anivibeSearchGrid"),status=document.getElementById("anivibeSearchStatus");if(!box||!grid||!status)return;
- const seq=++anivibeSearchSequence;box.hidden=false;status.textContent="Ищем на AniVibe…";grid.innerHTML="";
- try{const response=await fetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},cache:"no-store"});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
+ const seq=++anivibeSearchSequence,key=query.toLocaleLowerCase();box.hidden=false;
+ if(anivibeSearchCache.has(key)){renderAniVibeResults(anivibeSearchCache.get(key),grid,status);return;}
+ status.textContent="Ищем на AniVibe…";
+ if(anivibeSearchController)anivibeSearchController.abort();anivibeSearchController=new AbortController();
+ try{const response=await fetch("/api/anivibe/search?q="+encodeURIComponent(query)+"&limit=20",{headers:{"Accept":"application/json"},cache:"no-store",signal:anivibeSearchController.signal});const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Ошибка поиска AniVibe");if(seq!==anivibeSearchSequence)return;
  const items=Array.isArray(payload)?payload:(payload.data||payload.results||payload.items||payload.anime||[]);const unique=[],ids=new Set(),titles=new Set();
  for(const item of items){const id=Number(item.id??item.anime_id??item.shikimori_id);const title=String(item.title_ru||item.russian||item.name_ru||item.title||item.name||item.title_en||"").trim();if(!id||!title||ids.has(id)||titles.has(title.toLowerCase()))continue;ids.add(id);titles.add(title.toLowerCase());unique.push({id,title,poster:String(item.poster||item.image||item.cover||item.poster_url||""),status:String(item.status||"Каталог AniVibe"),kind:String(item.kind||"")});}
- if(!unique.length){status.textContent="AniVibe не нашёл совпадений.";return;}status.textContent="Найдено: "+unique.length+" · источник: AniVibe";
- grid.innerHTML=unique.map(item=>{const title=safeAniText(item.title),poster=safeAniText(item.poster),meta=safeAniText([item.kind,item.status].filter(Boolean).join(" · "));return '<article class="card anivibe-result-card" role="link" tabindex="0" data-anivibe-id="'+item.id+'" data-title="'+title+'" data-poster="'+poster+'"><div class="poster">'+(poster?'<img src="'+poster+'" alt="'+title+'" loading="lazy" onerror="this.remove()">':"")+'<span>'+title+'</span></div><h3>'+title+'</h3><p class="anivibe-source">'+(meta||"Есть на AniVibe")+'</p></article>';}).join("");
- }catch(error){if(seq!==anivibeSearchSequence)return;status.textContent=error.message||"Не удалось выполнить поиск AniVibe.";}
+ anivibeSearchCache.set(key,unique);if(anivibeSearchCache.size>30)anivibeSearchCache.delete(anivibeSearchCache.keys().next().value);renderAniVibeResults(unique,grid,status);
+ }catch(error){if(error.name==="AbortError"||seq!==anivibeSearchSequence)return;status.textContent=error.message||"Не удалось выполнить поиск AniVibe.";}
 }
 function openAniVibeCard(id,title,poster){const params=new URLSearchParams({anivibe_id:String(id),title:title||"Аниме",poster:poster||"",genre:"Каталог AniVibe"});window.location.href="/anime?"+params.toString();}
-
 function setGenre(genre,button){
   selectedGenre=genre;
   document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));

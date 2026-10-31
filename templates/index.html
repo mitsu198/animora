@@ -307,6 +307,38 @@ html[data-theme="glass"] .theme-modal{background:rgba(3,10,20,.56)!important;-we
 html[data-theme="glass"] .theme-backdrop{background:rgba(3,10,20,.42)!important}
 html[data-theme="glass"] footer{color:#c9dced}
 
+/* Применение выбранной палитры ко всем крупным поверхностям главной страницы. */
+html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef;--site-text:#effaff;--site-muted:#a9c7d8}
+html[data-theme="forest"]{--site-bg:#0b1510;--site-panel:#14251b;--site-panel-2:#0e1c14;--site-border:#315b40;--site-accent:#78d69a;--site-text:#effff3;--site-muted:#afc7b5}
+html[data-theme="rose"]{--site-bg:#1b0d16;--site-panel:#2a1422;--site-panel-2:#1d1019;--site-border:#63334f;--site-accent:#ff8fbd;--site-text:#fff0f6;--site-muted:#d1adbf}
+html[data-theme="light"]{--site-bg:#eeeaf4;--site-panel:#fff;--site-panel-2:#f5f1fa;--site-border:#d8cce5;--site-accent:#8138c7;--site-text:#241b2c;--site-muted:#716779}
+html[data-theme="sunset"]{--site-bg:#32142c;--site-panel:#49203b;--site-panel-2:#2a1728;--site-border:#a34b65;--site-accent:#ff9a62;--site-text:#fff4ed;--site-muted:#e1b9b0}
+html[data-theme="neon"]{--site-bg:#10102b;--site-panel:#1a2040;--site-panel-2:#14172f;--site-border:#386b83;--site-accent:#4fffe1;--site-text:#f1ffff;--site-muted:#b5cbd7}
+html[data-theme="lavender"]{--site-bg:#211735;--site-panel:#30234a;--site-panel-2:#251c39;--site-border:#5b4479;--site-accent:#d6a6ff;--site-text:#faf3ff;--site-muted:#c5b4d7}
+html[data-theme="custom"]{--site-bg:var(--custom-bg,#171321);--site-panel:var(--custom-panel,var(--custom-bg,#241432));--site-panel-2:var(--custom-panel,var(--custom-bg,#241432));--site-border:var(--custom-accent,#bd72ff);--site-accent:var(--custom-accent,#bd72ff);--site-text:#fff;--site-muted:#d0c4dc}
+html[data-theme]:not([data-theme="glass"]) body{background:var(--site-bg)!important;color:var(--site-text,#fff)!important}
+html[data-theme]:not([data-theme="glass"]) header,
+html[data-theme]:not([data-theme="glass"]) .hero-cinema,
+html[data-theme]:not([data-theme="glass"]) .discover,
+html[data-theme]:not([data-theme="glass"]) .category-strip,
+html[data-theme]:not([data-theme="glass"]) .card,
+html[data-theme]:not([data-theme="glass"]) .shelf-card,
+html[data-theme]:not([data-theme="glass"]) .header-search-wrap,
+html[data-theme]:not([data-theme="glass"]) footer{background:var(--site-panel)!important;border-color:var(--site-border)!important;color:var(--site-text)!important}
+html[data-theme]:not([data-theme="glass"]) .poster,
+html[data-theme]:not([data-theme="glass"]) .shelf-poster,
+html[data-theme]:not([data-theme="glass"]) .search,
+html[data-theme]:not([data-theme="glass"]) .header-search,
+html[data-theme]:not([data-theme="glass"]) .filters button{background:var(--site-panel-2)!important;border-color:var(--site-border)!important;color:var(--site-text)!important}
+html[data-theme]:not([data-theme="glass"]) .hero-cinema:before{background:linear-gradient(90deg,var(--site-bg)ee,var(--site-bg)99 55%,transparent),linear-gradient(0deg,var(--site-bg),transparent 45%)}
+html[data-theme]:not([data-theme="glass"]) .hero-cinema h1,
+html[data-theme]:not([data-theme="glass"]) .discover h2,
+html[data-theme]:not([data-theme="glass"]) .shelf-title h2,
+html[data-theme]:not([data-theme="glass"]) .logo{color:var(--site-accent)!important}
+html[data-theme]:not([data-theme="glass"]) .discover p,
+html[data-theme]:not([data-theme="glass"]) .shelf-title span{color:var(--site-muted)!important}
+html[data-theme="light"] .hero-cinema:before{background:linear-gradient(90deg,#eeeaf4f2,#eeeaf499 55%,transparent),linear-gradient(0deg,#eeeaf4,transparent 45%)}
+
 /* Тонкие анимации интерфейса без вмешательства в логику каталога и избранного. */
 html{scroll-behavior:smooth}
 .card,.shelf-card{transform:translateZ(0);will-change:transform}
@@ -654,6 +686,7 @@ function renderAnime(){
 }
 
 
+const BASE_ANIME_IDS=animeList.map(item=>item[0]);
 const ANIMORA_CATALOG_KEY="animora_expanded_catalog_v1";
 const ANIMORA_JIKAN_PAGE_KEY="animora_jikan_page_v1";
 let jikanPage=1;
@@ -673,7 +706,9 @@ try{
 let isLoadingMoreAnime=false;
 function saveExpandedCatalog(){
   try{
-    localStorage.setItem(ANIMORA_CATALOG_KEY,JSON.stringify(animeList.slice(123)));
+    const baseIds=new Set(BASE_ANIME_IDS);
+    const additions=animeList.filter(item=>!baseIds.has(item[0]));
+    localStorage.setItem(ANIMORA_CATALOG_KEY,JSON.stringify(additions));
     localStorage.setItem(ANIMORA_JIKAN_PAGE_KEY,String(jikanPage));
   }catch(error){console.warn("Не удалось сохранить расширенный каталог:",error);}
 }
@@ -690,7 +725,7 @@ function updateCatalogLoadStatus(message){
   if(status)status.textContent=message;
 }
 async function fetchJikanPage(page){
-  const response=await fetch("https://api.jikan.moe/v4/anime?page="+page+"&limit=25&order_by=popularity&sort=asc",{headers:{"Accept":"application/json"}});
+  const response=await fetch("https://api.jikan.moe/v4/anime?page="+page+"&limit=25&order_by=start_date&sort=desc",{headers:{"Accept":"application/json"},cache:"no-store"});
   if(response.status===429)throw new Error("RATE_LIMIT");
   if(!response.ok)throw new Error("JIKAN_HTTP_"+response.status);
   return response.json();
@@ -705,11 +740,14 @@ async function loadMoreAnime(){
   try{
     for(let batch=0;batch<4&&animeList.length<MAX_CATALOG_SIZE;batch++){
       let result=null;
-      for(let attempt=0;attempt<3;attempt++){
+      for(let attempt=0;attempt<5;attempt++){
         try{result=await fetchJikanPage(jikanPage);break;}
         catch(error){
-          if(error.message!=="RATE_LIMIT"||attempt===2)throw error;
-          await new Promise(resolve=>setTimeout(resolve,1300*(attempt+1)));
+          const retryable=error.message==="RATE_LIMIT"||error.message==="Failed to fetch"||error.name==="TypeError";
+          if(!retryable||attempt===4)throw error;
+          const waitMs=2500*Math.pow(1.7,attempt);
+          updateCatalogLoadStatus("Источник временно ограничивает запросы. Повторяем через "+Math.ceil(waitMs/1000)+" сек…");
+          await new Promise(resolve=>setTimeout(resolve,waitMs));
         }
       }
       const entries=Array.isArray(result?.data)?result.data:[];

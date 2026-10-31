@@ -259,6 +259,34 @@ html[data-theme="glass"] .palette-choice.selected{outline:2px solid #d8f2ff;outl
 }
 </style>
 
+<style id="animora-liquid-glass-global">
+html[data-theme="glass"]{color-scheme:dark;--glass-line:rgba(225,243,255,.34);--glass-fill:rgba(205,229,255,.105);--glass-fill-strong:rgba(220,239,255,.17);--glass-shadow:0 18px 48px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.28)}
+html[data-theme="glass"] body{
+ background:radial-gradient(ellipse at 12% 5%,rgba(100,174,255,.28),transparent 36%),radial-gradient(ellipse at 88% 24%,rgba(178,218,255,.19),transparent 32%),radial-gradient(ellipse at 50% 100%,rgba(77,122,191,.22),transparent 45%),linear-gradient(145deg,#07101f,#142943 52%,#0a1729)!important;
+ background-attachment:fixed!important;color:#f4f9ff!important
+}
+html[data-theme="glass"] body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(125deg,rgba(255,255,255,.045),transparent 35%,rgba(173,218,255,.035));}
+html[data-theme="glass"] body>*{position:relative;z-index:1}
+html[data-theme="glass"] header,html[data-theme="glass"] nav,html[data-theme="glass"] main>section,html[data-theme="glass"] main>.card,html[data-theme="glass"] .card,html[data-theme="glass"] .profile-card,html[data-theme="glass"] .theme-panel,html[data-theme="glass"] .theme-dialog,html[data-theme="glass"] .theme-preview,html[data-theme="glass"] .hero,html[data-theme="glass"] .shelf,html[data-theme="glass"] .anime-card,html[data-theme="glass"] .shelf-poster,html[data-theme="glass"] .service-card,html[data-theme="glass"] .player-shell,html[data-theme="glass"] .control,html[data-theme="glass"] .manual-player,html[data-theme="glass"] .episode-item,html[data-theme="glass"] .stats>.stat,html[data-theme="glass"] form,html[data-theme="glass"] .auth-card,html[data-theme="glass"] .login-card,html[data-theme="glass"] .register-card{
+ background-color:var(--glass-fill)!important;background-image:linear-gradient(135deg,rgba(255,255,255,.16),rgba(177,213,255,.035) 55%,rgba(255,255,255,.075))!important;
+ border:1px solid var(--glass-line)!important;border-radius:20px!important;box-shadow:var(--glass-shadow)!important;
+ -webkit-backdrop-filter:blur(24px) saturate(175%)!important;backdrop-filter:blur(24px) saturate(175%)!important;color:#f4f9ff!important
+}
+html[data-theme="glass"] .hero{overflow:hidden}
+html[data-theme="glass"] .anime-card:hover,html[data-theme="glass"] .service-card:hover,html[data-theme="glass"] button:hover{border-color:rgba(235,248,255,.65)!important;box-shadow:0 22px 55px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.4)!important;transform:translateY(-2px)}
+html[data-theme="glass"] button,html[data-theme="glass"] .link-button,html[data-theme="glass"] input,html[data-theme="glass"] select,html[data-theme="glass"] textarea{
+ background:rgba(9,23,42,.42)!important;border:1px solid rgba(220,241,255,.32)!important;color:#f7fbff!important;border-radius:13px!important;
+ -webkit-backdrop-filter:blur(16px) saturate(160%)!important;backdrop-filter:blur(16px) saturate(160%)!important
+}
+html[data-theme="glass"] input::placeholder,html[data-theme="glass"] textarea::placeholder{color:rgba(224,239,255,.65)!important}
+html[data-theme="glass"] h1,html[data-theme="glass"] h2,html[data-theme="glass"] h3,html[data-theme="glass"] p,html[data-theme="glass"] label,html[data-theme="glass"] small,html[data-theme="glass"] span{ text-shadow:0 1px 12px rgba(0,0,0,.18)}
+html[data-theme="glass"] a{color:#d7efff}
+html[data-theme="glass"] .logo{filter:drop-shadow(0 0 12px rgba(160,218,255,.5))}
+html[data-theme="glass"] .theme-modal{background:rgba(3,10,20,.56)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+html[data-theme="glass"] .theme-backdrop{background:rgba(3,10,20,.42)!important}
+html[data-theme="glass"] footer{color:#c9dced}
+@media(prefers-reduced-transparency:reduce){html[data-theme="glass"] header,html[data-theme="glass"] nav,html[data-theme="glass"] main>section,html[data-theme="glass"] .card,html[data-theme="glass"] form,html[data-theme="glass"] .anime-card{background:#1b2d45!important}}
+</style>
 </head>
 
 <body>

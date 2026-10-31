@@ -99,7 +99,7 @@ header{position:sticky;top:0;z-index:30;padding:13px 5.5%;background:rgba(9,10,1
 .main-nav .nav-current:after{content:"";display:block;height:2px;background:#c58cff;border-radius:3px;margin-top:7px}
 .main-nav .profile-avatar-link{margin-left:4px;flex:none}
 .hero-cinema{position:relative;isolation:isolate;min-height:570px;padding:76px 7% 45px;display:flex;align-items:center;overflow:hidden;background:radial-gradient(ellipse at 75% 40%,#49305f 0,#1c1429 38%,#0b0b11 78%)}
-.hero-backdrop{position:absolute;z-index:-2;inset:0;background-position:center 35%;background-size:cover;opacity:.48;filter:saturate(.82);transition:background-image .4s}
+.hero-backdrop{position:absolute;z-index:-2;inset:0;background-position:center 28%;background-size:cover;background-repeat:no-repeat;opacity:.62;filter:saturate(1.04) contrast(1.04);transform:scale(1.015);transition:opacity .35s,background-position .5s}.hero-backdrop.hero-image-ready{opacity:.68}
 .hero-cinema:before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#08090df5 0%,#08090ddd 38%,#08090d66 72%,#08090d88 100%),linear-gradient(0deg,#08090d 0%,transparent 34%)}
 .hero-content{max-width:690px;position:relative}
 .hero-kicker{display:block;color:#d1a3ff;font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:30px}
@@ -836,9 +836,11 @@ function showHeroSlide(index){
  if(watch)watch.onclick=()=>openAnimeCard(slide.id);
  const poster=posterCache[slide.id]||"";
  const fallback=slide.id==="frieren"?"https://m.media-amazon.com/images/S/pv-target-images/0eaaca5d01575caf2fda5fcad6a09e8c5a35bdcf8f4a2850741e262458273837.jpg":poster;
+ backdrop.classList.remove("hero-image-ready");
+ backdrop.style.backgroundImage="linear-gradient(115deg,#21152e,#171321 55%,#080a12)";
  if(fallback){
    const img=new Image();
-   img.onload=()=>{backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';backdrop.classList.add("hero-image-ready");};
+   img.onload=()=>{if(activeHeroSlide===index){backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';backdrop.classList.add("hero-image-ready");}};
    img.src=fallback;
  }
  if(dots)dots.innerHTML=heroSlides.map((item,i)=>'<button type="button" class="hero-dot '+(i===activeHeroSlide?'active':'')+'" aria-label="Баннер '+(i+1)+'" onclick="goHeroSlide('+i+')"></button>').join('');
@@ -847,6 +849,18 @@ function goHeroSlide(index){showHeroSlide(index);restartHeroTimer();}
 function changeHeroSlide(direction){goHeroSlide(activeHeroSlide+direction);}
 function restartHeroTimer(){if(heroTimer)clearInterval(heroTimer);heroTimer=setInterval(()=>showHeroSlide(activeHeroSlide+1),7000);}
 function renderCinemaHero(){showHeroSlide(0);restartHeroTimer();}
+async function loadHeroSlideImages(){
+ for(const slide of heroSlides){
+   if(posterCache[slide.id])continue;
+   try{
+     const image=await fetchAnimePoster([slide.id,slide.title,""]);
+     if(!image)continue;
+     posterCache[slide.id]=image;
+     savePosterCache();
+     if(heroSlides[activeHeroSlide]?.id===slide.id)showHeroSlide(activeHeroSlide);
+   }catch(error){console.warn("Не удалось загрузить широкий баннер "+slide.title+":",error);}
+ }
+}
 function updateOngoingArrows(){
   const track=document.getElementById("ongoingGrid"),prev=document.getElementById("ongoingPrev"),next=document.getElementById("ongoingNext");
   if(!track||!prev||!next)return;
@@ -1422,6 +1436,7 @@ if(anivibeCatalogFinished){
   if(loadButton)loadButton.textContent="＋ Загрузить ещё 50 аниме";
 }
 loadAnimePosters();
+loadHeroSlideImages();
 </script>
 
 

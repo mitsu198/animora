@@ -130,7 +130,7 @@ ONGOING_CACHE_TTL = 15 * 60
 
 @app.route("/api/anime/ongoing")
 def anime_ongoing_api():
-    """Онгоинги из AniVibe; ответ приводится к формату карточек Jikan."""
+    """Собирает до 18 онгоингов из нескольких страниц AniVibe recent."""
     now = time.time()
     cached = ONGOING_CACHE.get("payload")
     age = now - ONGOING_CACHE.get("updated_at", 0)
@@ -141,39 +141,70 @@ def anime_ongoing_api():
         return response
 
     try:
-        recent, error = anivibe_request("GET", "/api/v1/recent")
-        if error:
-            if cached:
-                response = jsonify(cached)
-                response.headers["X-Animora-Cache"] = "STALE"
-                return response
-            return error
-
-        entries = recent.get("data", []) if isinstance(recent, dict) else []
-        if not isinstance(entries, list):
-            raise ValueError("Unexpected AniVibe recent response")
-
         ongoing = []
-        for item in entries:
-            if not isinstance(item, dict) or str(item.get("status", "")).strip().casefold() != "онгоинг":
-                continue
-            anime_id = item.get("id") or item.get("shikimori_id")
-            title = (item.get("title_ru") or item.get("title_en") or "").strip()
-            if not anime_id or not title:
-                continue
-            poster = item.get("poster") or ""
-            ongoing.append({
-                "mal_id": anime_id,
-                "title": title,
-                "title_english": item.get("title_en"),
-                "images": {"jpg": {"image_url": poster, "large_image_url": poster}},
-                "genres": [],
-                "themes": [],
-                "episodes": item.get("episodes"),
-                "status": "Currently Airing",
-                "score": item.get("score"),
-                "year": item.get("year"),
-            })
+        seen_ids = set()
+        cursor = ""
+        # До четырёх страниц по 50 записей: достаточно для расширенной полки,
+        # но ограничивает число запросов и время ответа.
+        for _ in range(4):
+            params = {"limit": 50}
+            if cursor:
+                params["cursor"] = cursor
+            recent, error = anivibe_request("GET", "/api/v1/recent", params=params)
+            if error:
+                if cached:
+                    response = jsonify(cached)
+                    response.headers["X-Animora-Cache"] = "STALE"
+                    return response
+                return error
+
+            if not isinstance(recent, dict):
+                raise ValueError("Unexpected AniVibe recent response")
+            entries = recent.get("data", [])
+            if isinstance(entries, dict):
+                entries = entries.get("items") or entries.get("results") or entries.get("anime") or []
+            if not isinstance(entries, list):
+                raise ValueError("Unexpected AniVibe recent entries")
+
+            for item in entries:
+                if not isinstance(item, dict) or str(item.get("status", "")).strip().casefold() != "онгоинг":
+                    continue
+                anime_id = item.get("id") or item.get("shikimori_id")
+                title = (item.get("title_ru") or item.get("title_en") or "").strip()
+                if not anime_id or not title or str(anime_id) in seen_ids:
+                    continue
+                seen_ids.add(str(anime_id))
+                poster = item.get("poster") or ""
+                ongoing.append({
+                    "mal_id": anime_id,
+                    "title": title,
+                    "title_english": item.get("title_en"),
+                    "images": {"jpg": {"image_url": poster, "large_image_url": poster}},
+                    "genres": [],
+                    "themes": [],
+                    "episodes": item.get("episodes"),
+                    "status": "Currently Airing",
+                    "score": item.get("score"),
+                    "year": item.get("year"),
+                })
+                if len(ongoing) >= 18:
+                    break
+
+            if len(ongoing) >= 18:
+                break
+            next_cursor = (
+                recent.get("next_cursor")
+                or recent.get("nextCursor")
+                or recent.get("cursor_next")
+                or (recent.get("pagination") or {}).get("next_cursor")
+                or (recent.get("meta") or {}).get("next_cursor")
+                or (recent.get("next") or {}).get("cursor")
+                or ""
+            )
+            next_cursor = str(next_cursor).strip()
+            if not next_cursor or next_cursor == cursor:
+                break
+            cursor = next_cursor
 
         payload = {"data": ongoing}
         ONGOING_CACHE["payload"] = payload

@@ -547,6 +547,25 @@ footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px s
 }
 </style>
 
+
+<style id="animora-hero-carousel">
+.hero-cinema{position:relative;isolation:isolate;overflow:hidden;background:#0b0e17!important}
+.hero-backdrop{position:absolute;inset:0;z-index:-2;background-position:center 32%;background-size:cover;opacity:0;transform:scale(1.035);transition:opacity .75s ease,transform 7s ease}
+.hero-backdrop.hero-image-ready{opacity:1;transform:scale(1)}
+.hero-cinema:before{z-index:-1!important;content:"";position:absolute;inset:0;background:linear-gradient(90deg,#080a10f5 0%,#080a10d9 38%,#080a1070 72%,#080a1080 100%),linear-gradient(0deg,#080a10 0%,transparent 48%)!important}
+.hero-content{position:relative;z-index:2}
+.hero-meta{display:flex;gap:9px;flex-wrap:wrap}
+.hero-meta span{padding:6px 10px;border:1px solid #ffffff24;border-radius:6px;background:#10152288;color:#e4d9f7;font-size:11px}
+.hero-carousel-controls{position:absolute;right:5.5%;bottom:44px;z-index:4;display:flex;align-items:center;gap:9px}
+.hero-carousel-controls button{width:37px;height:37px;border-radius:50%;border:1px solid #ffffff50;background:#111522aa;color:white;font-size:19px;cursor:pointer;backdrop-filter:blur(10px)}
+.hero-carousel-controls button:hover{background:#8e63cb}
+.hero-dots{display:flex;gap:6px;margin:0 6px}
+.hero-dot{width:7px;height:7px;border-radius:20px;background:#ffffff66;border:0;padding:0;transition:width .25s}
+.hero-dot.active{width:23px;background:#d4b5ff}
+@media(max-width:560px){.hero-carousel-controls{right:5%;bottom:25px}.hero-carousel-controls button{width:32px;height:32px}.hero-bottom{bottom:20px!important}.hero-cinema{padding-bottom:90px!important}}
+@media(prefers-reduced-motion:reduce){.hero-backdrop{transition:none;transform:none}}
+</style>
+
 </head>
 <body>
 
@@ -598,6 +617,11 @@ footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px s
     </div>
   </div>
   <div class="hero-bottom"><span>ТВОЯ СЛЕДУЮЩАЯ ИСТОРИЯ НАЧИНАЕТСЯ ЗДЕСЬ</span><span class="hero-scroll">ЛИСТАЙ ВНИЗ ↓</span></div>
+  <div class="hero-carousel-controls" aria-label="Баннеры аниме">
+    <button type="button" onclick="changeHeroSlide(-1)" aria-label="Предыдущий баннер">‹</button>
+    <div class="hero-dots" id="heroDots"></div>
+    <button type="button" onclick="changeHeroSlide(1)" aria-label="Следующий баннер">›</button>
+  </div>
 </section>
 
 <section class="discover" aria-label="Подборки аниме">
@@ -792,17 +816,37 @@ const featuredCollections={
  recommended:["frieren","fullmetal-alchemist","steins-gate","vinland-saga","violet-evergarden","hunter-x-hunter"],
  discovery:["dandadan","the-apothecary-diaries","odd-taxi","ranking-of-kings","86-eighty-six","bocchi-the-rock"]
 };
-function renderCinemaHero(){
-  const backdrop=document.getElementById("heroBackdrop");
-  if(!backdrop)return;
-  // High-resolution promotional artwork; use the small catalog poster only as a fallback.
-  const highResArtwork="https://m.media-amazon.com/images/S/pv-target-images/0eaaca5d01575caf2fda5fcad6a09e8c5a35bdcf8f4a2850741e262458273837.jpg";
-  const fallback=posterCache["frieren"]||"";
-  const img=new Image();
-  img.onload=()=>{backdrop.style.backgroundImage='url("'+highResArtwork+'")';backdrop.classList.add("hero-image-ready");};
-  img.onerror=()=>{if(fallback){backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';}};
-  img.src=highResArtwork;
+const heroSlides=[
+ {id:"frieren",title:"Провожающая в последний путь Фрирен",description:"Большое путешествие не заканчивается вместе с победой. История о памяти, дружбе и времени.",genres:["Фэнтези","Приключения"]},
+ {id:"demon-slayer",title:"Клинок, рассекающий демонов",description:"Путь сквозь опасности, невероятные битвы и сила, которая рождается из любви к близким.",genres:["Экшен","Фэнтези"]},
+ {id:"jujutsu-kaisen",title:"Магическая битва",description:"Мир проклятий, мощные противники и сражения, от которых невозможно оторваться.",genres:["Экшен","Сёнен"]},
+ {id:"your-name",title:"Твоё имя",description:"Две судьбы переплетаются сквозь расстояние, время и одно необъяснимое чудо.",genres:["Романтика","Драма"]},
+ {id:"attack-on-titan",title:"Атака титанов",description:"За стенами скрывается правда, способная изменить весь мир. Начни это путешествие.",genres:["Экшен","Драма"]}
+];
+let activeHeroSlide=0,heroTimer=null;
+function showHeroSlide(index){
+ const backdrop=document.getElementById("heroBackdrop");
+ const slide=heroSlides[index];if(!backdrop||!slide)return;
+ activeHeroSlide=(index+heroSlides.length)%heroSlides.length;
+ const title=document.getElementById("heroTitle"),description=document.getElementById("heroDescription");
+ const meta=document.querySelector(".hero-meta"),watch=document.querySelector(".hero-watch"),dots=document.getElementById("heroDots");
+ if(title)title.textContent=slide.title;
+ if(description)description.textContent=slide.description;
+ if(meta)meta.innerHTML=slide.genres.map((g,i)=>'<span>'+(i===0?'✦ ':'')+g+'</span>').join('')+'<span>Рекомендация ANIMORA</span>';
+ if(watch)watch.onclick=()=>openAnimeCard(slide.id);
+ const poster=posterCache[slide.id]||"";
+ const fallback=slide.id==="frieren"?"https://m.media-amazon.com/images/S/pv-target-images/0eaaca5d01575caf2fda5fcad6a09e8c5a35bdcf8f4a2850741e262458273837.jpg":poster;
+ if(fallback){
+   const img=new Image();
+   img.onload=()=>{backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';backdrop.classList.add("hero-image-ready");};
+   img.src=fallback;
+ }
+ if(dots)dots.innerHTML=heroSlides.map((item,i)=>'<button type="button" class="hero-dot '+(i===activeHeroSlide?'active':'')+'" aria-label="Баннер '+(i+1)+'" onclick="goHeroSlide('+i+')"></button>').join('');
 }
+function goHeroSlide(index){showHeroSlide(index);restartHeroTimer();}
+function changeHeroSlide(direction){goHeroSlide(activeHeroSlide+direction);}
+function restartHeroTimer(){if(heroTimer)clearInterval(heroTimer);heroTimer=setInterval(()=>showHeroSlide(activeHeroSlide+1),7000);}
+function renderCinemaHero(){showHeroSlide(0);restartHeroTimer();}
 function updateOngoingArrows(){
   const track=document.getElementById("ongoingGrid"),prev=document.getElementById("ongoingPrev"),next=document.getElementById("ongoingNext");
   if(!track||!prev||!next)return;

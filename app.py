@@ -125,7 +125,7 @@ def anime_catalog_api():
 # Кэш каталога онгоингов AniVibe. Публичный каталог отдаёт карточки HTML-страницей,
 # поэтому читаем его постранично через ?status=Онгоинг&page=N.
 ONGOING_CACHE = {"payload": None, "updated_at": 0}
-ONGOING_CACHE_TTL = 15 * 60
+ONGOING_CACHE_TTL = 30 * 60
 
 
 class AniVibeCatalogParser(__import__("html.parser", fromlist=["HTMLParser"]).HTMLParser):
@@ -209,68 +209,53 @@ def anime_ongoing_api():
     try:
         ongoing, seen_ids = [], set()
         headers = {"User-Agent": "Mozilla/5.0 (compatible; Animora/1.0)", "Accept": "text/html"}
-        # У каталога есть обычная page=N пагинация. Ограничиваем максимум 20 страниц,
-        # чтобы не допустить бесконечных запросов при изменении разметки сайта.
-        for page in range(1, 21):
-            response = requests.get(
-                f"{ANIVIBE_BASE_URL}/catalog",
-                params={"status": "Онгоинг", "page": page},
-                headers=headers,
-                timeout=12,
-            )
-            response.raise_for_status()
-            parser = AniVibeCatalogParser()
-            parser.feed(response.text)
-            page_items = parser.items
-            if not page_items:
-                break
-
-            added = 0
-            for item in page_items:
-                match = __import__("re").search(r"/anime/(\d+)", item["href"])
-                if not match:
-                    continue
-                anime_id = match.group(1)
-                if anime_id in seen_ids:
-                    continue
-                seen_ids.add(anime_id)
-                added += 1
-                poster = item.get("poster", "")
-                if poster.startswith("/"):
-                    poster = ANIVIBE_BASE_URL + poster
-                ongoing.append({
-                    "mal_id": anime_id,
-                    "title": item["title"],
-                    "title_english": item["title"],
-                    "images": {"jpg": {"image_url": poster, "large_image_url": poster}},
-                    "genres": [{"name": name.strip()} for name in item.get("genres", "").split(",") if name.strip()],
-                    "themes": [],
-                    "status": "Currently Airing",
-                    "score": item.get("score"),
-                    "year": item.get("year"),
-                    "anivibe_catalog_url": ANIVIBE_BASE_URL + item["href"],
-                })
-            if added == 0:
-                break
+        # Берём первую страницу: главная не должна ждать обхода всего каталога.
+        response = requests.get(
+            f"{ANIVIBE_BASE_URL}/catalog",
+            params={"status": "Онгоинг", "page": 1},
+            headers=headers,
+            timeout=6,
+        )
+        response.raise_for_status()
+        parser = AniVibeCatalogParser()
+        parser.feed(response.text)
+        for item in parser.items:
+            match = __import__("re").search(r"/anime/(\\d+)", item["href"])
+            if not match:
+                continue
+            anime_id = match.group(1)
+            if anime_id in seen_ids:
+                continue
+            seen_ids.add(anime_id)
+            poster = item.get("poster", "")
+            if poster.startswith("/"):
+                poster = ANIVIBE_BASE_URL + poster
+            ongoing.append({
+                "mal_id": anime_id,
+                "title": item["title"],
+                "title_english": item["title"],
+                "images": {"jpg": {"image_url": poster, "large_image_url": poster}},
+                "genres": [{"name": name.strip()} for name in item.get("genres", "").split(",") if name.strip()],
+                "themes": [],
+                "status": "Currently Airing",
+                "score": item.get("score"),
+                "year": item.get("year"),
+                "anivibe_catalog_url": ANIVIBE_BASE_URL + item["href"],
+            })
 
         if not ongoing:
             # Если AniVibe поменял HTML-разметку, используем структурированный
             # Jikan API как резервный источник текущих онгоингов.
             app.logger.warning("AniVibe ongoing parser returned no cards; using Jikan fallback")
-            fallback_items = []
-            for page in range(1, 5):
-                fallback_response = requests.get(
-                    "https://api.jikan.moe/v4/seasons/now",
-                    params={"page": page, "limit": 25},
-                    headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
-                    timeout=15,
-                )
-                fallback_response.raise_for_status()
-                fallback_data = fallback_response.json()
-                fallback_items.extend(fallback_data.get("data", []))
-                if not fallback_data.get("pagination", {}).get("has_next_page"):
-                    break
-                time.sleep(0.35)
+            fallback_response = requests.get(
+                "https://api.jikan.moe/v4/seasons/now",
+                params={"page": 1, "limit": 25},
+                headers={"Accept": "application/json", "User-Agent": "ANIMORA/1.0"},
+                timeout=8,
+            )
+            fallback_response.raise_for_status()
+            fallback_data = fallback_response.json()
+            fallback_items = fallback_data.get("data", [])
             if not fallback_items:
                 raise ValueError("AniVibe and Jikan returned no ongoing anime")
             payload = {"data": fallback_items, "source": "jikan-fallback"}

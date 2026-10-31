@@ -1178,16 +1178,20 @@ async function toggleFavorite(event,button){
   }
 }
 
-document.getElementById("search").addEventListener("keydown",event=>{
+document.getElementById("search").addEventListener("keydown",async event=>{
   if(event.key!=="Enter")return;
   event.preventDefault();
+  event.stopPropagation();
   clearTimeout(anivibeSearchTimer);
   const query=event.currentTarget.value.trim();
   renderAnime();
   if(query.length>=2){
-    searchAniVibeCatalog(query);
+    await searchAniVibeCatalog(query);
     const results=document.getElementById("anivibeDiscovery");
-    if(results)results.scrollIntoView({behavior:"smooth",block:"start"});
+    if(results){
+      results.hidden=false;
+      requestAnimationFrame(()=>results.scrollIntoView({behavior:"smooth",block:"start"}));
+    }
   }else{
     document.getElementById("catalog").scrollIntoView({behavior:"smooth",block:"start"});
   }

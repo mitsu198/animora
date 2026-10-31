@@ -174,6 +174,50 @@ def anime_ongoing_api():
         return jsonify({"error": "Не удалось загрузить онгоинги."}), 502
 
 
+@app.route("/api/diagnostics/network")
+def network_diagnostics():
+    """Проверяет исходящий HTTPS-доступ только к фиксированным безопасным адресам."""
+    targets = {
+        "internet": "https://example.com/",
+        "jikan": "https://api.jikan.moe/",
+        "anivibe": "https://anivibe.pro/",
+    }
+    results = {}
+    for name, target in targets.items():
+        try:
+            response = requests.get(
+                target,
+                headers={"User-Agent": "ANIMORA-network-check/1.0"},
+                timeout=7,
+                allow_redirects=True,
+                stream=True,
+            )
+            results[name] = {
+                "ok": True,
+                "http_status": response.status_code,
+            }
+            response.close()
+        except requests.exceptions.Timeout:
+            results[name] = {"ok": False, "error": "timeout"}
+        except requests.exceptions.ConnectionError as exc:
+            message = str(exc).lower()
+            if "network is unreachable" in message:
+                reason = "network_unreachable"
+            elif "name or service not known" in message or "temporary failure in name resolution" in message:
+                reason = "dns_error"
+            else:
+                reason = "connection_error"
+            results[name] = {"ok": False, "error": reason}
+        except requests.RequestException:
+            results[name] = {"ok": False, "error": "request_error"}
+
+    return jsonify({
+        "diagnostic": "outbound_https",
+        "results": results,
+        "note": "Проверены только фиксированные публичные адреса; ключи и данные аккаунта не используются.",
+    })
+
+
 # AniVibe Partner API: ключ хранится только в переменных окружения Render.
 ANIVIBE_BASE_URL = "https://anivibe.pro"
 ANIMORA_PUBLIC_ORIGIN = "https://animora-f6xm.onrender.com"

@@ -298,7 +298,7 @@ function renderTranslations(items){
   translationsSelect.disabled=false;playButton.disabled=!selectedEpisode;
 }
 async function loadEpisodes(id){
-  selectedAnime=searchItems.find(x=>animeId(x)===id)||selectedAnime;
+  // selectedAnime is initialized from the anime page URL before this function runs.
   selectedEpisode=null;episodeItems=[];
   episodesSelect.disabled=true;episodesSelect.innerHTML='<option value="">Загрузка серий…</option>';
   translationsSelect.disabled=true;translationsSelect.innerHTML='<option value="">Выбери серию</option>';playButton.disabled=true;

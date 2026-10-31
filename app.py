@@ -247,7 +247,7 @@ def anivibe_embed_token():
         result, error = anivibe_request(
             "POST", "/api/v1/embed-token", payload=payload, authenticated=True
         )
-        return error if error else jsonify(result), (502 if error else 200)
+        if error:\n            return error\n        return jsonify(result)
     except RuntimeError as error:
         return jsonify({"error": str(error)}), 503
     except requests.RequestException:

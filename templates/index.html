@@ -221,10 +221,17 @@ html[data-theme] .category-strip .filters button{background:var(--site-panel);bo
 }
 </style>
 <style id="animora-ongoing-badge">
-.ongoing-shelf .shelf-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.ongoing-shelf .shelf-title{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.ongoing-arrows{display:flex;gap:8px;flex-shrink:0}
+.ongoing-arrow{width:38px;height:38px;border:1px solid var(--site-border,rgba(255,255,255,.14));border-radius:50%;background:var(--site-panel-2,rgba(255,255,255,.07));color:inherit;font-size:25px;line-height:1;cursor:pointer;transition:background .2s,opacity .2s,transform .2s}
+.ongoing-arrow:hover:not(:disabled){background:var(--site-accent,#a447e8);transform:scale(1.06)}
+.ongoing-arrow:disabled{opacity:.3;cursor:default}
+.ongoing-shelf .shelf-grid{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 12px}
+.ongoing-shelf .shelf-grid::-webkit-scrollbar{display:none}
+.ongoing-shelf .shelf-grid>.shelf-card{flex:0 0 calc((100% - 90px)/6);min-width:0;scroll-snap-align:start}
 .shelf-poster .ongoing-badge{position:absolute;top:9px;left:9px;inset:auto;background:#a447e8;color:#fff;padding:5px 8px;border-radius:6px;font-size:9px;letter-spacing:.7px;box-shadow:0 3px 12px #0006}
-@media(max-width:1000px){.ongoing-shelf .shelf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:600px){.ongoing-shelf .shelf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1000px){.ongoing-shelf .shelf-grid>.shelf-card{flex-basis:calc((100% - 36px)/3)}}
+@media(max-width:600px){.ongoing-shelf .shelf-grid{gap:12px}.ongoing-shelf .shelf-grid>.shelf-card{flex-basis:calc((100% - 12px)/2)}.ongoing-arrow{width:34px;height:34px}}
 </style>
 
 <style id="animora-liquid-glass">
@@ -446,7 +453,7 @@ html[data-theme] .search,html[data-theme] input,html[data-theme] select{backgrou
       <div><span class="eyebrow">ANIMORA подборки</span><h2>Найди свою следующую историю</h2><p>Подборки для любого настроения — от захватывающих приключений до уютной романтики.</p></div>
       <button class="random-btn" onclick="pickRandomAnime()">🎲 Случайное аниме</button>
     </div>
-    <section class="shelf ongoing-shelf" id="ongoing"><div class="shelf-title"><h2>📺 Сейчас выходит</h2><span>Онгоинги этого сезона</span></div><div class="shelf-grid" id="ongoingGrid"><p class="ongoing-loading">Загружаем актуальные онгоинги…</p></div></section>
+    <section class="shelf ongoing-shelf" id="ongoing"><div class="shelf-title"><div><h2>📺 Сейчас выходит</h2><span>Онгоинги этого сезона</span></div><div class="ongoing-arrows"><button class="ongoing-arrow" id="ongoingPrev" type="button" aria-label="Предыдущие онгоинги" onclick="scrollOngoing(-1)">‹</button><button class="ongoing-arrow" id="ongoingNext" type="button" aria-label="Следующие онгоинги" onclick="scrollOngoing(1)">›</button></div></div><div class="shelf-grid" id="ongoingGrid"><p class="ongoing-loading">Загружаем актуальные онгоинги…</p></div></section>
     <section class="shelf"><div class="shelf-title"><h2>🔥 Популярное</h2><span>Выбор зрителей</span></div><div class="shelf-grid" id="popularGrid"></div></section>
     <section class="shelf"><div class="shelf-title"><h2>✨ Советуем посмотреть</h2><span>Наши рекомендации</span></div><div class="shelf-grid" id="recommendedGrid"></div></section>
     <section class="shelf"><div class="shelf-title"><h2>🌟 Ещё интересное</h2><span>Открой что-то новое</span></div><div class="shelf-grid" id="discoveryGrid"></div></section>
@@ -639,6 +646,18 @@ function renderCinemaHero(){
   img.onerror=()=>{if(fallback){backdrop.style.backgroundImage='url("'+fallback.replace(/"/g,'%22')+'")';}};
   img.src=highResArtwork;
 }
+function updateOngoingArrows(){
+  const track=document.getElementById("ongoingGrid"),prev=document.getElementById("ongoingPrev"),next=document.getElementById("ongoingNext");
+  if(!track||!prev||!next)return;
+  const maxScroll=Math.max(0,track.scrollWidth-track.clientWidth);
+  prev.disabled=track.scrollLeft<=4; next.disabled=track.scrollLeft>=maxScroll-4;
+  prev.hidden=next.hidden=maxScroll<=4;
+}
+function scrollOngoing(direction){
+  const track=document.getElementById("ongoingGrid"); if(!track)return;
+  const card=track.querySelector(".shelf-card"),step=card?card.getBoundingClientRect().width+18:track.clientWidth*.8;
+  track.scrollBy({left:direction*step*3,behavior:"smooth"}); setTimeout(updateOngoingArrows,400);
+}
 async function loadOngoingAnime(){
   const target=document.getElementById("ongoingGrid");
   if(!target)return;
@@ -679,6 +698,7 @@ async function loadOngoingAnime(){
     renderFeatured();
     savePosterCache();
     saveExpandedCatalog();
+     requestAnimationFrame(updateOngoingArrows);
     updateCatalogLoadStatus("Актуальные онгоинги обновлены. В каталоге "+animeList.length+" аниме.");
   }catch(error){
     console.warn("Не удалось загрузить онгоинги:",error);

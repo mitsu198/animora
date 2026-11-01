@@ -784,6 +784,35 @@ footer{padding:28px clamp(18px,4vw,64px)!important;background:#f5f7fc!important;
 @media(prefers-reduced-motion:reduce){.shelf-card,.card{transition:none!important}}
 </style>
 
+
+<style id="animora-light-redesign-hotfix">
+/* Undo legacy sidebar positioning that was leaking into the new top header. */
+@media(min-width:851px){
+ .site-header .brand-row{position:static!important;inset:auto!important;top:auto!important;left:auto!important;width:max-content!important;height:auto!important}
+ .site-header .header-search-wrap{position:static!important;inset:auto!important;top:auto!important;left:auto!important;width:100%!important;height:42px!important;margin:0!important}
+}
+html[data-theme] body{background:radial-gradient(ellipse at 12% 0%,#dbe6ff 0,transparent 38%),#edf2fb!important;color:#20283a!important}
+html[data-theme] .site-header{position:relative!important;top:auto!important;left:auto!important;right:auto!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:column!important;gap:14px!important;padding:18px clamp(18px,4vw,64px) 0!important;background:rgba(255,255,255,.88)!important;border:0!important;border-bottom:1px solid #dfe6f2!important;border-radius:0!important;box-shadow:0 8px 28px #647ca51a!important}
+.site-header .header-topline{position:static!important;display:grid!important;grid-template-columns:minmax(220px,1fr) minmax(220px,420px) auto!important;grid-template-rows:auto!important;align-items:center!important;gap:20px!important;width:100%!important;height:auto!important;margin:0!important;padding:0!important}
+.site-header .brand-row{position:static!important;display:flex!important;grid-column:1!important;grid-row:1!important;align-items:center!important;gap:8px!important;width:max-content!important;max-width:100%!important;margin:0!important;padding:0!important}
+.site-header .header-search-wrap{position:static!important;grid-column:2!important;grid-row:1!important;width:100%!important;height:42px!important;margin:0!important;padding:0 12px!important;background:#f6f8fc!important;border:1px solid #dfe5f0!important;border-radius:14px!important}
+.site-header .header-profile{position:static!important;grid-column:3!important;grid-row:1!important;justify-self:end!important;align-self:center!important;width:38px!important;height:38px!important;margin:0!important}
+.site-header .main-nav{position:static!important;display:flex!important;grid-column:auto!important;grid-row:auto!important;width:100%!important;height:auto!important;align-items:center!important;gap:7px!important;margin:0!important;padding:12px 0 14px!important;border:0!important;overflow-x:auto!important;white-space:nowrap!important}
+.site-header .main-nav a{display:flex!important;align-items:center!important;min-height:36px!important;margin:0!important;padding:0 15px!important;border-radius:999px!important;background:transparent!important;color:#667087!important}
+.site-header .main-nav a.nav-current{background:#eee5ff!important;color:#7447bd!important}
+.site-header .brand-row>a[aria-label="Telegram-канал ANIMORA"],.site-header .brand-row>a[aria-label="TikTok-канал @mitsukix42"]{position:static!important;top:auto!important;left:auto!important;margin:0!important;align-self:center!important}
+html[data-theme] .category-strip{background:rgba(255,255,255,.74)!important;border-color:#dfe6f2!important}
+html[data-theme] .category-strip .filters button{background:#f7f8fc!important;border-color:#dce3ef!important;color:#667087!important}
+html[data-theme] .category-strip .filters button.active{background:#8960d5!important;border-color:#8960d5!important;color:#fff!important}
+@media(max-width:850px){
+ .site-header .header-topline{grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;gap:10px!important}
+ .site-header .brand-row{grid-column:1!important;grid-row:1!important}
+ .site-header .header-profile{grid-column:2!important;grid-row:1!important}
+ .site-header .header-search-wrap{grid-column:1/-1!important;grid-row:2!important}
+ .site-header .main-nav{gap:5px!important;padding:0 0 12px!important}
+}
+</style>
+
 </head>
 <body>
 

@@ -530,7 +530,7 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
   </div>
   <div class="level-panel">
     <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень {{ viewer_level }}{% if viewer_level >= 1000 %} · Легенда ANIMORA{% elif viewer_level >= 50 %} · Опытный зритель{% else %} · Новичок{% endif %}</strong></div><span class="level-xp">{{ viewer_xp }} XP</span></div>
-    <div class="level-track"><span style="width:{{ [viewer_xp % 100, 100]|max }}%"></span></div>
+    <div class="level-track"><span style="width:{{ [viewer_xp % 100, 100]|min }}%"></span></div>
     <p>До следующего уровня: {{ 100 - (viewer_xp % 100) }} XP.</p>
   </div>
   {% if is_admin %}

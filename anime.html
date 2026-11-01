@@ -24,6 +24,9 @@
 })();
 </script>
 
+<style id="animora-anime-status-style">
+.anime-status-box{margin-top:18px;padding:15px;border:1px solid rgba(150,130,200,.25);border-radius:15px;background:rgba(20,24,40,.72);color:#e8e4f4}.anime-status-box strong{display:block;margin-bottom:10px;font-size:12px}.anime-status-actions{display:flex;flex-wrap:wrap;gap:7px}.anime-status-actions button{padding:9px 11px;border:1px solid rgba(150,130,200,.28);border-radius:9px;background:#171c2c;color:#aeb7cb;font-size:11px;cursor:pointer}.anime-status-actions button:hover,.anime-status-actions button.active{background:#7f56c2;border-color:#a985f4;color:white}#animeStatusMessage{display:block;margin-top:9px;color:#b8a3f8;font-size:11px}
+</style>
 </head>
 <body>
 <header><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a><nav><a href="/">Главная</a><a href="/#catalog">Каталог</a><a class="profile-avatar-link" href="/profile" aria-label="Открыть профиль" title="Мой профиль"><span>👤</span></a></nav></header>
@@ -34,7 +37,16 @@
 <div class="info"><div class="eyebrow">ANIMORA • Страница аниме</div><h1 id="title">Название аниме</h1><div class="genre" id="genre"></div>
 <p class="description" id="animeDescription">Загружаем описание аниме…</p>
 <div class="anime-facts" id="animeFacts" aria-live="polite"></div>
-<button class="primary" onclick="document.getElementById('watch').scrollIntoView({behavior:'smooth'})">▶ Смотреть</button></div>
+<button class="primary" onclick="document.getElementById('watch').scrollIntoView({behavior:'smooth'})">▶ Смотреть</button>
+<div class="anime-status-box" id="animeStatusBox">
+<strong>Добавить в список</strong>
+<div class="anime-status-actions">
+<button type="button" data-status="watching">◉ Смотрю</button>
+<button type="button" data-status="planned">☁ В планах</button>
+<button type="button" data-status="watched">⚑ Просмотрено</button>
+<button type="button" data-status="dropped">⊘ Бросил</button>
+<button type="button" data-status="favorite">♥ Любимые</button>
+</div><small id="animeStatusMessage" role="status"></small></div></div>
 </section>
 <section class="watch" id="watch"><h2>Просмотр ANIMORA</h2><p class="sub">Выбери сезон, серию, озвучку и плеер.</p>
 <div class="controls">
@@ -269,5 +281,13 @@ async function init() {
 }
 init();
 window.addEventListener('pagehide', stopHeartbeat);
+</script>
+<script id="animora-anime-status-script">
+(function(){
+const box=document.getElementById('animeStatusBox');if(!box)return;
+const p=new URLSearchParams(location.search),id=p.get('id')||p.get('anime_id')||'',title=p.get('title')||document.getElementById('title').textContent,poster=p.get('poster')||'',genre=p.get('genre')||'',msg=document.getElementById('animeStatusMessage');
+if(!id){msg.textContent='Не удалось определить ID аниме.';return;}
+box.querySelectorAll('button[data-status]').forEach(button=>button.addEventListener('click',async()=>{button.disabled=true;msg.textContent='Сохраняем…';try{const res=await fetch('/watchlist/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({anime_id:id,title,poster,genre,status:button.dataset.status})});const data=await res.json();if(!res.ok||!data.success)throw new Error(data.message||'Не удалось сохранить');box.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===button&&data.active));msg.textContent=data.message;}catch(e){msg.textContent=e.message||'Ошибка сохранения';}finally{button.disabled=false;}}));
+})();
 </script>
 </body></html>

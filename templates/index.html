@@ -641,6 +641,20 @@ footer{padding:30px 4.5%!important;background:#08090e!important;border-top:1px s
 @media(hover:none){.card:hover,.shelf-card:hover,.hero-watch:hover{transform:none;box-shadow:none}}
 
 </style>
+
+<style id="animora-sidebar-carousel-fix">
+/* Bring the brand closer to the top of the desktop sidebar. */
+@media (min-width:851px){
+  .site-header .header-topline{display:block!important;position:static!important;flex:0 0 auto!important}
+  .site-header .brand-row{position:absolute!important;top:104px!important;left:16px!important;width:calc(100% - 32px)!important;align-items:center!important}
+  .site-header .header-search-wrap{position:absolute!important;top:166px!important;left:16px!important;width:calc(100% - 32px)!important;margin:0!important}
+}
+/* Carousel indicators stay circular, including the active slide. */
+.hero-dots{align-items:center!important}
+.hero-dot,.hero-dot.active{width:9px!important;height:9px!important;min-width:9px!important;min-height:9px!important;border-radius:50%!important;flex:0 0 9px!important}
+.hero-dot.active{background:#d4b5ff!important;box-shadow:0 0 0 3px #d4b5ff25!important}
+</style>
+
 </head>
 <body>
 

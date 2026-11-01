@@ -648,6 +648,33 @@ def login():
     return render_template("login.html")
 
 
+def build_achievements(watchlist, favorites):
+    """Build account achievements from the user's persisted anime lists."""
+    watched = sum(1 for item in watchlist if item.get("status") == "watched")
+    saved = len(watchlist)
+    favorite_count = max(
+        sum(1 for item in watchlist if item.get("status") == "favorite"),
+        len(favorites)
+    )
+    definitions = [
+        ("first_step", "Первый шаг", "Добавь первое аниме в свой список.", "🎬", saved, 1),
+        ("first_finish", "Финальные титры", "Заверши просмотр первого аниме.", "🏁", watched, 1),
+        ("five_finished", "Аниме-марафон", "Заверши 5 аниме.", "🍿", watched, 5),
+        ("twenty_five_finished", "Легенда марафона", "Заверши 25 аниме.", "👑", watched, 25),
+        ("five_favorites", "Избранное", "Собери 5 любимых аниме.", "💜", favorite_count, 5),
+        ("ten_saved", "Коллекционер", "Добавь 10 аниме в списки.", "📚", saved, 10),
+    ]
+    achievements = []
+    for achievement_id, title, description, icon, progress, target in definitions:
+        achievements.append({
+            "id": achievement_id, "title": title, "description": description,
+            "icon": icon, "progress": min(progress, target), "target": target,
+            "unlocked": progress >= target,
+            "percent": min(100, int(progress * 100 / target)),
+        })
+    return achievements
+
+
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
     if "user_id" not in session:
@@ -788,6 +815,8 @@ def profile():
         app.logger.exception("WATCHLIST LOAD ERROR")
         watchlist = []
 
+    achievements = build_achievements(watchlist, favorites)
+
     return render_template(
         "profile.html",
         email=session.get("user_email"),
@@ -797,7 +826,9 @@ def profile():
         watchlist=watchlist,
         is_admin=is_admin_user(),
         viewer_level=session.get("animora_level", 1),
-        viewer_xp=session.get("animora_xp", 0)
+        viewer_xp=session.get("animora_xp", 0),
+        achievements=achievements,
+        achievements_unlocked=sum(1 for item in achievements if item["unlocked"])
     )
 
 

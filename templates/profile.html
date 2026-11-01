@@ -525,20 +525,34 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
   </div>
   <div class="profile-stats">
     <div class="profile-stat"><span class="profile-stat-icon">♥</span><strong>{{ watchlist|selectattr('status','equalto','favorite')|list|length }}</strong><small>В любимых</small></div>
-    <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>{% if (email or '').strip().lower() == 'arabeozenton@gmail.com' %}1488{% else %}1{% endif %}</strong><small>Уровень зрителя</small></div>
+    <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>{{ viewer_level }}</strong><small>Уровень зрителя</small></div>
     <div class="profile-stat"><span class="profile-stat-icon">◷</span><strong>—</strong><small>Время просмотра</small></div>
   </div>
   <div class="level-panel">
-    {% if (email or '').strip().lower() == 'arabeozenton@gmail.com' %}
-    <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень 1488 · Легенда ANIMORA</strong></div><span class="level-xp">1488 LVL</span></div>
-    <div class="level-track"><span style="width:100%"></span></div>
-    <p>Особый уровень аккаунта.</p>
-    {% else %}
-    <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень 1 · Новичок</strong></div><span class="level-xp">0 / 100 XP</span></div>
-    <div class="level-track"><span></span></div>
-    <p>Система опыта появится в следующих обновлениях профиля.</p>
-    {% endif %}
+    <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень {{ viewer_level }}{% if viewer_level >= 1000 %} · Легенда ANIMORA{% elif viewer_level >= 50 %} · Опытный зритель{% else %} · Новичок{% endif %}</strong></div><span class="level-xp">{{ viewer_xp }} XP</span></div>
+    <div class="level-track"><span style="width:{{ [viewer_xp % 100, 100]|max }}%"></span></div>
+    <p>До следующего уровня: {{ 100 - (viewer_xp % 100) }} XP.</p>
   </div>
+  {% if is_admin %}
+  <section class="admin-panel" style="margin:0 28px 28px;padding:22px;border:1px solid #7656a8;border-radius:18px;background:linear-gradient(135deg,rgba(111,75,160,.22),rgba(19,24,40,.94));">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:22px">🛡️</span><strong style="font-size:18px">Панель администратора</strong><span class="admin-tag">ADMIN</span></div>
+    <p style="margin:0 0 18px;color:#aeb8cc">Управление уровнем и опытом твоего аккаунта.</p>
+    <form method="POST" class="admin-progress-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0;background:transparent;border:0;box-shadow:none">
+      <input type="hidden" name="action" value="admin_update_progress">
+      <label style="display:grid;gap:6px">Уровень
+        <input type="number" name="level" min="1" max="1000000" value="{{ viewer_level }}" required>
+      </label>
+      <label style="display:grid;gap:6px">Опыт (XP)
+        <input type="number" name="xp" min="0" max="1000000000" value="{{ viewer_xp }}" required>
+      </label>
+      <button type="submit" style="grid-column:1/-1;padding:12px">💾 Сохранить прогресс</button>
+    </form>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <form method="POST"><input type="hidden" name="action" value="admin_update_progress"><input type="hidden" name="level" value="{{ viewer_level }}"><input type="hidden" name="xp" value="{{ viewer_xp + 100 }}"><button type="submit">＋100 XP</button></form>
+      <form method="POST"><input type="hidden" name="action" value="admin_update_progress"><input type="hidden" name="level" value="{{ viewer_level + 1 }}"><input type="hidden" name="xp" value="0"><button type="submit">Повысить уровень</button></form>
+    </div>
+  </section>
+  {% endif %}
 </section>
 
 <nav class="profile-tabs status-tabs" aria-label="Списки аниме">

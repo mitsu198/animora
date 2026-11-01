@@ -517,6 +517,21 @@ def favorites_list():
             "message": "Необходимо войти в аккаунт."
         }), 401
 
+    if is_admin_user():
+        try:
+            base_url = os.environ["SUPABASE_URL"].rstrip("/")
+            user_response = requests.get(
+                f"{base_url}/auth/v1/user",
+                headers=supabase_headers(),
+                timeout=20
+            )
+            user_response.raise_for_status()
+            metadata = user_response.json().get("user_metadata") or {}
+            session["animora_level"] = max(1, int(metadata.get("animora_level", 1) or 1))
+            session["animora_xp"] = max(0, int(metadata.get("animora_xp", 0) or 0))
+        except Exception:
+            app.logger.exception("ADMIN PROGRESS LOAD ERROR")
+
     try:
         favorites = get_favorites()
         anime_ids = [item["anime_id"] for item in favorites]
@@ -556,6 +571,8 @@ def establish_auth_session(result, email):
     session["display_name"] = metadata.get(
         "display_name", (result.user.email or email).split("@")[0]
     )
+    session["animora_level"] = max(1, int(metadata.get("animora_level", 1) or 1))
+    session["animora_xp"] = max(0, int(metadata.get("animora_xp", 0) or 0))
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -630,6 +647,49 @@ def profile():
 
     if request.method == "POST":
         action = request.form.get("action")
+
+        if action == "admin_update_progress":
+            if not is_admin_user():
+                flash("Доступ запрещён.")
+                return redirect(url_for("profile"))
+
+            try:
+                level = int(request.form.get("level", "1"))
+                xp = int(request.form.get("xp", "0"))
+                if not 1 <= level <= 1000000 or not 0 <= xp <= 1000000000:
+                    raise ValueError("out of range")
+
+                base_url = os.environ["SUPABASE_URL"].rstrip("/")
+                headers = supabase_headers()
+                user_response = requests.get(
+                    f"{base_url}/auth/v1/user",
+                    headers=headers,
+                    timeout=20
+                )
+                user_response.raise_for_status()
+                user_data = user_response.json()
+                metadata = user_data.get("user_metadata") or {}
+                metadata.update({
+                    "animora_level": level,
+                    "animora_xp": xp
+                })
+                update_response = requests.put(
+                    f"{base_url}/auth/v1/user",
+                    headers=headers,
+                    json={"data": metadata},
+                    timeout=20
+                )
+                update_response.raise_for_status()
+                session["animora_level"] = level
+                session["animora_xp"] = xp
+                flash(f"Прогресс обновлён: уровень {level}, {xp} XP.")
+            except (TypeError, ValueError):
+                flash("Укажи корректные числа: уровень от 1 до 1 000 000, XP от 0 до 1 000 000 000.")
+            except Exception:
+                app.logger.exception("ADMIN PROGRESS UPDATE ERROR")
+                flash("Не удалось сохранить прогресс. Попробуй войти заново.")
+
+            return redirect(url_for("profile"))
 
         if action == "update_name":
             display_name = request.form.get("display_name", "").strip()
@@ -726,7 +786,9 @@ def profile():
         display_name=session.get("display_name", "Пользователь"),
         favorites=favorites,
         watchlist=watchlist,
-        is_admin=is_admin_user()
+        is_admin=is_admin_user(),
+        viewer_level=session.get("animora_level", 1),
+        viewer_xp=session.get("animora_xp", 0)
     )
 
 

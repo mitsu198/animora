@@ -442,6 +442,19 @@ body:has(.profile-hero) .email{color:#9ba8bf!important}
 body:has(.profile-hero) .profile-tabs{background:rgba(15,22,37,.88)!important;border:1px solid rgba(173,190,222,.18)!important}
 body:has(.profile-hero) .profile-cover{background:radial-gradient(ellipse at 70% 0%,rgba(103,216,245,.2),transparent 42%),radial-gradient(ellipse at 35% 20%,rgba(167,139,250,.34),transparent 45%),linear-gradient(110deg,#101726,#211d3b 52%,#102331)!important}
 </style>
+<style id="animora-status-tabs-style">
+.status-tabs{display:flex!important;flex-wrap:nowrap!important;gap:0!important;overflow-x:auto!important;padding:0 10px!important;margin:22px 0 18px!important;border-radius:0!important;border-bottom:1px solid #333044!important;background:rgba(24,23,43,.94)!important}
+.status-tabs a{display:flex!important;align-items:center;gap:7px;white-space:nowrap!important;flex:0 0 auto!important;border-radius:0!important;padding:15px 16px!important;background:transparent!important;border:0!important;border-bottom:3px solid transparent!important;color:#a6a4b8!important;font-size:11px!important;font-weight:800!important}
+.status-tabs a.active,.status-tabs a:hover{background:rgba(150,97,255,.08)!important;color:#f0eaff!important;border-bottom-color:#9b5cff!important}
+.status-tabs a span{min-width:22px;padding:3px 6px!important;text-align:center;border-radius:7px!important;background:#302844!important;color:#d9c5ff!important}
+.status-list{scroll-margin-top:110px!important}
+@media(max-width:650px){.status-tabs a{padding:13px 12px!important;font-size:10px!important}}
+</style>
+<script id="animora-status-tabs-interaction">
+document.querySelectorAll('.status-tabs a').forEach(link=>link.addEventListener('click',()=>{
+ document.querySelectorAll('.status-tabs a').forEach(a=>a.classList.remove('active'));link.classList.add('active');
+}));
+</script>
 </head>
 
 <body>
@@ -483,11 +496,20 @@ body:has(.profile-hero) .profile-cover{background:radial-gradient(ellipse at 70%
   </div>
 </section>
 
-<nav class="profile-tabs" aria-label="Разделы профиля">
-  <a class="active" href="#profileOverview">Обзор</a>
-  <a href="#favoritesSection">Избранное <span>{{ favorites|length }}</span></a>
-  <a href="#profileSettings" onclick="openProfileSettings();return false;">Настройки</a>
+<nav class="profile-tabs status-tabs" aria-label="Списки аниме">
+  <a class="active" href="#status-watching">◉ СМОТРЮ <span>0</span></a>
+  <a href="#status-planned">☁ В ПЛАНАХ <span>0</span></a>
+  <a href="#status-watched">⚑ ПРОСМОТРЕНО <span>0</span></a>
+  <a href="#status-dropped">⊘ БРОСИЛ <span>0</span></a>
+  <a href="#status-favorite">♥ ЛЮБИМЫЕ <span>0</span></a>
 </nav>
+<div class="status-list-sections">
+  <section class="favorites-section status-list" id="status-watching"><h2>◉ Смотрю</h2><div class="empty"><p>Аниме, которые ты сейчас смотришь, появятся здесь.</p><a href="/" class="link-button">Найти аниме</a></div></section>
+  <section class="favorites-section status-list" id="status-planned"><h2>☁ В планах</h2><div class="empty"><p>Сохраняй аниме, которые хочешь посмотреть.</p><a href="/" class="link-button">Найти аниме</a></div></section>
+  <section class="favorites-section status-list" id="status-watched"><h2>⚑ Просмотрено</h2><div class="empty"><p>Здесь будет история просмотренного.</p><a href="/" class="link-button">Найти аниме</a></div></section>
+  <section class="favorites-section status-list" id="status-dropped"><h2>⊘ Бросил</h2><div class="empty"><p>Аниме, просмотр которых ты прекратил.</p><a href="/" class="link-button">Найти аниме</a></div></section>
+  <section class="favorites-section status-list" id="status-favorite"><h2>♥ Любимые</h2><div class="empty"><p>Твои любимые аниме.</p><a href="/" class="link-button">Найти аниме</a></div></section>
+</div>
 
 <div class="profile-settings-modal" id="profileSettingsModal" aria-hidden="true">
   <button class="profile-settings-backdrop" type="button" aria-label="Закрыть настройки" onclick="closeProfileSettings()"></button>

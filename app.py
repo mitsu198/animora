@@ -529,14 +529,6 @@ def favorites_list():
             metadata = user_response.json().get("user_metadata") or {}
             session["animora_level"] = max(1, int(metadata.get("animora_level", 1) or 1))
             session["animora_xp"] = max(0, int(metadata.get("animora_xp", 0) or 0))
-    # Аватар хранится в постоянном Supabase Storage, а не только в Flask-сессии.
-    # Поэтому восстанавливаем ссылку при каждом входе с любого устройства.
-    supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
-    if supabase_url:
-        session["avatar_url"] = (
-            f"{supabase_url}/storage/v1/object/public/avatars/"
-            f"{result.user.id}/avatar?v={uuid.uuid4().hex}"
-        )
         except Exception:
             app.logger.exception("ADMIN PROGRESS LOAD ERROR")
 
@@ -581,6 +573,15 @@ def establish_auth_session(result, email):
     )
     session["animora_level"] = max(1, int(metadata.get("animora_level", 1) or 1))
     session["animora_xp"] = max(0, int(metadata.get("animora_xp", 0) or 0))
+
+    # Восстанавливаем постоянную ссылку на аватар из Supabase Storage
+    # при каждом входе, чтобы он отображался на других устройствах.
+    supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+    if supabase_url:
+        session["avatar_url"] = (
+            f"{supabase_url}/storage/v1/object/public/avatars/"
+            f"{result.user.id}/avatar?v={uuid.uuid4().hex}"
+        )
 
 
 @app.route("/register", methods=["GET", "POST"])

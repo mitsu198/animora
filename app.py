@@ -100,6 +100,17 @@ def get_favorites():
     return response.json()
 
 
+def get_watchlist():
+    base_url = os.environ["SUPABASE_URL"].rstrip("/")
+    response = requests.get(
+        f"{base_url}/rest/v1/animora_watchlist",
+        headers=supabase_headers(),
+        params={"select": "anime_id,title,poster,genre,status,updated_at", "user_id": f"eq.{session['user_id']}", "order": "updated_at.desc"},
+        timeout=30
+    )
+    response.raise_for_status()
+    return response.json()
+
 @app.route("/api/anime/catalog")
 def anime_catalog_api():
     """Прокси к Jikan: запросы выполняются сервером, а не браузером посетителя."""
@@ -694,12 +705,19 @@ def profile():
         favorites = []
         flash("Не удалось загрузить избранное.")
 
+    try:
+        watchlist = get_watchlist()
+    except Exception:
+        app.logger.exception("WATCHLIST LOAD ERROR")
+        watchlist = []
+
     return render_template(
         "profile.html",
         email=session.get("user_email"),
         avatar_url=session.get("avatar_url"),
         display_name=session.get("display_name", "Пользователь"),
         favorites=favorites,
+        watchlist=watchlist,
         is_admin=is_admin_user()
     )
 
@@ -795,6 +813,36 @@ def toggle_favorite():
             "message": "Внутренняя ошибка при обновлении избранного. Подробности записаны в лог."
         }), 500
 
+
+@app.route("/watchlist/toggle", methods=["POST"])
+def watchlist_toggle():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({"success": False, "message": "Сначала войди в аккаунт."}), 401
+    data = request.get_json(silent=True) or {}
+    anime_id = str(data.get("anime_id", "")).strip()
+    title = str(data.get("title", "")).strip()[:300]
+    poster = str(data.get("poster", "")).strip()[:2000]
+    genre = str(data.get("genre", "")).strip()[:300]
+    status = str(data.get("status", "")).strip()
+    if not anime_id or not title or status not in {"watching", "planned", "watched", "dropped", "favorite"}:
+        return jsonify({"success": False, "message": "Проверь аниме и статус."}), 400
+    url = os.environ["SUPABASE_URL"].rstrip("/") + "/rest/v1/animora_watchlist"
+    headers = supabase_headers()
+    try:
+        check = requests.get(url, headers=headers, params={"select": "status", "user_id": f"eq.{session['user_id']}", "anime_id": f"eq.{anime_id}"}, timeout=30)
+        check.raise_for_status()
+        existing = check.json()
+        if existing and existing[0].get('status') == status:
+            response = requests.delete(url, headers=headers, params={"user_id": f"eq.{session['user_id']}", "anime_id": f"eq.{anime_id}"}, timeout=30)
+            response.raise_for_status()
+            return jsonify({"success": True, "active": False, "message": "Статус убран."})
+        payload = {"user_id": session["user_id"], "anime_id": anime_id, "title": title, "poster": poster, "genre": genre, "status": status}
+        response = requests.post(url, headers={**headers, "Prefer": "resolution=merge-duplicates,return=representation"}, params={"on_conflict": "user_id,anime_id"}, json=payload, timeout=30)
+        response.raise_for_status()
+        return jsonify({"success": True, "active": True, "message": "Статус сохранён."})
+    except Exception:
+        app.logger.exception("WATCHLIST TOGGLE ERROR")
+        return jsonify({"success": False, "message": "Не удалось сохранить статус. Проверь таблицу animora_watchlist в Supabase."}), 502
 
 @app.route("/logout")
 def logout():

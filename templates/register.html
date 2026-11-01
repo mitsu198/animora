@@ -3,92 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='animora-redesign.css') }}">
 <title>Регистрация — ANIMORA</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at top,#291342,#0c0b13 65%);font-family:Arial,sans-serif;color:white;padding:20px}
-.card{width:100%;max-width:420px;padding:35px;background:#171321;border:1px solid #49305f;border-radius:20px;box-shadow:0 15px 50px #0008}
-.logo{text-align:center;color:#c58aff;font-size:32px;font-weight:bold;margin-bottom:10px}
-h1{text-align:center;font-size:25px}
-p{text-align:center;color:#aaa}
-input{width:100%;padding:15px;margin-top:14px;border:1px solid #443452;border-radius:10px;background:#0e0c15;color:white;font-size:15px}
-button{width:100%;padding:15px;margin-top:20px;border:0;border-radius:10px;background:#a34dff;color:white;font-size:16px;font-weight:bold;cursor:pointer}
-button:hover{background:#bd79ff}
-a{color:#c58aff;text-decoration:none}
-.message{color:#ff9d9d;text-align:center;margin-top:12px}
-@keyframes animoraGlobalFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}html[data-theme="sunset"]{--site-bg:#32142c;--site-panel:#49203b;--site-panel-2:#2a1728;--site-border:#a34b65;--site-accent:#ff9a62}html[data-theme="neon"]{--site-bg:#10102b;--site-panel:#1a2040;--site-panel-2:#14172f;--site-border:#386b83;--site-accent:#4fffe1}html[data-theme="lavender"]{--site-bg:#211735;--site-panel:#30234a;--site-panel-2:#251c39;--site-border:#5b4479;--site-accent:#d6a6ff}html[data-theme="custom"] body{background:linear-gradient(125deg,var(--custom-bg,#171321),var(--custom-panel,#241432),var(--custom-accent,#bd72ff),var(--custom-bg,#171321))!important;background-size:300% 300%!important;color:#fff!important}html[data-theme="custom"] body[data-animated="true"]{animation:animoraGlobalFlow 18s ease infinite}html[data-theme="custom"] header,html[data-theme="custom"] .card,html[data-theme="custom"] .anime-card,html[data-theme="custom"] .shelf-card,html[data-theme="custom"] .service-card,html[data-theme="custom"] .empty{background:var(--custom-panel,#241432)!important;border-color:var(--custom-accent,#bd72ff)!important;color:#fff!important}html[data-theme="custom"] h1,html[data-theme="custom"] h2,html[data-theme="custom"] .logo{color:var(--custom-accent,#bd72ff)!important}</style><style>
-:root{--site-bg:#0c0b13;--site-panel:#171321;--site-panel-2:#100d17;--site-border:#49305f;--site-accent:#bd72ff;--site-text:#fff;--site-muted:#aaa}
-html[data-theme="ocean"]{--site-bg:#08131e;--site-panel:#102234;--site-panel-2:#0b1a29;--site-border:#28516d;--site-accent:#55c7ef}
-html[data-theme="forest"]{--site-bg:#0b1510;--site-panel:#14251b;--site-panel-2:#0e1c14;--site-border:#315b40;--site-accent:#78d69a}
-html[data-theme="rose"]{--site-bg:#1b0d16;--site-panel:#2a1422;--site-panel-2:#1d1019;--site-border:#63334f;--site-accent:#ff8fbd}
-html[data-theme="light"]{--site-bg:#eeeaf4;--site-panel:#fff;--site-panel-2:#f5f1fa;--site-border:#d8cce5;--site-accent:#8138c7;--site-text:#241b2c;--site-muted:#716779}
-html[data-theme] body{background:var(--site-bg)!important;color:var(--site-text)}
-html[data-theme] header,html[data-theme] .card,html[data-theme] .watch,html[data-theme] .anime-card,html[data-theme] .empty{background:var(--site-panel)!important;border-color:var(--site-border)!important;color:var(--site-text)}
-html[data-theme] .stat,html[data-theme] input,html[data-theme] select,html[data-theme] .service-card,html[data-theme] .episode-item{background:var(--site-panel-2)!important;border-color:var(--site-border)!important;color:var(--site-text)}
-html[data-theme] .logo,html[data-theme] h1,html[data-theme] .favorites-section h2,html[data-theme] .form-title{color:var(--site-accent)!important}
-html[data-theme] p,html[data-theme] .email,html[data-theme] .stat span,html[data-theme] .sub,html[data-theme] .genre{color:var(--site-muted)}
-html[data-theme] .profile-tag{background:var(--site-panel-2);border-color:var(--site-border);color:var(--site-accent)}
-html[data-theme="light"] .hero{background:linear-gradient(110deg,#ded0ed,#cbb3e3);color:#241b2c}
-html[data-theme="light"] .hero p,html[data-theme="light"] nav a,html[data-theme="light"] header a{color:#493a55}
-html[data-theme="light"] .anime-info p{color:#716779}
-html[data-theme="light"] .favorite-btn{background:#fff;color:#8138c7}
-</style>
-<style id="animora-animated-logo">
-.logo{
-  display:inline-block;
-  color:transparent!important;
-  background:linear-gradient(100deg,#b56cff 0%,#55c9ff 24%,#67e8a5 48%,#ff8bc5 72%,#b56cff 100%);
-  background-size:300% 100%;
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
-  animation:animoraLogoFlow 5s ease-in-out infinite;
-  text-shadow:none!important;
-}
-@keyframes animoraLogoFlow{
-  0%,100%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-}
-@media(prefers-reduced-motion:reduce){
-  .logo{animation:none;background-position:50% 50%}
-}
-</style>
-<style id="animora-liquid-glass-global">
-html[data-theme="glass"]{color-scheme:dark;--glass-line:rgba(225,243,255,.34);--glass-fill:rgba(205,229,255,.105);--glass-fill-strong:rgba(220,239,255,.17);--glass-shadow:0 18px 48px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.28)}
-html[data-theme="glass"] body{
- background:radial-gradient(ellipse at 12% 5%,rgba(100,174,255,.28),transparent 36%),radial-gradient(ellipse at 88% 24%,rgba(178,218,255,.19),transparent 32%),radial-gradient(ellipse at 50% 100%,rgba(77,122,191,.22),transparent 45%),linear-gradient(145deg,#07101f,#142943 52%,#0a1729)!important;
- background-attachment:fixed!important;color:#f4f9ff!important
-}
-html[data-theme="glass"] body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:linear-gradient(125deg,rgba(255,255,255,.045),transparent 35%,rgba(173,218,255,.035));}
-html[data-theme="glass"] body>*{position:relative;z-index:1}
-html[data-theme="glass"] header,html[data-theme="glass"] nav,html[data-theme="glass"] main>section,html[data-theme="glass"] main>.card,html[data-theme="glass"] .card,html[data-theme="glass"] .profile-card,html[data-theme="glass"] .theme-panel,html[data-theme="glass"] .theme-dialog,html[data-theme="glass"] .theme-preview,html[data-theme="glass"] .hero,html[data-theme="glass"] .shelf,html[data-theme="glass"] .anime-card,html[data-theme="glass"] .shelf-poster,html[data-theme="glass"] .service-card,html[data-theme="glass"] .player-shell,html[data-theme="glass"] .control,html[data-theme="glass"] .manual-player,html[data-theme="glass"] .episode-item,html[data-theme="glass"] .stats>.stat,html[data-theme="glass"] form,html[data-theme="glass"] .auth-card,html[data-theme="glass"] .login-card,html[data-theme="glass"] .register-card{
- background-color:var(--glass-fill)!important;background-image:linear-gradient(135deg,rgba(255,255,255,.16),rgba(177,213,255,.035) 55%,rgba(255,255,255,.075))!important;
- border:1px solid var(--glass-line)!important;border-radius:20px!important;box-shadow:var(--glass-shadow)!important;
- -webkit-backdrop-filter:blur(24px) saturate(175%)!important;backdrop-filter:blur(24px) saturate(175%)!important;color:#f4f9ff!important
-}
-html[data-theme="glass"] .hero{overflow:hidden}
-html[data-theme="glass"] .anime-card:hover,html[data-theme="glass"] .service-card:hover,html[data-theme="glass"] button:hover{border-color:rgba(235,248,255,.65)!important;box-shadow:0 22px 55px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.4)!important;transform:translateY(-2px)}
-html[data-theme="glass"] button,html[data-theme="glass"] .link-button,html[data-theme="glass"] input,html[data-theme="glass"] select,html[data-theme="glass"] textarea{
- background:rgba(9,23,42,.42)!important;border:1px solid rgba(220,241,255,.32)!important;color:#f7fbff!important;border-radius:13px!important;
- -webkit-backdrop-filter:blur(16px) saturate(160%)!important;backdrop-filter:blur(16px) saturate(160%)!important
-}
-html[data-theme="glass"] input::placeholder,html[data-theme="glass"] textarea::placeholder{color:rgba(224,239,255,.65)!important}
-html[data-theme="glass"] h1,html[data-theme="glass"] h2,html[data-theme="glass"] h3,html[data-theme="glass"] p,html[data-theme="glass"] label,html[data-theme="glass"] small,html[data-theme="glass"] span{ text-shadow:0 1px 12px rgba(0,0,0,.18)}
-html[data-theme="glass"] a{color:#d7efff}
-html[data-theme="glass"] .logo{filter:drop-shadow(0 0 12px rgba(160,218,255,.5))}
-html[data-theme="glass"] .theme-modal{background:rgba(3,10,20,.56)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-html[data-theme="glass"] .theme-backdrop{background:rgba(3,10,20,.42)!important}
-html[data-theme="glass"] footer{color:#c9dced}
-@media(prefers-reduced-transparency:reduce){html[data-theme="glass"] header,html[data-theme="glass"] nav,html[data-theme="glass"] main>section,html[data-theme="glass"] .card,html[data-theme="glass"] form,html[data-theme="glass"] .anime-card{background:#1b2d45!important}}
-</style>
-<style id="animora-single-night-theme">
-:root{--site-bg:#0c0b13!important;--site-panel:#171321!important;--site-panel-2:#100d17!important;--site-border:#49305f!important;--site-accent:#bd72ff!important;--site-text:#fff!important;--site-muted:#aaa!important}
-html,html body{background:#0c0b13!important;color:#fff!important}
-html body{background-image:none!important;animation:none!important}
-html[data-theme] body,html[data-theme="light"] body,html[data-theme="custom"] body{background:#0c0b13!important;background-image:none!important;color:#fff!important}
-html[data-theme] header,html[data-theme] .card,html[data-theme] .shelf-card,html[data-theme] .theme-panel,html[data-theme] .anime-card,html[data-theme] form,html[data-theme] .theme-dialog{background-color:#171321!important;color:#fff!important;border-color:#49305f!important}
-html[data-theme] .search,html[data-theme] input,html[data-theme] select{background-color:#100d17!important;color:#fff!important;border-color:#49305f!important}
-</style>
+
+
+
+
 <script>
 (function(){
  try{

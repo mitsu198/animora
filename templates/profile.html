@@ -455,6 +455,23 @@ document.querySelectorAll('.status-tabs a').forEach(link=>link.addEventListener(
  document.querySelectorAll('.status-tabs a').forEach(a=>a.classList.remove('active'));link.classList.add('active');
 }));
 </script>
+
+<style id="animora-profile-font-tabs-fix">
+/* Match the main catalog typography and make profile lists behave like real tabs. */
+body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-list,
+.status-list h2,.status-list .anime-info,.status-list button{
+  font-family:'Manrope',Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;
+}
+.logo,.site-logo,.brand-logo,.header-logo{
+  font-family:'Manrope',Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  font-weight:800!important;letter-spacing:2px!important;
+}
+.status-list{display:none!important}
+.status-list.is-active{display:block!important}
+.status-tabs a{font-family:'Manrope',Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important}
+.status-tabs a.active{color:#fff!important}
+</style>
+
 </head>
 
 <body>
@@ -719,6 +736,30 @@ for(const status of Object.keys(labels)){const section=document.getElementById('
 for(const item of list){const card=document.createElement('div');card.className='anime-card';card.tabIndex=0;const q=new URLSearchParams({id:item.anime_id,title:item.title,poster:item.poster||'',genre:item.genre||''});card.addEventListener('click',()=>location.href='/anime?'+q.toString());if(item.poster){const img=document.createElement('img');img.src=item.poster;img.alt=item.title;card.appendChild(img);}const info=document.createElement('div');info.className='anime-info';const h=document.createElement('h3');h.textContent=item.title;info.appendChild(h);const g=document.createElement('p');g.textContent=item.genre||'Аниме';info.appendChild(g);const b=document.createElement('button');b.className='remove-btn';b.textContent='Убрать из списка';b.addEventListener('click',async e=>{e.stopPropagation();try{const rr=await fetch('/watchlist/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({anime_id:item.anime_id,title:item.title,poster:item.poster||'',genre:item.genre||'',status})});const dd=await rr.json();if(!rr.ok||!dd.success)throw new Error(dd.message||'Ошибка');location.reload();}catch(err){alert(err.message);}});info.appendChild(b);card.appendChild(info);grid.appendChild(card);}
 if(!list.length){grid.remove();const empty=document.createElement('div');empty.className='empty';const p=document.createElement('p');p.textContent='Пока пусто. Открой аниме и выбери этот статус.';empty.appendChild(p);const a=document.createElement('a');a.href='/';a.className='link-button';a.textContent='Найти аниме';empty.appendChild(a);section.appendChild(empty);}}
 }catch(e){console.warn('Watchlist unavailable',e);}})();
+</script>
+
+<script id="animora-real-status-tabs">
+(function(){
+ const links=[...document.querySelectorAll('.status-tabs a[href^="#status-"]')];
+ const sections=[...document.querySelectorAll('.status-list[id^="status-"]')];
+ if(!links.length||!sections.length)return;
+ function activate(id,updateHash){
+   const target=sections.find(s=>s.id===id)||sections[0];
+   sections.forEach(s=>s.classList.toggle('is-active',s===target));
+   links.forEach(a=>{
+     const active=a.getAttribute('href')==='#'+target.id;
+     a.classList.toggle('active',active);
+     if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+   });
+   if(updateHash&&location.hash!=='#'+target.id) history.replaceState(null,'','#'+target.id);
+ }
+ links.forEach(a=>a.addEventListener('click',e=>{
+   e.preventDefault();
+   activate(a.getAttribute('href').slice(1),true);
+ }));
+ const initial=location.hash&&sections.some(s=>'#'+s.id===location.hash)?location.hash.slice(1):'status-watching';
+ activate(initial,false);
+})();
 </script>
 </body>
 </html>

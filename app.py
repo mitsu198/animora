@@ -540,78 +540,117 @@ def anime():
     return send_from_directory(".", "anime.html")
 
 
+def request_email_code(email, should_create_user):
+    """Ask Supabase Auth to email a one-time code to the user."""
+    return get_supabase().auth.sign_in_with_otp({
+        "email": email,
+        "options": {"should_create_user": should_create_user}
+    })
+
+
+def finish_email_login(email, token):
+    result = get_supabase().auth.verify_otp({
+        "email": email,
+        "token": token,
+        "type": "email"
+    })
+    if not result.user or not result.session:
+        raise RuntimeError("Код не подтверждён. Запроси новый код.")
+    session.clear()
+    session["user_email"] = result.user.email
+    session["user_id"] = result.user.id
+    session["access_token"] = result.session.access_token
+    session["refresh_token"] = result.session.refresh_token
+    metadata = result.user.user_metadata or {}
+    session["display_name"] = metadata.get(
+        "display_name", (result.user.email or email).split("@")[0]
+    )
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-
-        if not email or not password:
-            flash("Заполни все поля.")
-            return redirect(url_for("register"))
-
-        if len(password) < 6:
-            flash("Пароль должен содержать минимум 6 символов.")
-            return redirect(url_for("register"))
-
-        try:
-            result = get_supabase().auth.sign_up({
-                "email": email,
-                "password": password
-            })
-
-            if result.session:
-                session["user_email"] = result.user.email
-                session["user_id"] = result.user.id
-                session["access_token"] = result.session.access_token
-                session["refresh_token"] = result.session.refresh_token
-
-                metadata = result.user.user_metadata or {}
-                session["display_name"] = metadata.get(
-                    "display_name", email.split("@")[0]
-                )
-
+        action = request.form.get("action", "send_code")
+        if action == "verify_code":
+            email = (session.get("pending_auth_email") or request.form.get("email", "")).strip().lower()
+            code = request.form.get("code", "").strip()
+            if not email or not code:
+                flash("Введи код из письма.")
+                return redirect(url_for("register"))
+            try:
+                finish_email_login(email, code)
+                session.pop("pending_auth_email", None)
+                session.pop("pending_auth_flow", None)
                 return redirect(url_for("profile"))
+            except Exception as exc:
+                app.logger.warning("SUPABASE EMAIL SIGNUP VERIFY FAILED: %s", str(exc)[:300])
+                session["pending_auth_email"] = email
+                session["pending_auth_flow"] = "register"
+                flash("Код не подошёл или истёк. Проверь его или запроси новый.")
+                return redirect(url_for("register"))
 
-            flash("Теперь войди в аккаунт.")
-            return redirect(url_for("login"))
+        email = request.form.get("email", "").strip().lower()
+        if not email or "@" not in email:
+            flash("Введи корректный адрес электронной почты.")
+            return redirect(url_for("register"))
+        try:
+            request_email_code(email, True)
+            session["pending_auth_email"] = email
+            session["pending_auth_flow"] = "register"
+            flash("Отправили код подтверждения на почту. Проверь также папку «Спам».")
+            return redirect(url_for("register"))
+        except Exception as exc:
+            app.logger.warning("SUPABASE EMAIL SIGNUP CODE FAILED: %s", str(exc)[:500])
+            flash("Не удалось отправить код. Проверь настройки почты в Supabase и попробуй позже.")
 
-        except Exception:
-            app.logger.exception("SUPABASE REGISTRATION ERROR")
-            flash("Не удалось зарегистрироваться. Попробуй снова.")
-
-    return render_template("register.html")
+    return render_template(
+        "register.html",
+        otp_sent=session.get("pending_auth_flow") == "register",
+        pending_email=session.get("pending_auth_email", "")
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
+        action = request.form.get("action", "send_code")
+        if action == "verify_code":
+            email = (session.get("pending_auth_email") or request.form.get("email", "")).strip().lower()
+            code = request.form.get("code", "").strip()
+            if not email or not code:
+                flash("Введи код из письма.")
+                return redirect(url_for("login"))
+            try:
+                finish_email_login(email, code)
+                session.pop("pending_auth_email", None)
+                session.pop("pending_auth_flow", None)
+                return redirect(url_for("profile"))
+            except Exception as exc:
+                app.logger.warning("SUPABASE EMAIL LOGIN VERIFY FAILED: %s", str(exc)[:300])
+                session["pending_auth_email"] = email
+                session["pending_auth_flow"] = "login"
+                flash("Код не подошёл или истёк. Проверь его или запроси новый.")
+                return redirect(url_for("login"))
 
+        email = request.form.get("email", "").strip().lower()
+        if not email or "@" not in email:
+            flash("Введи корректный адрес электронной почты.")
+            return redirect(url_for("login"))
         try:
-            result = get_supabase().auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
+            request_email_code(email, False)
+            session["pending_auth_email"] = email
+            session["pending_auth_flow"] = "login"
+            flash("Отправили код входа на почту. Проверь также папку «Спам».")
+            return redirect(url_for("login"))
+        except Exception as exc:
+            app.logger.warning("SUPABASE EMAIL LOGIN CODE FAILED: %s", str(exc)[:500])
+            flash("Не удалось отправить код. Проверь адрес и настройки почты в Supabase.")
 
-            session["user_email"] = result.user.email
-            session["user_id"] = result.user.id
-            session["access_token"] = result.session.access_token
-            session["refresh_token"] = result.session.refresh_token
-
-            metadata = result.user.user_metadata or {}
-            session["display_name"] = metadata.get(
-                "display_name", email.split("@")[0]
-            )
-
-            return redirect(url_for("profile"))
-
-        except Exception:
-            app.logger.exception("SUPABASE LOGIN ERROR")
-            flash("Не удалось войти. Проверь почту и пароль.")
-
-    return render_template("login.html")
+    return render_template(
+        "login.html",
+        otp_sent=session.get("pending_auth_flow") == "login",
+        pending_email=session.get("pending_auth_email", "")
+    )
 
 
 @app.route("/profile", methods=["GET", "POST"])

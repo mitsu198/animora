@@ -525,13 +525,19 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
   </div>
   <div class="profile-stats">
     <div class="profile-stat"><span class="profile-stat-icon">♥</span><strong>{{ watchlist|selectattr('status','equalto','favorite')|list|length }}</strong><small>В любимых</small></div>
-    <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>1</strong><small>Уровень зрителя</small></div>
+    <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>{% if (email or '').strip().lower() == 'arabeozenton@gmail.com' %}1488{% else %}1{% endif %}</strong><small>Уровень зрителя</small></div>
     <div class="profile-stat"><span class="profile-stat-icon">◷</span><strong>—</strong><small>Время просмотра</small></div>
   </div>
   <div class="level-panel">
+    {% if (email or '').strip().lower() == 'arabeozenton@gmail.com' %}
+    <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень 1488 · Легенда ANIMORA</strong></div><span class="level-xp">1488 LVL</span></div>
+    <div class="level-track"><span style="width:100%"></span></div>
+    <p>Особый уровень аккаунта.</p>
+    {% else %}
     <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень 1 · Новичок</strong></div><span class="level-xp">0 / 100 XP</span></div>
     <div class="level-track"><span></span></div>
     <p>Система опыта появится в следующих обновлениях профиля.</p>
+    {% endif %}
   </div>
 </section>
 

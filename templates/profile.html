@@ -711,5 +711,14 @@ async function removeFavorite(button){
 </script>
 
 
+<script id="animora-watchlist-render">
+(async function(){
+const labels={watching:'Смотрю',planned:'В планах',watched:'Просмотрено',dropped:'Бросил',favorite:'Любимые'};
+try{const res=await fetch('/watchlist/list');if(!res.ok)return;const data=await res.json();if(!data.success)return;const items=data.items||[];
+for(const status of Object.keys(labels)){const section=document.getElementById('status-'+status);if(!section)continue;const list=items.filter(x=>x.status===status);const count=document.querySelector('.status-tabs a[href="#status-'+status+'"] span');if(count)count.textContent=list.length;const old=section.querySelector('.empty');if(old)old.remove();let grid=section.querySelector('.favorites-grid');if(!grid){grid=document.createElement('div');grid.className='favorites-grid';section.appendChild(grid);}grid.replaceChildren();
+for(const item of list){const card=document.createElement('div');card.className='anime-card';card.tabIndex=0;const q=new URLSearchParams({id:item.anime_id,title:item.title,poster:item.poster||'',genre:item.genre||''});card.addEventListener('click',()=>location.href='/anime?'+q.toString());if(item.poster){const img=document.createElement('img');img.src=item.poster;img.alt=item.title;card.appendChild(img);}const info=document.createElement('div');info.className='anime-info';const h=document.createElement('h3');h.textContent=item.title;info.appendChild(h);const g=document.createElement('p');g.textContent=item.genre||'Аниме';info.appendChild(g);const b=document.createElement('button');b.className='remove-btn';b.textContent='Убрать из списка';b.addEventListener('click',async e=>{e.stopPropagation();try{const rr=await fetch('/watchlist/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({anime_id:item.anime_id,title:item.title,poster:item.poster||'',genre:item.genre||'',status})});const dd=await rr.json();if(!rr.ok||!dd.success)throw new Error(dd.message||'Ошибка');location.reload();}catch(err){alert(err.message);}});info.appendChild(b);card.appendChild(info);grid.appendChild(card);}
+if(!list.length){grid.remove();const empty=document.createElement('div');empty.className='empty';const p=document.createElement('p');p.textContent='Пока пусто. Открой аниме и выбери этот статус.';empty.appendChild(p);const a=document.createElement('a');a.href='/';a.className='link-button';a.textContent='Найти аниме';empty.appendChild(a);section.appendChild(empty);}}
+}catch(e){console.warn('Watchlist unavailable',e);}})();
+</script>
 </body>
 </html>

@@ -502,7 +502,7 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
     <button class="profile-edit-link" type="button" onclick="openProfileSettings()">⚙ Настройки</button>
   </div>
   <div class="profile-stats">
-    <div class="profile-stat"><span class="profile-stat-icon">♥</span><strong>{{ favorites|length }}</strong><small>В избранном</small></div>
+    <div class="profile-stat"><span class="profile-stat-icon">♥</span><strong>{{ watchlist|selectattr('status','equalto','favorite')|list|length }}</strong><small>В любимых</small></div>
     <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>1</strong><small>Уровень зрителя</small></div>
     <div class="profile-stat"><span class="profile-stat-icon">◷</span><strong>—</strong><small>Время просмотра</small></div>
   </div>
@@ -559,53 +559,7 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
   </div>
 </div>
 
-<section class="favorites-section" id="favoritesSection">
-    <h2>❤️ Моё избранное</h2>
 
-    {% if favorites %}
-    <div class="favorites-tools">
-        <input type="text" id="favoriteSearch" placeholder="🔎 Найти в избранном..." aria-label="Поиск по избранному">
-        <span class="favorites-count" id="favoritesCount">{{ favorites|length }} тайтлов</span>
-    </div>
-    <div class="favorites-grid" id="favoritesGrid">
-
-        {% for anime in favorites %}
-        <div class="anime-card" data-anime-id="{{ anime.anime_id }}" data-title="{{ anime.title }}" data-poster="{{ anime.poster or '' }}" data-genre="{{ anime.genre or '' }}" role="link" tabindex="0">
-
-            {% if anime.poster %}
-                <img src="{{ anime.poster }}" alt="{{ anime.title }}"
-                     onerror="this.style.display='none'">
-            {% else %}
-                <div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:50px">🎬</div>
-            {% endif %}
-
-            <div class="anime-info">
-                <h3>{{ anime.title }}</h3>
-                <p>{{ anime.genre or 'Аниме' }}</p>
-
-                <button class="remove-btn"
-                    onclick="removeFavorite(this)"
-                    data-id="{{ anime.anime_id }}"
-                    data-title="{{ anime.title }}"
-                    data-poster="{{ anime.poster or '' }}"
-                    data-genre="{{ anime.genre or '' }}">
-                    ♥ Убрать из избранного
-                </button>
-            </div>
-        </div>
-        {% endfor %}
-
-    </div>
-    <div class="no-search-results" id="noSearchResults">Ничего не найдено. Попробуй другое название.</div>
-    {% else %}
-    <div class="empty" id="emptyFavorites">
-        <div style="font-size:45px">💜</div>
-        <h3>Пока здесь пусто</h3>
-        <p>Добавляй любимые аниме в избранное из каталога!</p>
-        <a href="/" class="link-button">Перейти в каталог</a>
-    </div>
-    {% endif %}
-</section>
 
 </main>
 

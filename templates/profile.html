@@ -523,6 +523,23 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
 }
 </style>
 
+<style id="animora-achievements">
+.achievements-section{margin:0 28px 28px;padding:24px;border:1px solid rgba(151,126,220,.28);border-radius:20px;background:linear-gradient(145deg,rgba(35,31,61,.92),rgba(17,24,42,.96));color:#f5f3ff}
+.achievements-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
+.achievements-heading h2{margin:5px 0;font-size:24px;color:#fff}.achievements-heading p{margin:0;color:#b8bdd0;font-size:13px}
+.achievements-counter{white-space:nowrap;padding:8px 12px;border:1px solid #62528d;border-radius:999px;background:#292343;color:#e4d8ff;font-size:12px;font-weight:800}
+.achievements-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.achievement-card{display:flex;gap:14px;align-items:flex-start;min-width:0;padding:15px;border:1px solid #343b54;border-radius:15px;background:rgba(10,16,31,.66)}
+.achievement-card.is-unlocked{border-color:#8069b9;background:linear-gradient(120deg,rgba(100,75,151,.23),rgba(10,16,31,.7))}
+.achievement-icon{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:14px;background:#292542;font-size:25px}
+.achievement-card.is-locked .achievement-icon{filter:grayscale(1);opacity:.55}
+.achievement-copy{flex:1;min-width:0}.achievement-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.achievement-title-row h3{margin:0;color:#fff;font-size:14px}.achievement-state{font-size:9px;font-weight:900;letter-spacing:.06em;color:#c8b5ff}
+.achievement-card.is-locked .achievement-state{color:#9ba4b8}.achievement-copy p{margin:5px 0 10px;color:#aeb8cc;font-size:12px;line-height:1.4}
+.achievement-progress{height:6px;overflow:hidden;border-radius:99px;background:#30364b}.achievement-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8b6be8,#c2a7ff)}
+.achievement-copy small{display:block;margin-top:6px;color:#aeb8cc;font-size:10px;text-align:right}
+@media(max-width:650px){.achievements-section{margin:0 14px 20px;padding:16px}.achievements-heading{align-items:flex-start;flex-direction:column}.achievements-grid{grid-template-columns:1fr}.achievement-card{padding:12px}}
+</style>
 </head>
 
 <body>
@@ -570,6 +587,25 @@ body,.profile-page,.profile-container,.profile-content,.profile-tabs,.status-lis
     <div class="level-track"><span style="width:{{ [viewer_xp % 100, 100]|min }}%"></span></div>
     <p>До следующего уровня: {{ 100 - (viewer_xp % 100) }} XP.</p>
   </div>
+  <section class="achievements-section" id="achievements">
+    <div class="achievements-heading">
+      <div><span class="level-kicker">ТВОИ НАГРАДЫ</span><h2>Достижения</h2><p>Выполняй условия и открывай новые награды за просмотр аниме.</p></div>
+      <span class="achievements-counter">{{ achievements_unlocked }} / {{ achievements|length }} открыто</span>
+    </div>
+    <div class="achievements-grid">
+      {% for achievement in achievements %}
+      <article class="achievement-card {% if achievement.unlocked %}is-unlocked{% else %}is-locked{% endif %}">
+        <div class="achievement-icon">{{ achievement.icon }}</div>
+        <div class="achievement-copy">
+          <div class="achievement-title-row"><h3>{{ achievement.title }}</h3><span class="achievement-state">{% if achievement.unlocked %}ОТКРЫТО{% else %}ЗАКРЫТО{% endif %}</span></div>
+          <p>{{ achievement.description }}</p>
+          <div class="achievement-progress"><span style="width:{{ achievement.percent }}%"></span></div>
+          <small>{{ achievement.progress }} / {{ achievement.target }}</small>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
   {% if is_admin %}
   <section class="admin-panel" style="margin:0 28px 28px;padding:22px;border:1px solid #7656a8;border-radius:18px;background:linear-gradient(135deg,rgba(111,75,160,.22),rgba(19,24,40,.94));">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:22px">🛡️</span><strong style="font-size:18px">Панель администратора</strong><span class="admin-tag">ADMIN</span></div>

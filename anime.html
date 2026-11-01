@@ -201,6 +201,79 @@ main{max-width:1240px!important}
 }
 
 </style>
+
+<style id="animora-liquid-glass-final">
+
+/* ANIMORA Liquid Glass — shared visual system */
+:root{color-scheme:light;--ag-ink:#20263a;--ag-muted:#747e94;--ag-purple:#8558c8;--ag-purple-dark:#6742a8;--ag-line:rgba(137,151,183,.24);--ag-glass:rgba(255,255,255,.72);--ag-shadow:0 16px 44px rgba(63,79,118,.12)}
+html{background:#eef2fb!important;color:var(--ag-ink)!important}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif!important;color:var(--ag-ink)!important;background:radial-gradient(ellipse at 8% 0%,rgba(203,219,255,.7),transparent 34%),radial-gradient(ellipse at 95% 12%,rgba(242,218,244,.58),transparent 30%),linear-gradient(145deg,#f7f8fd 0%,#edf1fa 54%,#f8f2fb 100%)!important;background-attachment:fixed!important}
+h1,h2,h3,h4,strong{letter-spacing:-.025em}
+p{line-height:1.65}
+a,button,input,select,textarea{ -webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font-family:inherit}
+.site-header,body>header{background:rgba(255,255,255,.68)!important;border-color:rgba(255,255,255,.78)!important;box-shadow:0 10px 35px rgba(47,60,94,.08)!important;backdrop-filter:blur(24px) saturate(160%)!important;-webkit-backdrop-filter:blur(24px) saturate(160%)!important}
+.site-header .logo,body>header .logo{font-weight:850!important;letter-spacing:.06em!important;background:linear-gradient(100deg,#55c9df 0%,#a47be5 50%,#ed85b8 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+.main-nav a,body>header nav a{border-radius:999px!important;transition:background .2s ease,color .2s ease,transform .2s ease!important}
+.main-nav a:hover,body>header nav a:hover{background:rgba(139,102,209,.1)!important;color:#7048b2!important}
+.main-nav a.nav-current{background:rgba(145,104,217,.16)!important;color:#7149b4!important}
+.header-search-wrap,.search,.header-search-wrap input{background:rgba(255,255,255,.66)!important;color:var(--ag-ink)!important}
+.header-search-wrap{border:1px solid rgba(148,159,188,.28)!important;border-radius:16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.85)!important}
+.header-search-wrap input::placeholder,input::placeholder,textarea::placeholder{color:#929bb0!important}
+.category-strip{background:rgba(255,255,255,.43)!important;border-color:rgba(255,255,255,.75)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}
+.category-strip .filters button{border:1px solid rgba(142,153,184,.24)!important;background:rgba(255,255,255,.64)!important;color:#69738b!important;border-radius:999px!important;box-shadow:0 3px 10px rgba(50,63,96,.035)!important}
+.category-strip .filters button.active{background:linear-gradient(135deg,#9b76e0,#8056c8)!important;color:white!important;border-color:transparent!important}
+.discover,.shelf,.anivibe-discovery,#catalog{color:var(--ag-ink)!important}
+.discover-head h2,#catalog>h2,.anivibe-discovery h2,.shelf-title h2{color:#252b40!important}
+.discover-head p,.shelf-title>span,.category-strip-label,#counter,.anivibe-discovery-head span{color:var(--ag-muted)!important}
+.shelf-card,.card,.profile-hero,.profile-stat,.level-panel,.profile-settings-card,.profile-settings-dialog,.player-choices,.watch,.anime-facts,.anime-fact,.controls,.player-shell,.player-toolbar,.episode-list,.episodes,.episode-card,.anime-card,.empty-state{background:rgba(255,255,255,.74)!important;color:var(--ag-ink)!important;border:1px solid rgba(255,255,255,.92)!important;box-shadow:0 14px 38px rgba(55,70,108,.09),inset 0 1px 0 rgba(255,255,255,.95)!important;backdrop-filter:blur(22px) saturate(145%)!important;-webkit-backdrop-filter:blur(22px) saturate(145%)!important}
+.shelf-card,.card{border-radius:20px!important;overflow:hidden!important}
+.shelf-card h3,.card h3,.anime-info h3{color:#252b40!important;font-weight:700!important;line-height:1.45!important}
+.shelf-card p,.card p,.anime-info p{color:#7b8498!important}
+.shelf-card:hover,.card:hover{transform:translateY(-3px)!important;box-shadow:0 20px 42px rgba(55,70,108,.15)!important}
+.discover-head h2,#catalog>h2{font-weight:800!important;line-height:1.18!important}
+.random-btn,.primary,.hero-watch,.profile-form button,.profile-actions a,.profile-edit-link{border:0!important;border-radius:14px!important;background:linear-gradient(135deg,#9871df,#7951bf)!important;color:#fff!important;box-shadow:0 8px 24px rgba(128,84,197,.22)!important;font-weight:700!important}
+.random-btn:hover,.primary:hover,.hero-watch:hover{filter:brightness(1.04)!important;transform:translateY(-1px)!important}
+.back,body>header>a:last-child{color:#7951bf!important}
+input,select,textarea{border:1px solid rgba(143,155,185,.3)!important;border-radius:13px!important;background:rgba(255,255,255,.75)!important;color:var(--ag-ink)!important}
+input:focus,select:focus,textarea:focus{outline:none!important;border-color:#a78ae0!important;box-shadow:0 0 0 4px rgba(151,113,219,.14)!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media(max-width:600px){
+ body{background-attachment:scroll!important}
+ .site-header,body>header{box-shadow:0 8px 25px rgba(47,60,94,.07)!important}
+ .shelf-card,.card{border-radius:16px!important}
+ .discover-head h2,#catalog>h2{font-size:clamp(24px,6vw,32px)!important}
+}
+
+body>header{display:flex!important;align-items:center!important;gap:12px!important;flex-wrap:wrap!important;padding:16px clamp(16px,4vw,48px)!important;border-bottom:1px solid rgba(255,255,255,.8)!important}
+body>header nav{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important;margin-left:auto!important}
+body>header nav a{padding:9px 13px!important;color:#626d85!important;text-decoration:none!important}
+main{max-width:1380px!important;margin:0 auto!important;padding:clamp(18px,3vw,42px)!important}
+.back{display:inline-flex!important;margin:0 0 20px!important;font-weight:700!important;text-decoration:none!important}
+.hero{display:grid!important;grid-template-columns:minmax(180px,290px) minmax(0,1fr)!important;gap:clamp(22px,4vw,54px)!important;align-items:center!important;padding:clamp(20px,4vw,44px)!important;border:1px solid rgba(255,255,255,.9)!important;border-radius:30px!important;background:rgba(255,255,255,.65)!important;box-shadow:var(--ag-shadow),inset 0 1px 0 white!important;backdrop-filter:blur(24px)!important;-webkit-backdrop-filter:blur(24px)!important}
+.poster-wrap img{width:100%!important;max-height:430px!important;object-fit:cover!important;border-radius:20px!important;box-shadow:0 15px 35px rgba(40,48,75,.17)!important}
+.info h1{color:#20263a!important;font-size:clamp(30px,4vw,48px)!important;line-height:1.12!important;font-weight:850!important}
+.eyebrow{color:#8558c8!important;letter-spacing:.15em!important}
+.genre,.description,.sub{color:#747e94!important}
+.watch{margin-top:28px!important;padding:clamp(18px,3vw,32px)!important;border-radius:26px!important}
+.watch h2{color:#252b40!important;font-size:clamp(22px,3vw,30px)!important}
+.player-shell{overflow:hidden!important;border-radius:20px!important}
+.video-stage{background:#090b13!important;border-radius:16px!important;overflow:hidden!important}
+.video-stage iframe{width:100%!important;height:100%!important;border:0!important}
+.player-toolbar{color:#4f5a73!important}
+.primary{padding:13px 22px!important}
+@media(max-width:700px){
+ body>header{gap:9px!important;padding:13px 16px!important}
+ body>header nav{width:100%!important;order:5!important;margin:0!important;overflow-x:auto!important;flex-wrap:nowrap!important}
+ body>header nav a{white-space:nowrap!important}
+ main{padding:16px!important}
+ .hero{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;padding:18px!important;border-radius:22px!important}
+ .poster-wrap{max-width:330px!important;margin:0 auto!important;width:100%!important}
+ .poster-wrap img{max-height:460px!important;aspect-ratio:3/4!important}
+ .info h1{font-size:clamp(29px,8vw,40px)!important}
+ .watch{padding:16px!important;border-radius:20px!important}
+}
+</style>
 </head>
 <body>
 <header><a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a><a href="https://t.me/AnimoraOfficial" target="_blank" rel="noopener noreferrer" aria-label="Telegram-канал ANIMORA" title="Telegram ANIMORA" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 30px;border-radius:50%;background:#229ED9;color:#fff;text-decoration:none;vertical-align:middle;margin-left:9px;box-shadow:0 2px 10px rgba(34,158,217,.28)"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21.8 4.6 18.5 20c-.25 1.1-.9 1.35-1.82.84l-5.03-3.7-2.43 2.34c-.27.27-.5.5-1.02.5l.36-5.12 9.32-8.42c.4-.36-.09-.56-.62-.2L5.73 13.6.76 12.05c-1.08-.34-1.1-1.08.23-1.58L20.4 2.9c.9-.33 1.69.22 1.4 1.7Z"/></svg></a><nav><a href="/">Главная</a><a href="/#catalog">Каталог</a><a class="profile-avatar-link" href="/profile" aria-label="Открыть профиль" title="Мой профиль"><span>👤</span></a></nav></header>

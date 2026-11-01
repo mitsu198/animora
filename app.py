@@ -814,6 +814,16 @@ def toggle_favorite():
         }), 500
 
 
+@app.route("/watchlist/list")
+def watchlist_list():
+    if "user_id" not in session:
+        return jsonify({"success": False, "message": "Сначала войди в аккаунт."}), 401
+    try:
+        return jsonify({"success": True, "items": get_watchlist()})
+    except Exception:
+        app.logger.exception("WATCHLIST LIST ERROR")
+        return jsonify({"success": False, "message": "Не удалось загрузить список."}), 500
+
 @app.route("/watchlist/toggle", methods=["POST"])
 def watchlist_toggle():
     if "user_id" not in session or "access_token" not in session:

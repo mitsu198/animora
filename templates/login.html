@@ -5,45 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="{{ url_for('static', filename='animora-redesign.css') }}">
 <title>Вход — ANIMORA</title>
-
-
-
-
-<script>
-(function(){
- try{
-  localStorage.setItem('animora_site_theme','default');
-  localStorage.removeItem('animora_custom_theme');
- }catch(e){}
- document.documentElement.removeAttribute('data-theme');
- document.documentElement.style.removeProperty('--custom-bg');
- document.documentElement.style.removeProperty('--custom-accent');
- document.documentElement.style.removeProperty('--custom-panel');
- if(document.body){document.body.removeAttribute('data-animated');}
-})();
-</script>
+<style>
+.auth-note{font-size:13px;line-height:1.5;color:#aeb7cb}.auth-code{letter-spacing:.35em;text-align:center;font-size:22px!important}.auth-email{word-break:break-word;color:#bca0ff}
+</style>
 </head>
 <body>
 <div class="card">
 <a class="logo" href="/" style="color:inherit;text-decoration:none">ANIMORA</a>
 <h1>С возвращением!</h1>
-<p>Войди в свой аккаунт</p>
-
+<p>Войди в свой аккаунт по коду из почты</p>
 {% with messages = get_flashed_messages() %}
-{% for message in messages %}
-<div class="message">{{ message }}</div>
-{% endfor %}
+{% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}
 {% endwith %}
-
+{% if otp_sent %}
+<p class="auth-note">Мы отправили код на <strong class="auth-email">{{ pending_email }}</strong>. Введи его ниже.</p>
 <form method="POST">
-<input type="email" name="email" placeholder="Электронная почта" required>
-<input type="password" name="password" placeholder="Пароль" required>
-<button type="submit">Войти</button>
+<input type="hidden" name="action" value="verify_code">
+<input type="text" name="code" class="auth-code" placeholder="123456" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" minlength="6" maxlength="8" required autofocus>
+<button type="submit">Подтвердить и войти</button>
 </form>
-
+<form method="POST">
+<input type="hidden" name="action" value="send_code">
+<input type="hidden" name="email" value="{{ pending_email }}">
+<button type="submit" class="secondary">Отправить код повторно</button>
+</form>
+{% else %}
+<form method="POST">
+<input type="email" name="email" placeholder="Электронная почта" autocomplete="email" required>
+<button type="submit">Получить код на почту</button>
+</form>
+{% endif %}
 <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
 <p><a href="/">← Вернуться в каталог</a></p>
 </div>
-
 </body>
 </html>

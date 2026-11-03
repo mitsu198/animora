@@ -76,7 +76,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfile
       <div class="profile-badges">
         {% if is_admin %}<span class="admin-tag">👑 ADMIN</span>{% endif %}
         <span class="profile-tag">✦ Участник ANIMORA</span>
-        {% if wallet and wallet.premium_until %}<span class="profile-tag">👑 ANIMORA PREMIUM</span>{% endif %}
+        {% if premium_active %}<span class="profile-tag">👑 ANIMORA PREMIUM</span>{% endif %}
       </div>
     </div>
     <button class="profile-edit-link" type="button" onclick="openProfileSettings()">⚙ Настройки</button>

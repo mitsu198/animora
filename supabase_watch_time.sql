@@ -43,8 +43,19 @@ begin
     set display_name = excluded.display_name,
         total_seconds = public.animora_watch_time.total_seconds + excluded.total_seconds,
         updated_at = now();
+
+  -- Keep XP progression consistent when this setup script is run by itself.
+  insert into public.animora_wallets(user_id)
+  values (auth.uid())
+  on conflict (user_id) do nothing;
+
+  update public.animora_wallets
+  set xp = xp + greatest(1, floor(safe_seconds / 30.0)::integer),
+      level = 1 + floor((xp + greatest(1, floor(safe_seconds / 30.0)::integer)) / 100.0)::integer,
+      updated_at = now()
+  where user_id = auth.uid();
 end;
-$$;
+$;
 
 revoke all on function public.increment_watch_time(integer, text) from public;
 grant execute on function public.increment_watch_time(integer, text) to authenticated;

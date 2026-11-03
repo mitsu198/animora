@@ -136,6 +136,40 @@ grant execute on function public.claim_animora_achievement(text) to authenticate
 grant execute on function public.buy_animora_item(text) to authenticated;
 grant execute on function public.buy_animora_premium(integer) to authenticated;
 
+-- Keep the production watch-time table compatible with the economy RPC.
+-- The original production schema uses animora_watch_time.total_seconds.
+create table if not exists public.animora_watch_time (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  display_name text not null default 'Зритель',
+  total_seconds bigint not null default 0 check (total_seconds >= 0),
+  updated_at timestamptz not null default now()
+);
+
+-- Older installations may not have a unique constraint on user_id.
+-- Merge any duplicate rows before creating the conflict target used below.
+do $
+begin
+  if exists (
+    select 1 from public.animora_watch_time
+    group by user_id having count(*) > 1
+  ) then
+    with merged as (
+      select user_id,
+             (array_agg(display_name order by updated_at desc))[1] as display_name,
+             sum(total_seconds)::bigint as total_seconds,
+             max(updated_at) as updated_at
+      from public.animora_watch_time
+      group by user_id
+    )
+    delete from public.animora_watch_time;
+    insert into public.animora_watch_time(user_id, display_name, total_seconds, updated_at)
+    select user_id, display_name, total_seconds, updated_at from merged;
+  end if;
+end $;
+
+create unique index if not exists animora_watch_time_user_id_uidx
+  on public.animora_watch_time(user_id);
+
 -- Reward a small amount of progression for verified watch time, server-side.
 create or replace function public.increment_watch_time(p_seconds integer, p_display_name text)
 returns void language plpgsql security definer set search_path=public as $$

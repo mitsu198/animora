@@ -9,6 +9,7 @@
 <style>
 .profile-cover.banner-sakura{background:radial-gradient(ellipse at 20% 20%,#f8a7d1 0,transparent 35%),linear-gradient(120deg,#311b49,#8e4d8c 55%,#e9a5c9)!important}.profile-cover.banner-neon{background:radial-gradient(ellipse at 80% 20%,#21d4fd 0,transparent 30%),linear-gradient(120deg,#10112c,#4a2a85 55%,#0b788e)!important}.profile-cover.banner-galaxy{background:radial-gradient(ellipse at 60% 15%,#a28cff 0,transparent 25%),radial-gradient(ellipse at 20% 80%,#4c4ba7 0,transparent 30%),linear-gradient(120deg,#09091b,#251b4d 60%,#5a2b73)!important}
 .profile-stat.balance strong{color:#d9c5ff}.profile-stat.balance .profile-stat-icon{color:#c9a6ff}
+.profile-avatar.frame-violet{outline:3px solid #b68cff;outline-offset:3px;box-shadow:0 0 18px #a879ff88}.profile-avatar.frame-gold{outline:3px solid #f4cb68;outline-offset:3px;box-shadow:0 0 18px #e7bb4f88}
 </style>
 
 
@@ -65,7 +66,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfile
   <div class="profile-cover {{ ('banner-sakura' if profile_settings and profile_settings.banner_key == 'banner_sakura' else 'banner-neon' if profile_settings and profile_settings.banner_key == 'banner_neon' else 'banner-galaxy' if profile_settings and profile_settings.banner_key == 'banner_galaxy' else '') }}"><span class="cover-orbit orbit-one"></span><span class="cover-orbit orbit-two"></span><span class="cover-label">ANIMORA MEMBER SPACE</span></div>
   <div class="profile-identity">
     <div class="profile-avatar-wrap">
-      {% if avatar_url %}<img class="avatar profile-avatar" src="{{ avatar_url }}" alt="Аватар">{% else %}<div class="avatar profile-avatar avatar-placeholder">👤</div>{% endif %}
+      {% if avatar_url %}<img class="avatar profile-avatar {{ ('frame-violet' if profile_settings and profile_settings.frame_key == 'frame_violet' else 'frame-gold' if profile_settings and profile_settings.frame_key == 'frame_gold' else '') }}" src="{{ avatar_url }}" alt="Аватар">{% else %}<div class="avatar profile-avatar avatar-placeholder {{ ('frame-violet' if profile_settings and profile_settings.frame_key == 'frame_violet' else 'frame-gold' if profile_settings and profile_settings.frame_key == 'frame_gold' else '') }}">👤</div>{% endif %}
       <span class="online-dot" title="Аккаунт активен"></span>
     </div>
     <div class="profile-name-block">

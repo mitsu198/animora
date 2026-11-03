@@ -153,19 +153,19 @@ begin
     select 1 from public.animora_watch_time
     group by user_id having count(*) > 1
   ) then
-    with merged as materialized (
+    drop table if exists pg_temp.animora_watch_time_merged;
+    create temporary table animora_watch_time_merged on commit drop as
       select user_id,
              (array_agg(display_name order by updated_at desc))[1] as display_name,
              sum(total_seconds)::bigint as total_seconds,
              max(updated_at) as updated_at
       from public.animora_watch_time
-      group by user_id
-    ),
-    deleted as (
-      delete from public.animora_watch_time returning user_id
-    )
+      group by user_id;
+
+    truncate table public.animora_watch_time;
     insert into public.animora_watch_time(user_id, display_name, total_seconds, updated_at)
-    select user_id, display_name, total_seconds, updated_at from merged;
+    select user_id, display_name, total_seconds, updated_at
+    from pg_temp.animora_watch_time_merged;
   end if;
 end
 $body$;

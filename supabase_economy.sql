@@ -63,10 +63,10 @@ begin
       select count(*) >= 5 from public.favorites where user_id=uid into eligible;
     when 'watch_30m' then
       reward_coins := 200; reward_xp := 50;
-      select coalesce(seconds,0) >= 1800 from public.watch_time where user_id=uid into eligible;
+      select coalesce(total_seconds,0) >= 1800 from public.animora_watch_time where user_id=uid into eligible;
     when 'watch_2h' then
       reward_coins := 600; reward_xp := 150;
-      select coalesce(seconds,0) >= 7200 from public.watch_time where user_id=uid into eligible;
+      select coalesce(total_seconds,0) >= 7200 from public.animora_watch_time where user_id=uid into eligible;
     else raise exception 'Unknown achievement';
   end case;
   if not coalesce(eligible,false) then raise exception 'Achievement requirements not met'; end if;
@@ -145,10 +145,10 @@ begin
   safe_seconds := greatest(0, least(coalesce(p_seconds,0),30));
   if safe_seconds < 1 then raise exception 'Invalid seconds'; end if;
   safe_name := left(coalesce(nullif(trim(p_display_name),''),'Зритель'),24);
-  insert into public.watch_time(user_id,display_name,seconds,updated_at)
+  insert into public.animora_watch_time(user_id,display_name,total_seconds,updated_at)
   values(auth.uid(),safe_name,safe_seconds,now())
   on conflict(user_id) do update set display_name=excluded.display_name,
-    seconds=public.watch_time.seconds+excluded.seconds,updated_at=now();
+    total_seconds=public.animora_watch_time.total_seconds+excluded.total_seconds,updated_at=now();
   insert into public.animora_wallets(user_id) values(auth.uid()) on conflict(user_id) do nothing;
   update public.animora_wallets set xp=xp+greatest(1,floor(safe_seconds/30.0)::integer),
     level=1+floor((xp+greatest(1,floor(safe_seconds/30.0)::integer))/100.0)::integer,updated_at=now()

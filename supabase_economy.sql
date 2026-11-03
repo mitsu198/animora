@@ -81,15 +81,15 @@ end; $$;
 
 create or replace function public.buy_animora_item(p_item_key text)
 returns jsonb language plpgsql security definer set search_path=public as $$
-declare uid uuid := auth.uid(); cost integer; is_banner boolean := false;
+declare uid uuid := auth.uid(); cost integer; is_banner boolean := false; is_frame boolean := false;
 begin
   if uid is null then raise exception 'Authentication required'; end if;
   case p_item_key
     when 'banner_sakura' then cost:=1500; is_banner:=true;
     when 'banner_neon' then cost:=2500; is_banner:=true;
     when 'banner_galaxy' then cost:=4000; is_banner:=true;
-    when 'frame_violet' then cost:=1000;
-    when 'frame_gold' then cost:=3000;
+    when 'frame_violet' then cost:=1000; is_frame:=true;
+    when 'frame_gold' then cost:=3000; is_frame:=true;
     else raise exception 'Unknown shop item';
   end case;
   insert into public.animora_wallets(user_id) values(uid) on conflict(user_id) do nothing;
@@ -103,6 +103,9 @@ begin
   if is_banner then
     insert into public.animora_profile_settings(user_id,banner_key) values(uid,p_item_key)
     on conflict(user_id) do update set banner_key=excluded.banner_key,updated_at=now();
+  elsif is_frame then
+    insert into public.animora_profile_settings(user_id,frame_key) values(uid,p_item_key)
+    on conflict(user_id) do update set frame_key=excluded.frame_key,updated_at=now();
   end if;
   return jsonb_build_object('success',true,'cost',cost);
 end; $$;

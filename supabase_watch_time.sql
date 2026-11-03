@@ -1,19 +1,19 @@
 -- ANIMORA: watch-time leaderboard
-create table if not exists public.watch_time (
+create table if not exists public.animora_watch_time (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null default 'Зритель',
-  seconds bigint not null default 0 check (seconds >= 0),
+  total_seconds bigint not null default 0 check (total_seconds >= 0),
   updated_at timestamptz not null default now()
 );
 
-alter table public.watch_time enable row level security;
+alter table public.animora_watch_time enable row level security;
 
-drop policy if exists "Leaderboard is publicly readable" on public.watch_time;
+drop policy if exists "Leaderboard is publicly readable" on public.animora_watch_time;
 create policy "Leaderboard is publicly readable"
-  on public.watch_time for select
+  on public.animora_watch_time for select
   using (true);
 
-grant select on public.watch_time to anon, authenticated;
+grant select on public.animora_watch_time to anon, authenticated;
 
 create or replace function public.increment_watch_time(
   p_seconds integer,
@@ -37,11 +37,11 @@ begin
   end if;
   safe_name := left(coalesce(nullif(trim(p_display_name), ''), 'Зритель'), 24);
 
-  insert into public.watch_time(user_id, display_name, seconds, updated_at)
+  insert into public.animora_watch_time(user_id, display_name, total_seconds, updated_at)
   values (auth.uid(), safe_name, safe_seconds, now())
   on conflict (user_id) do update
     set display_name = excluded.display_name,
-        seconds = public.watch_time.seconds + excluded.seconds,
+        total_seconds = public.animora_watch_time.total_seconds + excluded.total_seconds,
         updated_at = now();
 end;
 $$;

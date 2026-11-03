@@ -857,12 +857,16 @@ def profile():
 
     try:
         wallet = economy_wallet()
+        settings_rows = economy_get_rows("animora_profile_settings", "banner_key,frame_key")
+        profile_settings = settings_rows[0] if settings_rows else {}
     except Exception:
         app.logger.exception("PROFILE WALLET LOAD ERROR")
         wallet = {"balance": 0, "xp": 0, "level": 1, "premium_until": None}
+        profile_settings = {}
     return render_template(
         "profile.html",
         wallet=wallet,
+        profile_settings=profile_settings,
         email=session.get("user_email"),
         avatar_url=session.get("avatar_url"),
         display_name=session.get("display_name", "Пользователь"),

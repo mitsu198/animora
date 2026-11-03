@@ -562,8 +562,8 @@ def achievements():
         wallet = economy_wallet()
         completed = {row.get("achievement_key") for row in economy_get_rows("animora_achievements", "achievement_key")}
         favorites = economy_get_rows("favorites", "anime_id")
-        watch_rows = economy_get_rows("watch_time", "seconds")
-        watch_seconds = int(watch_rows[0].get("seconds", 0)) if watch_rows else 0
+        watch_rows = economy_get_rows("animora_watch_time", "total_seconds")
+        watch_seconds = int(watch_rows[0].get("total_seconds", 0)) if watch_rows else 0
         favorite_count = len(favorites)
         for item in definitions:
             item["claimed"] = item["key"] in completed

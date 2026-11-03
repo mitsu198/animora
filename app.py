@@ -5,6 +5,7 @@ import requests
 import base64
 import json
 import time
+from datetime import datetime, timezone
 
 from flask import (
     Flask, render_template, request, redirect,
@@ -863,9 +864,15 @@ def profile():
         app.logger.exception("PROFILE WALLET LOAD ERROR")
         wallet = {"balance": 0, "xp": 0, "level": 1, "premium_until": None}
         profile_settings = {}
+    premium_until = wallet.get("premium_until") if isinstance(wallet, dict) else None
+    try:
+        premium_active = bool(premium_until) and datetime.fromisoformat(str(premium_until).replace("Z", "+00:00")) > datetime.now(timezone.utc)
+    except (TypeError, ValueError):
+        premium_active = False
     return render_template(
         "profile.html",
         wallet=wallet,
+        premium_active=premium_active,
         profile_settings=profile_settings,
         email=session.get("user_email"),
         avatar_url=session.get("avatar_url"),

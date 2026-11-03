@@ -498,6 +498,167 @@ def increment_watch_time():
         return jsonify({"success": False, "message": "Не удалось сохранить время просмотра."}), 503
 
 
+
+# --- ANIMORA AniCoins economy ---
+def economy_rpc(function_name, payload=None):
+    base_url = os.environ["SUPABASE_URL"].rstrip("/")
+    response = requests.post(
+        f"{base_url}/rest/v1/rpc/{function_name}",
+        headers=supabase_headers(),
+        json=payload or {},
+        timeout=20
+    )
+    if response.status_code >= 400:
+        app.logger.warning("ECONOMY RPC %s failed: %s %s", function_name, response.status_code, response.text[:400])
+        try:
+            message = response.json().get("message", "")
+        except ValueError:
+            message = ""
+        if "Not enough AniCoins" in message:
+            raise ValueError("Недостаточно AniCoins для покупки.")
+        if "requirements not met" in message:
+            raise ValueError("Условия достижения ещё не выполнены.")
+        if "already claimed" in message or "already owned" in message:
+            raise ValueError("Награда уже получена или предмет уже куплен.")
+        raise RuntimeError("Не удалось выполнить операцию экономики. Проверь, применена ли миграция Supabase.")
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
+def economy_wallet():
+    result = economy_rpc("ensure_animora_wallet")
+    if isinstance(result, list):
+        return result[0] if result else {"balance": 0, "xp": 0, "level": 1, "premium_until": None}
+    return result or {"balance": 0, "xp": 0, "level": 1, "premium_until": None}
+
+
+def economy_get_rows(table, select):
+    base_url = os.environ["SUPABASE_URL"].rstrip("/")
+    response = requests.get(
+        f"{base_url}/rest/v1/{table}",
+        headers=supabase_headers(),
+        params={"select": select, "user_id": f"eq.{session['user_id']}"},
+        timeout=20
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+@app.route("/achievements")
+def achievements():
+    if "user_id" not in session:
+        flash("Войди в аккаунт, чтобы получать награды.")
+        return redirect(url_for("login"))
+    definitions = [
+        {"key":"first_favorite","icon":"💜","title":"Первая любовь","description":"Добавь первое аниме в избранное.","coins":100,"xp":25},
+        {"key":"collector_5","icon":"🎬","title":"Коллекционер","description":"Собери в избранном 5 аниме.","coins":250,"xp":60},
+        {"key":"watch_30m","icon":"⏱️","title":"Первый марафон","description":"Набери 30 минут просмотра с авторизацией.","coins":200,"xp":50},
+        {"key":"watch_2h","icon":"🌙","title":"Ночная смена","description":"Набери 2 часа просмотра с авторизацией.","coins":600,"xp":150},
+    ]
+    try:
+        wallet = economy_wallet()
+        completed = {row.get("achievement_key") for row in economy_get_rows("animora_achievements", "achievement_key")}
+        favorites = economy_get_rows("favorites", "anime_id")
+        watch_rows = economy_get_rows("watch_time", "seconds")
+        watch_seconds = int(watch_rows[0].get("seconds", 0)) if watch_rows else 0
+        favorite_count = len(favorites)
+        for item in definitions:
+            item["claimed"] = item["key"] in completed
+            item["eligible"] = (
+                (item["key"] == "first_favorite" and favorite_count >= 1)
+                or (item["key"] == "collector_5" and favorite_count >= 5)
+                or (item["key"] == "watch_30m" and watch_seconds >= 1800)
+                or (item["key"] == "watch_2h" and watch_seconds >= 7200)
+            )
+        return render_template("achievements.html", wallet=wallet, achievements=definitions)
+    except Exception:
+        app.logger.exception("ANIMORA ACHIEVEMENTS LOAD ERROR")
+        flash("Не удалось загрузить достижения. Проверь миграцию supabase_economy.sql в Supabase.")
+        return redirect(url_for("profile"))
+
+
+@app.route("/shop")
+def shop():
+    if "user_id" not in session:
+        flash("Войди в аккаунт, чтобы открыть магазин.")
+        return redirect(url_for("login"))
+    item_defs = [
+        {"key":"banner_sakura","icon":"🌸","title":"Баннер «Сакура»","description":"Нежный розово-фиолетовый баннер для профиля.","price":1500},
+        {"key":"banner_neon","icon":"🌌","title":"Баннер «Неон»","description":"Неоновое оформление в стиле ночного города.","price":2500},
+        {"key":"banner_galaxy","icon":"🌠","title":"Баннер «Галактика»","description":"Редкий космический баннер.","price":4000},
+        {"key":"frame_violet","icon":"💜","title":"Фиолетовая рамка","description":"Украшение для аватара.","price":1000},
+        {"key":"frame_gold","icon":"👑","title":"Золотая рамка","description":"Премиальная золотая рамка.","price":3000},
+    ]
+    try:
+        wallet = economy_wallet()
+        owned = {row.get("item_key") for row in economy_get_rows("animora_inventory", "item_key")}
+        for item in item_defs:
+            item["owned"] = item["key"] in owned
+        return render_template("shop.html", wallet=wallet, items=item_defs, premium_plans=[
+            {"days":7,"price":5000},{"days":30,"price":15000},{"days":90,"price":40000}
+        ])
+    except Exception:
+        app.logger.exception("ANIMORA SHOP LOAD ERROR")
+        flash("Не удалось загрузить магазин. Проверь миграцию supabase_economy.sql в Supabase.")
+        return redirect(url_for("profile"))
+
+
+@app.route("/economy/claim-achievement", methods=["POST"])
+def claim_economy_achievement():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({"success":False,"message":"Войди в аккаунт."}), 401
+    key = str((request.get_json(silent=True) or {}).get("key", "")).strip()
+    if key not in {"first_favorite","collector_5","watch_30m","watch_2h"}:
+        return jsonify({"success":False,"message":"Неизвестное достижение."}), 400
+    try:
+        result = economy_rpc("claim_animora_achievement", {"p_key": key})
+        return jsonify({"success":bool((result or {}).get("success", True)),"message":"Награда начислена!"})
+    except ValueError as error:
+        return jsonify({"success":False,"message":str(error)}), 409
+    except Exception:
+        app.logger.exception("ANIMORA ACHIEVEMENT CLAIM ERROR")
+        return jsonify({"success":False,"message":"Не удалось получить награду. Проверь настройки экономики в Supabase."}), 503
+
+
+@app.route("/economy/buy-item", methods=["POST"])
+def buy_economy_item():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({"success":False,"message":"Войди в аккаунт."}), 401
+    key = str((request.get_json(silent=True) or {}).get("key", "")).strip()
+    if key not in {"banner_sakura","banner_neon","banner_galaxy","frame_violet","frame_gold"}:
+        return jsonify({"success":False,"message":"Неизвестный предмет."}), 400
+    try:
+        economy_rpc("buy_animora_item", {"p_item_key": key})
+        return jsonify({"success":True,"message":"Покупка прошла успешно!"})
+    except ValueError as error:
+        return jsonify({"success":False,"message":str(error)}), 409
+    except Exception:
+        app.logger.exception("ANIMORA SHOP PURCHASE ERROR")
+        return jsonify({"success":False,"message":"Не удалось купить предмет. Проверь миграцию Supabase."}), 503
+
+
+@app.route("/economy/buy-premium", methods=["POST"])
+def buy_economy_premium():
+    if "user_id" not in session or "access_token" not in session:
+        return jsonify({"success":False,"message":"Войди в аккаунт."}), 401
+    try:
+        days = int((request.get_json(silent=True) or {}).get("days", 0))
+    except (TypeError, ValueError):
+        days = 0
+    if days not in {7,30,90}:
+        return jsonify({"success":False,"message":"Недопустимый срок Premium."}), 400
+    try:
+        economy_rpc("buy_animora_premium", {"p_days": days})
+        return jsonify({"success":True,"message":"ANIMORA Premium активирован!"})
+    except ValueError as error:
+        return jsonify({"success":False,"message":str(error)}), 409
+    except Exception:
+        app.logger.exception("ANIMORA PREMIUM PURCHASE ERROR")
+        return jsonify({"success":False,"message":"Не удалось подключить Premium. Проверь миграцию Supabase."}), 503
+
+
 @app.route("/favorites/list")
 def favorites_list():
     if "user_id" not in session or "access_token" not in session:
@@ -694,8 +855,14 @@ def profile():
         favorites = []
         flash("Не удалось загрузить избранное.")
 
+    try:
+        wallet = economy_wallet()
+    except Exception:
+        app.logger.exception("PROFILE WALLET LOAD ERROR")
+        wallet = {"balance": 0, "xp": 0, "level": 1, "premium_until": None}
     return render_template(
         "profile.html",
+        wallet=wallet,
         email=session.get("user_email"),
         avatar_url=session.get("avatar_url"),
         display_name=session.get("display_name", "Пользователь"),

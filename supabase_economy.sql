@@ -146,26 +146,29 @@ create table if not exists public.animora_watch_time (
 );
 
 -- Older installations may not have a unique constraint on user_id.
--- Merge any duplicate rows before creating the conflict target used below.
-do $
+-- Merge duplicates while preserving the accumulated watch time.
+do $body$
 begin
   if exists (
     select 1 from public.animora_watch_time
     group by user_id having count(*) > 1
   ) then
-    with merged as (
+    with merged as materialized (
       select user_id,
              (array_agg(display_name order by updated_at desc))[1] as display_name,
              sum(total_seconds)::bigint as total_seconds,
              max(updated_at) as updated_at
       from public.animora_watch_time
       group by user_id
+    ),
+    deleted as (
+      delete from public.animora_watch_time returning user_id
     )
-    delete from public.animora_watch_time;
     insert into public.animora_watch_time(user_id, display_name, total_seconds, updated_at)
     select user_id, display_name, total_seconds, updated_at from merged;
   end if;
-end $;
+end
+$body$;
 
 create unique index if not exists animora_watch_time_user_id_uidx
   on public.animora_watch_time(user_id);

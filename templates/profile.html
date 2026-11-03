@@ -6,6 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="{{ url_for('static', filename='animora-redesign.css') }}">
 <title>Мой профиль — ANIMORA</title>
+<style>
+.profile-cover.banner-sakura{background:radial-gradient(ellipse at 20% 20%,#f8a7d1 0,transparent 35%),linear-gradient(120deg,#311b49,#8e4d8c 55%,#e9a5c9)!important}.profile-cover.banner-neon{background:radial-gradient(ellipse at 80% 20%,#21d4fd 0,transparent 30%),linear-gradient(120deg,#10112c,#4a2a85 55%,#0b788e)!important}.profile-cover.banner-galaxy{background:radial-gradient(ellipse at 60% 15%,#a28cff 0,transparent 25%),radial-gradient(ellipse at 20% 80%,#4c4ba7 0,transparent 30%),linear-gradient(120deg,#09091b,#251b4d 60%,#5a2b73)!important}
+.profile-stat.balance strong{color:#d9c5ff}.profile-stat.balance .profile-stat-icon{color:#c9a6ff}
+</style>
 
 
 
@@ -58,7 +62,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfile
 <main id="profileOverview">
 
 <section class="profile-hero">
-  <div class="profile-cover"><span class="cover-orbit orbit-one"></span><span class="cover-orbit orbit-two"></span><span class="cover-label">ANIMORA MEMBER SPACE</span></div>
+  <div class="profile-cover {{ ('banner-sakura' if profile_settings and profile_settings.banner_key == 'banner_sakura' else 'banner-neon' if profile_settings and profile_settings.banner_key == 'banner_neon' else 'banner-galaxy' if profile_settings and profile_settings.banner_key == 'banner_galaxy' else '') }}"><span class="cover-orbit orbit-one"></span><span class="cover-orbit orbit-two"></span><span class="cover-label">ANIMORA MEMBER SPACE</span></div>
   <div class="profile-identity">
     <div class="profile-avatar-wrap">
       {% if avatar_url %}<img class="avatar profile-avatar" src="{{ avatar_url }}" alt="Аватар">{% else %}<div class="avatar profile-avatar avatar-placeholder">👤</div>{% endif %}
@@ -71,25 +75,28 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfile
       <div class="profile-badges">
         {% if is_admin %}<span class="admin-tag">👑 ADMIN</span>{% endif %}
         <span class="profile-tag">✦ Участник ANIMORA</span>
+        {% if wallet and wallet.premium_until %}<span class="profile-tag">👑 ANIMORA PREMIUM</span>{% endif %}
       </div>
     </div>
     <button class="profile-edit-link" type="button" onclick="openProfileSettings()">⚙ Настройки</button>
   </div>
   <div class="profile-stats">
     <div class="profile-stat"><span class="profile-stat-icon">♥</span><strong>{{ favorites|length }}</strong><small>В избранном</small></div>
-    <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>1</strong><small>Уровень зрителя</small></div>
-    <div class="profile-stat"><span class="profile-stat-icon">◷</span><strong>—</strong><small>Время просмотра</small></div>
+    <div class="profile-stat"><span class="profile-stat-icon">✦</span><strong>{{ wallet.level|default(1) }}</strong><small>Уровень зрителя</small></div>
+    <div class="profile-stat balance"><span class="profile-stat-icon">◈</span><strong>{{ wallet.balance|default(0) }}</strong><small>AniCoins</small></div>
   </div>
   <div class="level-panel">
-    <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень 1 · Новичок</strong></div><span class="level-xp">0 / 100 XP</span></div>
-    <div class="level-track"><span></span></div>
-    <p>Система опыта появится в следующих обновлениях профиля.</p>
+    <div class="level-topline"><div><span class="level-kicker">ТВОЙ ПРОГРЕСС</span><strong>Уровень {{ wallet.level|default(1) }} · {{ 'Новичок' if (wallet.level|default(1)) < 5 else 'Знаток' if (wallet.level|default(1)) < 15 else 'Мастер' }}</strong></div><span class="level-xp">{{ (wallet.xp|default(0)) % 100 }} / 100 XP</span></div>
+    <div class="level-track"><span style="width:{{ (wallet.xp|default(0)) % 100 }}%"></span></div>
+    <p>Выполняй задания, получай AniCoins и открывай новые украшения.</p>
   </div>
 </section>
 
 <nav class="profile-tabs" aria-label="Разделы профиля">
   <a class="active" href="#profileOverview">Обзор</a>
   <a href="#favoritesSection">Избранное <span>{{ favorites|length }}</span></a>
+  <a href="/achievements">Достижения</a>
+  <a href="/shop">Магазин</a>
   <a href="#profileSettings" onclick="openProfileSettings();return false;">Настройки</a>
 </nav>
 
